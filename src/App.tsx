@@ -26,22 +26,22 @@ class App extends React.Component<Record<string, never>, AppState> {
   }
 
   getResults = async (searchTerm = ''): Promise<void> => {
-    this.setState({loading: true});
+    this.setState({ loading: true });
 
     try {
       searchTerm = searchTerm.trim();
       const searchQuery = searchTerm ? `&search=${searchTerm}` : '';
-      const res = await fetch('https://swapi.dev/api/people/?page=1'+searchQuery);
+      const res = await fetch(
+        'https://swapi.dev/api/people/?page=1' + searchQuery
+      );
       const data = await res.json();
       const { results } = data;
       this.setState({ results, loading: false });
     } catch (error) {
       console.log(error, typeof error, (error as Error)?.message);
-      
-      this.setState({error: (error as Error).message, loading: false});
-    }
 
-    
+      this.setState({ error: (error as Error).message, loading: false });
+    }
   };
 
   handleButtonClick = async () => {
@@ -66,8 +66,10 @@ class App extends React.Component<Record<string, never>, AppState> {
         />
 
         {this.state.loading && !this.state.error && <Spinner />}
-        {!this.state.loading && !this.state.error && <ResultList results={this.state.results} />}
-         {this.state.error && <p style={{ color: "red" }}>{this.state.error}</p>}
+        {!this.state.loading && !this.state.error && (
+          <ResultList results={this.state.results} />
+        )}
+        {this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
       </>
     );
   }
