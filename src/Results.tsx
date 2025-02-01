@@ -6,15 +6,15 @@ interface Character {
   birth_year: string;
 }
 
-type ResultListState = {
+type ResultsState = {
   hasError: boolean;
 };
 
-class ResultList extends React.Component<
+class Results extends React.Component<
   { results: Character[] },
-  ResultListState
+  ResultsState
 > {
-  state: ResultListState = {
+  state: ResultsState = {
     hasError: false,
   };
 
@@ -52,4 +52,4 @@ class ResultList extends React.Component<
   }
 }
 
-export default ResultList;
+export default Results;

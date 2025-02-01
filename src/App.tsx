@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import TopControls from './TopControls';
-import ResultList from './ResultList';
+import Results from './Results';
 import Spinner from './Spinner';
 
 type AppState = {
@@ -67,7 +67,7 @@ class App extends React.Component<Record<string, never>, AppState> {
 
         {this.state.loading && !this.state.error && <Spinner />}
         {!this.state.loading && !this.state.error && (
-          <ResultList results={this.state.results} />
+          <Results results={this.state.results} />
         )}
         {this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
       </>
