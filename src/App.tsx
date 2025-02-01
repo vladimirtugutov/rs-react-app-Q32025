@@ -9,6 +9,7 @@ type AppState = {
   searchValue: string;
   loading: boolean;
   error: string | null;
+  hasSimulatedError: boolean;
 };
 
 class App extends React.Component<Record<string, never>, AppState> {
@@ -17,6 +18,7 @@ class App extends React.Component<Record<string, never>, AppState> {
     searchValue: localStorage.getItem('prevSearchValue') || '',
     loading: false,
     error: null,
+    hasSimulatedError: false,
   };
 
   async componentDidMount(): Promise<void> {
@@ -56,21 +58,34 @@ class App extends React.Component<Record<string, never>, AppState> {
     this.setState({ searchValue: newValue });
   };
 
+  handleErrorButtonClick = () => {
+    this.setState({ hasSimulatedError: true });
+  };
+
   render() {
+    if (this.state.hasSimulatedError) {
+      throw new Error('Simulated error by Error Button click.');
+    }
     return (
-      <>
+      <div className="app-container">
         <TopControls
           handleButtonClick={this.handleButtonClick}
           handleInputChange={this.handleInputChange}
           searchValue={this.state.searchValue}
         />
 
-        {this.state.loading && !this.state.error && <Spinner />}
-        {!this.state.loading && !this.state.error && (
-          <Results results={this.state.results} />
-        )}
-        {this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
-      </>
+        <div className="results-wrapper">
+          {this.state.loading && !this.state.error ? (
+            <Spinner />
+          ) : (
+            <Results results={this.state.results} error={this.state.error} />
+          )}
+        </div>
+
+        <div className="error-button-container">
+          <button onClick={this.handleErrorButtonClick}>Error Button</button>
+        </div>
+      </div>
     );
   }
 }

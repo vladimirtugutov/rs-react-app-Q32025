@@ -6,45 +6,44 @@ interface Character {
   birth_year: string;
 }
 
-type ResultsState = {
-  hasError: boolean;
-};
-
-class Results extends React.Component<{ results: Character[] }, ResultsState> {
-  state: ResultsState = {
-    hasError: false,
-  };
-
-  handleClick = () => {
-    this.setState({ hasError: true });
-  };
-
+class Results extends React.Component<{
+  results: Character[];
+  error: string | null;
+}> {
   render() {
-    if (this.state.hasError) {
-      throw new Error('Simulated error by button click.');
-    }
     return (
-      <div>
-        <table>
-          <thead>
+      <table className="results-table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Item Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {this.props.error ? (
             <tr>
-              <th>Item Name</th>
-              <th>Item Description</th>
+              <td colSpan={2} className="error-message">
+                {this.props.error}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {this.props.results.map((item) => (
+          ) : this.props.results.length === 0 ? (
+            <tr>
+              <td colSpan={2} className="no-results">
+                No results found
+              </td>
+            </tr>
+          ) : (
+            this.props.results.map((item) => (
               <tr key={item.name}>
                 <td>{item.name}</td>
                 <td>
                   {item.gender}, {item.birth_year}
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <button onClick={this.handleClick}>Error button</button>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
     );
   }
 }

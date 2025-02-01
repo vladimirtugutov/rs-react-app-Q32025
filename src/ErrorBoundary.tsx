@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component<
     if (this.state.errorMessage) {
       return (
         <>
-          <p style={{ color: 'red' }}>{this.state.errorMessage}</p>
+          <p className="error-message">{this.state.errorMessage}</p>
           <button onClick={this.refreshPage}>Refresh Page</button>
         </>
       );

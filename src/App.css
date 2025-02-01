@@ -40,3 +40,76 @@
 .read-the-docs {
   color: #888;
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-controls {
+  width: 80%;
+  max-width: 600px;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  background-color: #f8f8f8;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+.results-wrapper {
+  width: 80%;
+  max-width: 800px;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  flex-grow: 1;
+}
+
+.results-table tbody {
+  flex-grow: 1;
+}
+
+.error-button-container {
+  margin-top: auto;
+  padding: 10px 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.no-results {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  padding: 20px;
+}
+
+button {
+  border: 2px solid black;
+  padding: 8px 16px;
+  background-color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #f0f0f0;
+}

@@ -19,13 +19,13 @@ class TopControls extends React.Component<TopControlsProps, TopControlsState> {
 
   render() {
     return (
-      <>
+      <div className="top-controls">
         <SearchInput
           value={this.props.searchValue}
           onChange={this.props.handleInputChange}
         />
         <SearchButton onClick={this.props.handleButtonClick} />
-      </>
+      </div>
     );
   }
 }
