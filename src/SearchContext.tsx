@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SearchContextType {
   searchValue: string;
@@ -7,7 +7,7 @@ interface SearchContextType {
 }
 
 const defaultValues: SearchContextType = {
-  searchValue: "",
+  searchValue: '',
   setSearchValue: () => {},
   handleSearchButtonClick: () => {},
 };

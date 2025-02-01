@@ -1,5 +1,5 @@
-import React from "react";
-import SearchContext from "./SearchContext";
+import React from 'react';
+import SearchContext from './SearchContext';
 
 class SearchInput extends React.Component {
   render() {

@@ -2,7 +2,7 @@ import React from 'react';
 import SearchInput from './SearchInput';
 import SearchButton from './SearchButton';
 
-class TopControls extends React.Component {
+class TopControls extends React.Component<Record<string, never>> {
   render() {
     return (
       <div className="top-controls">

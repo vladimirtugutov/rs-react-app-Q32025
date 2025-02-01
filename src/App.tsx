@@ -2,7 +2,7 @@ import React from 'react';
 import TopControls from './TopControls';
 import Results from './Results';
 import Spinner from './Spinner';
-import SearchContext from "./SearchContext";
+import SearchContext from './SearchContext';
 import './App.css';
 
 type AppState = {
@@ -76,9 +76,8 @@ class App extends React.Component<Record<string, never>, AppState> {
             setSearchValue: this.setSearchValue,
           }}
         >
-          <TopControls/>
+          <TopControls />
         </SearchContext.Provider>
-        
 
         <div className="results-wrapper">
           {this.state.loading && !this.state.error ? (
