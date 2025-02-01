@@ -6,7 +6,7 @@ type SearchButtonProps = {
 
 class SearchButton extends React.Component<SearchButtonProps> {
   render() {
-    return <button onClick={this.props.onClick}>SearchButton</button>;
+    return <button onClick={this.props.onClick}>Search Button</button>;
   }
 }
 

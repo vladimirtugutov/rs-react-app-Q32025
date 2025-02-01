@@ -6,7 +6,7 @@ interface Character {
   birth_year: string;
 }
 
-class Results extends React.Component<{ results: Character[] }> {
+class ResultList extends React.Component<{ results: Character[] }> {
   render() {
     return (
       <table>
@@ -31,4 +31,4 @@ class Results extends React.Component<{ results: Character[] }> {
   }
 }
 
-export default Results;
+export default ResultList;
