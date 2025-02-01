@@ -1,22 +1,18 @@
-import React from 'react';
+import React from "react";
+import SearchContext from "./SearchContext";
 
-type SearchInputProps = {
-  value: string;
-  onChange: (value: string) => void;
-};
-
-class SearchInput extends React.Component<SearchInputProps> {
-  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.props.onChange(event.target.value);
-  };
-
+class SearchInput extends React.Component {
   render() {
     return (
-      <input
-        type="text"
-        value={this.props.value}
-        onChange={this.handleInputChange}
-      ></input>
+      <SearchContext.Consumer>
+        {(context) => (
+          <input
+            type="text"
+            value={context.searchValue}
+            onChange={(e) => context.setSearchValue(e.target.value)}
+          />
+        )}
+      </SearchContext.Consumer>
     );
   }
 }

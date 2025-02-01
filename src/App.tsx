@@ -1,8 +1,9 @@
 import React from 'react';
-import './App.css';
 import TopControls from './TopControls';
 import Results from './Results';
 import Spinner from './Spinner';
+import SearchContext from "./SearchContext";
+import './App.css';
 
 type AppState = {
   results: [];
@@ -46,7 +47,7 @@ class App extends React.Component<Record<string, never>, AppState> {
     }
   };
 
-  handleButtonClick = async () => {
+  handleSearchButtonClick = async () => {
     console.log('Button click!', this.state.searchValue);
 
     localStorage.setItem('prevSearchValue', this.state.searchValue);
@@ -54,7 +55,7 @@ class App extends React.Component<Record<string, never>, AppState> {
     await this.getResults(this.state.searchValue);
   };
 
-  handleInputChange = (newValue: string) => {
+  setSearchValue = (newValue: string) => {
     this.setState({ searchValue: newValue });
   };
 
@@ -68,11 +69,16 @@ class App extends React.Component<Record<string, never>, AppState> {
     }
     return (
       <div className="app-container">
-        <TopControls
-          handleButtonClick={this.handleButtonClick}
-          handleInputChange={this.handleInputChange}
-          searchValue={this.state.searchValue}
-        />
+        <SearchContext.Provider
+          value={{
+            searchValue: this.state.searchValue,
+            handleSearchButtonClick: this.handleSearchButtonClick,
+            setSearchValue: this.setSearchValue,
+          }}
+        >
+          <TopControls/>
+        </SearchContext.Provider>
+        
 
         <div className="results-wrapper">
           {this.state.loading && !this.state.error ? (
