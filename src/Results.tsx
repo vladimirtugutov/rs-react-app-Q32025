@@ -10,10 +10,7 @@ type ResultsState = {
   hasError: boolean;
 };
 
-class Results extends React.Component<
-  { results: Character[] },
-  ResultsState
-> {
+class Results extends React.Component<{ results: Character[] }, ResultsState> {
   state: ResultsState = {
     hasError: false,
   };
