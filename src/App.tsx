@@ -76,9 +76,9 @@ class App extends React.Component<Record<string, never>, AppState> {
         const speciesData: SpeciesData = await speciesRes.json();
 
         const description =
-          speciesData.flavor_text_entries.find(
-            (entry) => entry.language.name === 'en'
-          )?.flavor_text.replace(/\f/g, ' ') ?? '';
+          speciesData.flavor_text_entries
+            .find((entry) => entry.language.name === 'en')
+            ?.flavor_text.replace(/\f/g, ' ') ?? '';
 
         results = [{ ...data, description }];
       } else {
@@ -87,13 +87,15 @@ class App extends React.Component<Record<string, never>, AppState> {
             const res = await fetch(item.url);
             const pokemon = await res.json();
 
-            const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${item.name}`);
+            const speciesRes = await fetch(
+              `https://pokeapi.co/api/v2/pokemon-species/${item.name}`
+            );
             const speciesData: SpeciesData = await speciesRes.json();
 
             const description =
-              speciesData.flavor_text_entries.find(
-                (entry) => entry.language.name === 'en'
-              )?.flavor_text.replace(/\f/g, ' ') ?? '';
+              speciesData.flavor_text_entries
+                .find((entry) => entry.language.name === 'en')
+                ?.flavor_text.replace(/\f/g, ' ') ?? '';
 
             return { ...pokemon, description };
           })
