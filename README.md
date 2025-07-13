@@ -1,2 +1,2 @@
 Task 1 - Class components
-deployed https://soft-lolly-1ae17e.netlify.app/
+deployed https://cheery-starburst-bb8ce2.netlify.app/
