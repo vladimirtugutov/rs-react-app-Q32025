@@ -5,12 +5,31 @@ import Spinner from './Spinner';
 import SearchContext from './SearchContext';
 import './App.css';
 
+type Pokemon = {
+  name: string;
+  sprites?: {
+    front_default: string;
+  };
+  description?: string;
+};
+
 type AppState = {
-  results: [];
+  results: Pokemon[];
   searchValue: string;
   loading: boolean;
   error: string | null;
   hasSimulatedError: boolean;
+};
+
+type FlavorTextEntry = {
+  flavor_text: string;
+  language: {
+    name: string;
+  };
+};
+
+type SpeciesData = {
+  flavor_text_entries: FlavorTextEntry[];
 };
 
 class App extends React.Component<Record<string, never>, AppState> {
@@ -31,27 +50,65 @@ class App extends React.Component<Record<string, never>, AppState> {
   getResults = async (searchTerm = ''): Promise<void> => {
     this.setState({ loading: true });
 
+    const baseUrl = 'https://pokeapi.co/api/v2/pokemon';
+
     try {
       searchTerm = searchTerm.trim();
-      const searchQuery = searchTerm ? `&search=${searchTerm}` : '';
-      const res = await fetch(
-        'https://swapi.dev/api/people/?page=1' + searchQuery
-      );
+      const url = searchTerm
+        ? `${baseUrl}/${searchTerm.toLowerCase()}`
+        : `${baseUrl}?limit=10`;
+
+      const res = await fetch(url);
+      await new Promise((r) => setTimeout(r, 500));
+
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status}`);
+      }
+
       const data = await res.json();
-      const { results } = data;
-      this.setState({ results, loading: false });
+
+      let results: Pokemon[];
+
+      if (searchTerm) {
+        const speciesRes = await fetch(
+          `https://pokeapi.co/api/v2/pokemon-species/${searchTerm.toLowerCase()}`
+        );
+        const speciesData: SpeciesData = await speciesRes.json();
+
+        const description =
+          speciesData.flavor_text_entries.find(
+            (entry) => entry.language.name === 'en'
+          )?.flavor_text.replace(/\f/g, ' ') ?? '';
+
+        results = [{ ...data, description }];
+      } else {
+        results = await Promise.all(
+          data.results.map(async (item: { name: string; url: string }) => {
+            const res = await fetch(item.url);
+            const pokemon = await res.json();
+
+            const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${item.name}`);
+            const speciesData: SpeciesData = await speciesRes.json();
+
+            const description =
+              speciesData.flavor_text_entries.find(
+                (entry) => entry.language.name === 'en'
+              )?.flavor_text.replace(/\f/g, ' ') ?? '';
+
+            return { ...pokemon, description };
+          })
+        );
+      }
+
+      this.setState({ results, loading: false, error: null });
     } catch (error) {
       console.log(error, typeof error, (error as Error)?.message);
-
       this.setState({ error: (error as Error).message, loading: false });
     }
   };
 
   handleSearchButtonClick = async () => {
-    console.log('Button click!', this.state.searchValue);
-
     localStorage.setItem('prevSearchValue', this.state.searchValue);
-
     await this.getResults(this.state.searchValue);
   };
 
@@ -67,6 +124,7 @@ class App extends React.Component<Record<string, never>, AppState> {
     if (this.state.hasSimulatedError) {
       throw new Error('Simulated error by Error Button click.');
     }
+
     return (
       <div className="app-container">
         <SearchContext.Provider
