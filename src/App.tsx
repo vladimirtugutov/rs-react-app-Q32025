@@ -33,6 +33,8 @@ type SpeciesData = {
 };
 
 class App extends React.Component<Record<string, never>, AppState> {
+  private _isMounted = false;
+
   state: AppState = {
     results: [],
     searchValue: localStorage.getItem('prevSearchValue') || '',
@@ -42,12 +44,18 @@ class App extends React.Component<Record<string, never>, AppState> {
   };
 
   async componentDidMount(): Promise<void> {
+    this._isMounted = true;
     const prevSearchValue = localStorage.getItem('prevSearchValue') ?? '';
     this.setState({ searchValue: prevSearchValue });
     await this.getResults(prevSearchValue);
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   getResults = async (searchTerm = ''): Promise<void> => {
+    if (!this._isMounted) return;
     this.setState({ loading: true });
 
     const baseUrl = 'https://pokeapi.co/api/v2/pokemon';
@@ -102,10 +110,14 @@ class App extends React.Component<Record<string, never>, AppState> {
         );
       }
 
-      this.setState({ results, loading: false, error: null });
+      if (this._isMounted) {
+        this.setState({ results, loading: false, error: null });
+      }
     } catch (error) {
       console.log(error, typeof error, (error as Error)?.message);
-      this.setState({ error: (error as Error).message, loading: false });
+      if (this._isMounted) {
+        this.setState({ error: (error as Error).message, loading: false });
+      }
     }
   };
 

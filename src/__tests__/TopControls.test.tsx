@@ -18,6 +18,8 @@ describe('TopControls', () => {
 
     expect(screen.getByRole('textbox')).toBeInTheDocument();
 
-    expect(screen.getByRole('button', { name: /search button/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /search button/i })
+    ).toBeInTheDocument();
   });
 });
