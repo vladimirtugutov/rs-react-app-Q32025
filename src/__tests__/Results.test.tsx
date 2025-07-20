@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { render, screen } from '@testing-library/react';
 import Results from '../Results';
 
@@ -31,11 +30,9 @@ describe('Results component', () => {
 
     render(<Results results={mockResults} error={null} />);
 
-    // Проверка на имена
     expect(screen.getByText(/bulbasaur/i)).toBeInTheDocument();
     expect(screen.getByText(/charmander/i)).toBeInTheDocument();
 
-    // Проверка на изображения
     expect(screen.getByAltText(/bulbasaur/i)).toHaveAttribute(
       'src',
       'https://example.com/bulbasaur.png'

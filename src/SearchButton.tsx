@@ -2,7 +2,7 @@ import React from 'react';
 import SearchContext from './SearchContext';
 
 type SearchButtonProps = {
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 class SearchButton extends React.Component<SearchButtonProps> {

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchInput from '../SearchInput'; // относительный путь от __tests__
+import SearchInput from '../SearchInput';
 import SearchContext from '../SearchContext';
 
 describe('SearchInput component', () => {
