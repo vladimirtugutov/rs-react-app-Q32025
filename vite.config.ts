@@ -17,14 +17,14 @@ export default defineConfig({
         'src/**/*.spec.{ts,tsx}',
         'src/index.tsx',
         'src/setupTests.ts',
-        'src/**/*.d.ts'
+        'src/**/*.d.ts',
       ],
       thresholds: {
         statements: 80,
         branches: 50,
         functions: 50,
-        lines: 50
-      }
-    }
-  }
+        lines: 50,
+      },
+    },
+  },
 });
