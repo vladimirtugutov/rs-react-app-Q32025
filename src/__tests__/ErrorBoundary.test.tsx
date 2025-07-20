@@ -23,7 +23,9 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText(/Test error/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /refresh/i })
+    ).toBeInTheDocument();
   });
 
   it('calls logErrorToServices when error is caught', () => {
@@ -42,7 +44,9 @@ describe('ErrorBoundary', () => {
   });
 
   it('refreshes the page when Refresh Page button is clicked', () => {
-    const mockHistory = vi.spyOn(globalThis.history, 'go').mockImplementation(() => {});
+    const mockHistory = vi
+      .spyOn(globalThis.history, 'go')
+      .mockImplementation(() => {});
 
     render(
       <ErrorBoundary>
