@@ -89,7 +89,10 @@ describe('useLocalStorage', () => {
       expect(result.current[0]).toEqual({ default: true });
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error reading localStorage key "test-key":',
-        expect.any(Error)
+        expect.objectContaining({
+          name: 'SyntaxError',
+          message: expect.stringContaining('Unexpected token'),
+        })
       );
     });
 
@@ -108,7 +111,10 @@ describe('useLocalStorage', () => {
       expect(result.current[0]).toBe('fallback');
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error reading localStorage key "test-key":',
-        expect.any(Error)
+        expect.objectContaining({
+          name: 'Error',
+          message: 'localStorage not available',
+        })
       );
     });
   });
@@ -241,7 +247,10 @@ describe('useLocalStorage', () => {
       expect(result.current[0]).toBe('new-value');
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error setting localStorage key "test-key":',
-        expect.any(Error)
+        expect.objectContaining({
+          name: 'Error',
+          message: 'localStorage quota exceeded',
+        })
       );
     });
   });
