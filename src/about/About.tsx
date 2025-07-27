@@ -14,20 +14,20 @@ function About() {
         <div className="author-info">
           <h2>Author Information</h2>
           <p>
-            <strong>Name:</strong> [Ваше имя]
+            <strong>Name:</strong> Vladimir Tugutov
           </p>
           <p>
             <strong>GitHub:</strong>{' '}
             <a
-              href="https://github.com/[ваш-username]"
+              href="https://github.com/vladimirtugutov"
               target="_blank"
               rel="noopener noreferrer"
             >
-              [ваш-username]
+              [vladimirtugutov]
             </a>
           </p>
           <p>
-            <strong>Course:</strong> RS School React Course 2024
+            <strong>Course:</strong> RS School React Course Q3 2025
           </p>
         </div>
 
@@ -43,7 +43,7 @@ function About() {
               rel="noopener noreferrer"
               className="course-link"
             >
-              🎓 RS School React Course
+              RS School React Course
             </a>
           </p>
         </div>
