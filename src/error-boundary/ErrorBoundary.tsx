@@ -1,12 +1,5 @@
-import React, { ReactNode, ErrorInfo } from 'react';
-
-interface ErrorBoundaryProps {
-  children: ReactNode;
-}
-
-interface ErrorBoundaryState {
-  errorMessage: string;
-}
+import React, { ErrorInfo, Fragment } from 'react';
+import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
 
 class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
@@ -33,10 +26,10 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.errorMessage) {
       return (
-        <>
+        <Fragment>
           <p className="error-message">{this.state.errorMessage}</p>
           <button onClick={this.refreshPage}>Refresh Page</button>
-        </>
+        </Fragment>
       );
     }
     return this.props.children;
