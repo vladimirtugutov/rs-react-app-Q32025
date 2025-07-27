@@ -1,6 +1,7 @@
 import './BookDetails.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Book } from '../app/App';
+import { API_CONFIG } from '../constants/api';
 
 type BookDetailsProps = {
   results: Book[];
@@ -20,7 +21,7 @@ function BookDetails({ results }: BookDetailsProps) {
   };
 
   const getCoverUrl = (coverId: number): string => {
-    return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+    return `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
   };
 
   if (!detailsId) return null;

@@ -1,4 +1,4 @@
-import React, { ReactNode, ErrorInfo } from 'react';
+import React, { ReactNode, ErrorInfo, Fragment } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -33,10 +33,10 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.errorMessage) {
       return (
-        <>
+        <Fragment>
           <p className="error-message">{this.state.errorMessage}</p>
           <button onClick={this.refreshPage}>Refresh Page</button>
-        </>
+        </Fragment>
       );
     }
     return this.props.children;

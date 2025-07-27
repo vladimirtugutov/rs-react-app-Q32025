@@ -8,6 +8,8 @@ import About from '../about/About';
 import NotFound from '../not-found/NotFound';
 import SearchContext from '../search/SearchContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { STORAGE_KEYS } from '../constants/storageKeys';
+import { API_CONFIG } from '../constants/api';
 import './App.css';
 
 export type Book = {
@@ -39,8 +41,6 @@ type OpenLibraryResponse = {
   start: number;
 };
 
-const ITEMS_PER_PAGE = 10;
-
 function App() {
   const [hasSimulatedError, setHasSimulatedError] = useState(false);
 
@@ -69,7 +69,7 @@ function App() {
 function MainLayout() {
   const [results, setResults] = useState<Book[]>([]);
   const [searchValue, setSearchValueState] = useLocalStorage(
-    'prevSearchValue',
+    STORAGE_KEYS.PREV_SEARCH_VALUE,
     ''
   );
   const [loading, setLoading] = useState(false);
@@ -108,15 +108,13 @@ function MainLayout() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = 'https://openlibrary.org/search.json';
-
       try {
         searchTerm = searchTerm.trim();
-        const offset = (pageNum - 1) * ITEMS_PER_PAGE;
+        const offset = (pageNum - 1) * API_CONFIG.ITEMS_PER_PAGE;
 
         const url = searchTerm
-          ? `${baseUrl}?title=${encodeURIComponent(searchTerm)}&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
-          : `${baseUrl}?q=*&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
+          ? `${API_CONFIG.BASE_URL}?title=${encodeURIComponent(searchTerm)}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
+          : `${API_CONFIG.BASE_URL}?q=*&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
 
         const res = await fetch(url);
         await new Promise((r) => setTimeout(r, 500));
@@ -152,12 +150,13 @@ function MainLayout() {
   );
 
   useEffect(() => {
-    const savedSearchValue = localStorage.getItem('prevSearchValue') || '';
+    const savedSearchValue =
+      localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
     getResults(savedSearchValue, currentPage);
   }, [getResults, currentPage]);
 
   const handleSearchButtonClick = useCallback(async () => {
-    localStorage.setItem('prevSearchValue', searchValue);
+    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
     navigate('/1');
     await getResults(searchValue, 1);
   }, [searchValue, getResults, navigate]);
@@ -174,7 +173,7 @@ function MainLayout() {
     navigate(newUrl);
   };
 
-  const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
 
   return (
     <SearchContext.Provider
