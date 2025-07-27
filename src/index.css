@@ -69,3 +69,155 @@ button:focus-visible {
 .results-wrapper {
   color: black;
 }
+.main-content {
+  display: flex;
+  gap: 1rem;
+}
+
+.results-section {
+  flex: 1;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.pagination button.active {
+  background: #007bff;
+  color: white;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.book-details-panel {
+  width: 400px;
+  background: #f9f9f9;
+  border-left: 1px solid #ccc;
+  padding: 1rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.book-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.book-cover-large {
+  max-width: 200px;
+  margin-bottom: 1rem;
+}
+
+.about-page,
+.not-found-page {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about-nav {
+  margin-bottom: 2rem;
+}
+
+.course-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+.search-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.navigation a {
+  color: #007bff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+}
+
+.not-found-content {
+  text-align: center;
+}
+
+.not-found-content h1 {
+  font-size: 6rem;
+  margin: 0;
+  color: #ccc;
+}
+.book-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: #666;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.results-section {
+  cursor: pointer;
+}
+
+.book-details-panel {
+  width: 400px;
+  background: #f9f9f9;
+  border-left: 2px solid #ddd;
+  padding: 1rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}

@@ -1,22 +1,12 @@
-import React from 'react';
+import { useContext } from 'react';
 import SearchContext from './SearchContext';
 
-type SearchButtonProps = {
-  onClick?: () => void;
-};
+function SearchButton() {
+  const context = useContext(SearchContext);
 
-class SearchButton extends React.Component<SearchButtonProps> {
-  render() {
-    return (
-      <SearchContext.Consumer>
-        {(context) => (
-          <button onClick={context.handleSearchButtonClick}>
-            Search Button
-          </button>
-        )}
-      </SearchContext.Consumer>
-    );
-  }
+  return (
+    <button onClick={context.handleSearchButtonClick}>Search Button</button>
+  );
 }
 
 export default SearchButton;

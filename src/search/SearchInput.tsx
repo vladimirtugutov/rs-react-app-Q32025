@@ -1,20 +1,21 @@
-import React from 'react';
+import { useContext } from 'react';
 import SearchContext from './SearchContext';
 
-class SearchInput extends React.Component {
-  render() {
-    return (
-      <SearchContext.Consumer>
-        {(context) => (
-          <input
-            type="text"
-            value={context.searchValue}
-            onChange={(e) => context.setSearchValue(e.target.value)}
-          />
-        )}
-      </SearchContext.Consumer>
-    );
-  }
+function SearchInput() {
+  const context = useContext(SearchContext);
+
+  return (
+    <input
+      type="text"
+      value={context.searchValue}
+      onChange={(e) => context.setSearchValue(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          context.handleSearchButtonClick();
+        }
+      }}
+    />
+  );
 }
 
 export default SearchInput;

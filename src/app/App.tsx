@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Routes,
   Route,
-  useSearchParams,
-  // useNavigate,
-  Outlet,
+  // useSearchParams,
+  useParams,
+  useNavigate,
 } from 'react-router-dom';
 import TopControls from '../topcontrols/TopControls';
 import Results from '../results/Results';
 import Spinner from '../spinner/Spinner';
-// import BookDetails from '../book-details/BookDetails';
+import BookDetails from '../book-details/BookDetails';
 import About from '../about/About';
 import NotFound from '../not-found/NotFound';
 import SearchContext from '../search/SearchContext';
@@ -48,6 +48,34 @@ type OpenLibraryResponse = {
 const ITEMS_PER_PAGE = 10;
 
 function App() {
+  const [hasSimulatedError, setHasSimulatedError] = useState(false);
+
+  const handleErrorButtonClick = () => {
+    setHasSimulatedError(true);
+  };
+
+  if (hasSimulatedError) {
+    throw new Error('Simulated error by Error Button click.');
+  }
+
+  return (
+    <div className="app-container">
+      <Routes>
+        <Route path="/about" element={<About />} />
+        <Route path="/:page?" element={<MainLayout />}>
+          <Route path=":detailsId" element={<BookDetails />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      <div className="error-button-container">
+        <button onClick={handleErrorButtonClick}>Error Button</button>
+      </div>
+    </div>
+  );
+}
+
+function MainLayout() {
   const [results, setResults] = useState<Book[]>([]);
   const [searchValue, setSearchValueState] = useLocalStorage(
     'prevSearchValue',
@@ -55,13 +83,12 @@ function App() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasSimulatedError, setHasSimulatedError] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  // const navigate = useNavigate();
+  // const [searchParams, setSearchParams] = useSearchParams();
+  const { page = '1', detailsId } = useParams();
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const currentPage = parseInt(page, 10);
 
   const generateDescription = useCallback((book: OpenLibraryBook): string => {
     const parts: string[] = [];
@@ -86,7 +113,7 @@ function App() {
   }, []);
 
   const getResults = useCallback(
-    async (searchTerm = '', page = 1): Promise<void> => {
+    async (searchTerm = '', pageNum = 1): Promise<void> => {
       setLoading(true);
       setError(null);
 
@@ -94,7 +121,7 @@ function App() {
 
       try {
         searchTerm = searchTerm.trim();
-        const offset = (page - 1) * ITEMS_PER_PAGE;
+        const offset = (pageNum - 1) * ITEMS_PER_PAGE;
 
         const url = searchTerm
           ? `${baseUrl}?title=${encodeURIComponent(searchTerm)}&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher&sort=rating`
@@ -138,9 +165,9 @@ function App() {
   }, [getResults, searchValue, currentPage]);
 
   const handleSearchButtonClick = useCallback(async () => {
-    setSearchParams({ page: '1' });
+    window.history.pushState({}, '', '/1');
     await getResults(searchValue, 1);
-  }, [searchValue, getResults, setSearchParams]);
+  }, [searchValue, getResults]);
 
   const setSearchValue = useCallback(
     (newValue: string) => {
@@ -149,58 +176,31 @@ function App() {
     [setSearchValueState]
   );
 
-  const handleErrorButtonClick = () => {
-    setHasSimulatedError(true);
+  const handlePageChange = (newPage: number) => {
+    const newUrl = detailsId ? `/${newPage}/${detailsId}` : `/${newPage}`;
+    window.history.pushState({}, '', newUrl);
   };
-
-  const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', page.toString());
-    setSearchParams(params);
-  };
-
-  if (hasSimulatedError) {
-    throw new Error('Simulated error by Error Button click.');
-  }
 
   const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
 
   return (
-    <div className="app-container">
-      <SearchContext.Provider
-        value={{
-          searchValue,
-          handleSearchButtonClick,
-          setSearchValue,
-        }}
-      >
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route
-            path="/:page?/:detailsId?"
-            element={
-              <>
-                <TopControls />
-                <MainContent
-                  loading={loading}
-                  error={error}
-                  results={results}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <Outlet />
-              </>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </SearchContext.Provider>
-
-      <div className="error-button-container">
-        <button onClick={handleErrorButtonClick}>Error Button</button>
-      </div>
-    </div>
+    <SearchContext.Provider
+      value={{
+        searchValue,
+        handleSearchButtonClick,
+        setSearchValue,
+      }}
+    >
+      <TopControls />
+      <MainContent
+        loading={loading}
+        error={error}
+        results={results}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+    </SearchContext.Provider>
   );
 }
 
@@ -213,6 +213,39 @@ type MainContentProps = {
   onPageChange: (page: number) => void;
 };
 
+// function MainContent({
+//   loading,
+//   error,
+//   results,
+//   currentPage,
+//   totalPages,
+//   onPageChange,
+// }: MainContentProps) {
+//   const { detailsId } = useParams();
+
+//   return (
+//     <div className="main-content">
+//       <div className="results-section">
+//         {loading && !error ? (
+//           <Spinner />
+//         ) : (
+//           <>
+//             <Results results={results} error={error} />
+//             {results.length > 0 && totalPages > 1 && (
+//               <Pagination
+//                 currentPage={currentPage}
+//                 totalPages={totalPages}
+//                 onPageChange={onPageChange}
+//               />
+//             )}
+//           </>
+//         )}
+//       </div>
+//       {detailsId && <BookDetails />}
+//     </div>
+//   );
+// }
+
 function MainContent({
   loading,
   error,
@@ -221,9 +254,22 @@ function MainContent({
   totalPages,
   onPageChange,
 }: MainContentProps) {
+  const { detailsId, page = '1' } = useParams();
+  const navigate = useNavigate();
+
+  // Добавьте этот обработчик для закрытия панели деталей при клике на основную область
+  const handleMainPanelClick = () => {
+    if (detailsId) {
+      navigate(`/${page}`);
+    }
+  };
+
   return (
     <div className="main-content">
-      <div className="results-section">
+      <div
+        className="results-section"
+        onClick={handleMainPanelClick} // Добавьте этот обработчик
+      >
         {loading && !error ? (
           <Spinner />
         ) : (
@@ -239,7 +285,7 @@ function MainContent({
           </>
         )}
       </div>
-      <Outlet />
+      {detailsId && <BookDetails />}
     </div>
   );
 }
