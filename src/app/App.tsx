@@ -152,10 +152,12 @@ function MainLayout() {
   );
 
   useEffect(() => {
-    getResults(searchValue, currentPage);
-  }, [getResults, searchValue, currentPage]);
+    const savedSearchValue = localStorage.getItem('prevSearchValue') || '';
+    getResults(savedSearchValue, currentPage);
+  }, [getResults, currentPage]);
 
   const handleSearchButtonClick = useCallback(async () => {
+    localStorage.setItem('prevSearchValue', searchValue);
     navigate('/1');
     await getResults(searchValue, 1);
   }, [searchValue, getResults, navigate]);
