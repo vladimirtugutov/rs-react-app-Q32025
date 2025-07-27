@@ -5,31 +5,42 @@ import Spinner from './Spinner';
 import SearchContext from './SearchContext';
 import './App.css';
 
-type Pokemon = {
-  name: string;
-  sprites?: {
-    front_default: string;
-  };
-  description?: string;
-};
-
 type AppState = {
-  results: Pokemon[];
+  results: Book[];
   searchValue: string;
   loading: boolean;
   error: string | null;
   hasSimulatedError: boolean;
 };
 
-type FlavorTextEntry = {
-  flavor_text: string;
-  language: {
-    name: string;
-  };
+type Book = {
+  title: string;
+  author_name?: string[];
+  first_publish_year?: number;
+  cover_i?: number;
+  isbn?: string[];
+  subject?: string[];
+  publisher?: string[];
+  description?: string;
+  key?: string;
 };
 
-type SpeciesData = {
-  flavor_text_entries: FlavorTextEntry[];
+// Типы для ответа Open Library API
+type OpenLibraryBook = {
+  title?: string;
+  author_name?: string[];
+  first_publish_year?: number;
+  cover_i?: number;
+  isbn?: string[];
+  subject?: string[];
+  publisher?: string[];
+  key?: string;
+};
+
+type OpenLibraryResponse = {
+  docs: OpenLibraryBook[];
+  numFound: number;
+  start: number;
 };
 
 class App extends React.Component<Record<string, never>, AppState> {
@@ -58,13 +69,14 @@ class App extends React.Component<Record<string, never>, AppState> {
     if (!this._isMounted) return;
     this.setState({ loading: true });
 
-    const baseUrl = 'https://pokeapi.co/api/v2/pokemon';
+    const baseUrl = 'https://openlibrary.org/search.json';
 
     try {
       searchTerm = searchTerm.trim();
+
       const url = searchTerm
-        ? `${baseUrl}/${searchTerm.toLowerCase()}`
-        : `${baseUrl}?limit=10`;
+        ? `${baseUrl}?title=${encodeURIComponent(searchTerm)}&limit=10&fields=key,title,author_name,cover_i,first_publish_year,publisher&sort=rating`
+        : `${baseUrl}?q=*&limit=10&fields=key,title,author_name,cover_i,first_publish_year,publisher&sort=rating`;
 
       const res = await fetch(url);
       await new Promise((r) => setTimeout(r, 500));
@@ -73,42 +85,19 @@ class App extends React.Component<Record<string, never>, AppState> {
         throw new Error(`API Error: ${res.status}`);
       }
 
-      const data = await res.json();
+      const data: OpenLibraryResponse = await res.json();
 
-      let results: Pokemon[];
-
-      if (searchTerm) {
-        const speciesRes = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${searchTerm.toLowerCase()}`
-        );
-        const speciesData: SpeciesData = await speciesRes.json();
-
-        const description =
-          speciesData.flavor_text_entries
-            .find((entry) => entry.language.name === 'en')
-            ?.flavor_text.replace(/\f/g, ' ') ?? '';
-
-        results = [{ ...data, description }];
-      } else {
-        results = await Promise.all(
-          data.results.map(async (item: { name: string; url: string }) => {
-            const res = await fetch(item.url);
-            const pokemon = await res.json();
-
-            const speciesRes = await fetch(
-              `https://pokeapi.co/api/v2/pokemon-species/${item.name}`
-            );
-            const speciesData: SpeciesData = await speciesRes.json();
-
-            const description =
-              speciesData.flavor_text_entries
-                .find((entry) => entry.language.name === 'en')
-                ?.flavor_text.replace(/\f/g, ' ') ?? '';
-
-            return { ...pokemon, description };
-          })
-        );
-      }
+      const results: Book[] = data.docs.map((book: OpenLibraryBook) => ({
+        title: book.title || 'Название не указано',
+        author_name: book.author_name || [],
+        first_publish_year: book.first_publish_year,
+        cover_i: book.cover_i,
+        isbn: book.isbn,
+        subject: book.subject,
+        publisher: book.publisher,
+        key: book.key,
+        description: this.generateDescription(book),
+      }));
 
       if (this._isMounted) {
         this.setState({ results, loading: false, error: null });
@@ -119,6 +108,28 @@ class App extends React.Component<Record<string, never>, AppState> {
         this.setState({ error: (error as Error).message, loading: false });
       }
     }
+  };
+
+  private generateDescription = (book: OpenLibraryBook): string => {
+    const parts: string[] = [];
+
+    if (book.author_name && book.author_name.length > 0) {
+      parts.push(`Author: ${book.author_name.slice(0, 2).join(', ')}`);
+    }
+
+    if (book.first_publish_year) {
+      parts.push(`First publish year: ${book.first_publish_year}`);
+    }
+
+    if (book.publisher && book.publisher.length > 0) {
+      parts.push(`Publisher: ${book.publisher[0]}`);
+    }
+
+    if (book.subject && book.subject.length > 0) {
+      parts.push(`Subject: ${book.subject.slice(0, 3).join(', ')}`);
+    }
+
+    return parts.join(' • ');
   };
 
   handleSearchButtonClick = async () => {

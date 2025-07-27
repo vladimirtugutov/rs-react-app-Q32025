@@ -1,20 +1,28 @@
 import React from 'react';
 
-type Pokemon = {
-  name: string;
-  sprites?: {
-    front_default: string;
-  };
+type Book = {
+  title: string;
+  author_name?: string[];
+  first_publish_year?: number;
+  cover_i?: number;
+  isbn?: string[];
+  subject?: string[];
+  publisher?: string[];
   description?: string;
-  url?: string;
+  key?: string;
 };
 
 type ResultsProps = {
-  results: Pokemon[];
+  results: Book[];
   error: string | null;
 };
 
 class Results extends React.Component<ResultsProps> {
+  getCoverUrl = (coverId: number | undefined): string | null => {
+    if (!coverId) return null;
+    return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+  };
+
   render() {
     const { results, error } = this.props;
 
@@ -23,14 +31,14 @@ class Results extends React.Component<ResultsProps> {
     }
 
     if (!results || results.length === 0) {
-      return <div className="no-results">No results found.</div>;
+      return <div className="no-results">Нет результатов.</div>;
     }
 
     return (
       <div className="results-table">
-        {results.map((item, index) => (
+        {results.map((book, index) => (
           <div
-            key={index}
+            key={book.key || index}
             style={{
               padding: '1rem',
               borderBottom: '1px solid #ccc',
@@ -39,20 +47,23 @@ class Results extends React.Component<ResultsProps> {
               gap: '1rem',
             }}
           >
-            {item.sprites?.front_default && (
+            {book.cover_i && (
               <img
-                src={item.sprites.front_default}
-                alt={item.name}
+                src={this.getCoverUrl(book.cover_i) ?? undefined}
+                alt={book.title}
                 width={80}
-                height={80}
-                style={{ imageRendering: 'pixelated' }}
+                height={120}
+                style={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             )}
             <div style={{ textAlign: 'left' }}>
-              <h3 style={{ margin: '0 0 0.5rem' }}>{item.name}</h3>
-              {item.description && (
+              <h3 style={{ margin: '0 0 0.5rem' }}>{book.title}</h3>
+              {book.description && (
                 <p style={{ margin: 0, fontStyle: 'italic', color: '#555' }}>
-                  {item.description}
+                  {book.description}
                 </p>
               )}
             </div>
