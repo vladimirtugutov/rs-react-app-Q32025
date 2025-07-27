@@ -29,7 +29,7 @@ function App() {
     <div className="app-container">
       <Routes>
         <Route path="/about" element={<About />} />
-        <Route path="/:page?/:detailsId?" element={<MainLayout />} />
+        <Route path="/:page?/:detailsId?" element={<ValidatedMainLayout />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <div className="error-button-container">
@@ -37,6 +37,17 @@ function App() {
       </div>
     </div>
   );
+}
+
+function ValidatedMainLayout() {
+  const { page = '1' } = useParams();
+
+  const pageNum = parseInt(page, 10);
+  if (isNaN(pageNum) || pageNum < 1) {
+    return <NotFound />;
+  }
+
+  return <MainLayout />;
 }
 
 function MainLayout() {
