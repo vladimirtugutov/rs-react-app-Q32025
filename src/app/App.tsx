@@ -1,8 +1,8 @@
 import React from 'react';
-import TopControls from './TopControls';
-import Results from './Results';
-import Spinner from './Spinner';
-import SearchContext from './SearchContext';
+import TopControls from '../topcontrols/TopControls';
+import Results from '../results/Results';
+import Spinner from '../spinner/Spinner';
+import SearchContext from '../search/SearchContext';
 import './App.css';
 
 type AppState = {

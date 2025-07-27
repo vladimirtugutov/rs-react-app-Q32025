@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import TopControls from '../TopControls';
-import SearchContext from '../SearchContext';
+import TopControls from '../topcontrols/TopControls';
+import SearchContext from '../search/SearchContext';
 
 describe('TopControls', () => {
   it('renders SearchInput and SearchButton', () => {

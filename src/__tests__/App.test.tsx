@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import App from '../App';
-import ErrorBoundary from '../ErrorBoundary';
+import App from '../app/App';
+import ErrorBoundary from '../error-boundary/ErrorBoundary';
 import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 

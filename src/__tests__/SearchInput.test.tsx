@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchInput from '../SearchInput';
-import SearchContext from '../SearchContext';
+import SearchInput from '../search/SearchInput';
+import SearchContext from '../search/SearchContext';
 
 describe('SearchInput component', () => {
   it('renders input with default value from context', () => {

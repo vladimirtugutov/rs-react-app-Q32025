@@ -1,6 +1,6 @@
 import React from 'react';
-import SearchInput from './SearchInput';
-import SearchButton from './SearchButton';
+import SearchInput from '../search/SearchInput';
+import SearchButton from '../search/SearchButton';
 
 class TopControls extends React.Component<Record<string, never>> {
   render() {

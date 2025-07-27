@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import Results from '../Results';
+import Results from '../results/Results';
 
 describe('Results component', () => {
   it('renders message when there are no results', () => {

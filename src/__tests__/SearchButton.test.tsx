@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchButton from '../SearchButton';
-import SearchContext from '../SearchContext';
+import SearchButton from '../search/SearchButton';
+import SearchContext from '../search/SearchContext';
 
 describe('SearchButton', () => {
   it('renders a button with label', () => {
