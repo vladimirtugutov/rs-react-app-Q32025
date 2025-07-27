@@ -1,52 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import './BookDetails.css';
 import { useParams, useNavigate } from 'react-router-dom';
-import Spinner from '../spinner/Spinner';
+import { Book } from '../app/App';
 
-type BookDetails = {
-  title?: string;
-  description?: string | { value: string };
-  authors?: Array<{ author: { key: string } }>;
-  subjects?: string[];
-  publish_date?: string;
-  publishers?: string[];
-  covers?: number[];
+type BookDetailsProps = {
+  results: Book[];
 };
 
-function BookDetails() {
+function BookDetails({ results }: BookDetailsProps) {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
-  const [bookDetails, setBookDetails] = useState<BookDetails | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!detailsId) return;
-
-    const fetchBookDetails = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `https://openlibrary.org/works/${detailsId}.json`
-        );
-        await new Promise((r) => setTimeout(r, 300));
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch book details: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setBookDetails(data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBookDetails();
-  }, [detailsId]);
+  const bookFromList = results.find((book) => {
+    const cleanKey = book.key?.replace('/works/', '');
+    return cleanKey === detailsId;
+  });
 
   const handleClose = () => {
     navigate(`/${page}`);
@@ -56,80 +23,79 @@ function BookDetails() {
     return `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
   };
 
-  const getDescription = (
-    description: string | { value: string } | undefined
-  ): string => {
-    if (!description) return 'Описание недоступно';
-    if (typeof description === 'string') return description;
-    return description.value || 'Описание недоступно';
-  };
-
   if (!detailsId) return null;
+
+  if (!bookFromList) {
+    return (
+      <div className="book-details-panel">
+        <div className="book-details-header">
+          <h2>Book Details</h2>
+          <button className="close-button" onClick={handleClose}>
+            ×
+          </button>
+        </div>
+        <div>Book not found in results</div>
+      </div>
+    );
+  }
 
   return (
     <div className="book-details-panel">
       <div className="book-details-header">
         <h2>Book Details</h2>
-        <button
-          className="close-button"
-          onClick={handleClose}
-          title="Close details"
-        >
+        <button className="close-button" onClick={handleClose}>
           ×
         </button>
       </div>
 
       <div className="book-details-content">
-        {loading && <Spinner />}
-
-        {error && (
-          <div className="error-message">
-            Error loading book details: {error}
-          </div>
+        {bookFromList.cover_i && (
+          <img
+            src={getCoverUrl(bookFromList.cover_i)}
+            alt={bookFromList.title}
+            className="book-cover-large"
+            style={{ width: '200px', marginBottom: '1rem' }}
+          />
         )}
 
-        {bookDetails && !loading && (
-          <div className="book-details-info">
-            {bookDetails.covers && bookDetails.covers[0] && (
-              <img
-                src={getCoverUrl(bookDetails.covers[0])}
-                alt={bookDetails.title}
-                className="book-cover-large"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
+        <div className="book-details-info">
+          <h3>{bookFromList.title}</h3>
 
-            <h3>{bookDetails.title}</h3>
-
-            <div className="book-description">
-              <h4>Description:</h4>
-              <p>{getDescription(bookDetails.description)}</p>
+          {bookFromList.author_name && bookFromList.author_name.length > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h4>Authors:</h4>
+              <p>{bookFromList.author_name.join(', ')}</p>
             </div>
+          )}
 
-            {bookDetails.subjects && bookDetails.subjects.length > 0 && (
-              <div className="book-subjects">
-                <h4>Subjects:</h4>
-                <p>{bookDetails.subjects.slice(0, 5).join(', ')}</p>
-              </div>
-            )}
+          {bookFromList.first_publish_year && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h4>First Published:</h4>
+              <p>{bookFromList.first_publish_year}</p>
+            </div>
+          )}
 
-            {bookDetails.publish_date && (
-              <div className="book-publish-date">
-                <h4>Publish Date:</h4>
-                <p>{bookDetails.publish_date}</p>
-              </div>
-            )}
+          {bookFromList.publisher && bookFromList.publisher.length > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h4>Publishers:</h4>
+              <p>{bookFromList.publisher.join(', ')}</p>
+            </div>
+          )}
 
-            {bookDetails.publishers && bookDetails.publishers.length > 0 && (
-              <div className="book-publishers">
-                <h4>Publishers:</h4>
-                <p>{bookDetails.publishers.join(', ')}</p>
-              </div>
-            )}
-          </div>
-        )}
+          {bookFromList.description && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h4>Description:</h4>
+              <p>{bookFromList.description}</p>
+            </div>
+          )}
+
+          {bookFromList.subject && bookFromList.subject.length > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h4>Subjects:</h4>
+              <p>{bookFromList.subject.slice(0, 8).join(', ')}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Routes,
-  Route,
-  // useSearchParams,
-  useParams,
-  useNavigate,
-} from 'react-router-dom';
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import TopControls from '../topcontrols/TopControls';
 import Results from '../results/Results';
 import Spinner from '../spinner/Spinner';
@@ -62,12 +56,9 @@ function App() {
     <div className="app-container">
       <Routes>
         <Route path="/about" element={<About />} />
-        <Route path="/:page?" element={<MainLayout />}>
-          <Route path=":detailsId" element={<BookDetails />} />
-        </Route>
+        <Route path="/:page?/:detailsId?" element={<MainLayout />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-
       <div className="error-button-container">
         <button onClick={handleErrorButtonClick}>Error Button</button>
       </div>
@@ -85,8 +76,8 @@ function MainLayout() {
   const [error, setError] = useState<string | null>(null);
   const [totalResults, setTotalResults] = useState(0);
 
-  // const [searchParams, setSearchParams] = useSearchParams();
   const { page = '1', detailsId } = useParams();
+  const navigate = useNavigate();
 
   const currentPage = parseInt(page, 10);
 
@@ -124,8 +115,8 @@ function MainLayout() {
         const offset = (pageNum - 1) * ITEMS_PER_PAGE;
 
         const url = searchTerm
-          ? `${baseUrl}?title=${encodeURIComponent(searchTerm)}&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher&sort=rating`
-          : `${baseUrl}?q=*&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher&sort=rating`;
+          ? `${baseUrl}?title=${encodeURIComponent(searchTerm)}&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
+          : `${baseUrl}?q=*&limit=${ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
 
         const res = await fetch(url);
         await new Promise((r) => setTimeout(r, 500));
@@ -165,9 +156,9 @@ function MainLayout() {
   }, [getResults, searchValue, currentPage]);
 
   const handleSearchButtonClick = useCallback(async () => {
-    window.history.pushState({}, '', '/1');
+    navigate('/1');
     await getResults(searchValue, 1);
-  }, [searchValue, getResults]);
+  }, [searchValue, getResults, navigate]);
 
   const setSearchValue = useCallback(
     (newValue: string) => {
@@ -178,7 +169,7 @@ function MainLayout() {
 
   const handlePageChange = (newPage: number) => {
     const newUrl = detailsId ? `/${newPage}/${detailsId}` : `/${newPage}`;
-    window.history.pushState({}, '', newUrl);
+    navigate(newUrl);
   };
 
   const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
@@ -213,39 +204,6 @@ type MainContentProps = {
   onPageChange: (page: number) => void;
 };
 
-// function MainContent({
-//   loading,
-//   error,
-//   results,
-//   currentPage,
-//   totalPages,
-//   onPageChange,
-// }: MainContentProps) {
-//   const { detailsId } = useParams();
-
-//   return (
-//     <div className="main-content">
-//       <div className="results-section">
-//         {loading && !error ? (
-//           <Spinner />
-//         ) : (
-//           <>
-//             <Results results={results} error={error} />
-//             {results.length > 0 && totalPages > 1 && (
-//               <Pagination
-//                 currentPage={currentPage}
-//                 totalPages={totalPages}
-//                 onPageChange={onPageChange}
-//               />
-//             )}
-//           </>
-//         )}
-//       </div>
-//       {detailsId && <BookDetails />}
-//     </div>
-//   );
-// }
-
 function MainContent({
   loading,
   error,
@@ -257,7 +215,6 @@ function MainContent({
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
-  // Добавьте этот обработчик для закрытия панели деталей при клике на основную область
   const handleMainPanelClick = () => {
     if (detailsId) {
       navigate(`/${page}`);
@@ -266,10 +223,7 @@ function MainContent({
 
   return (
     <div className="main-content">
-      <div
-        className="results-section"
-        onClick={handleMainPanelClick} // Добавьте этот обработчик
-      >
+      <div className="results-section" onClick={handleMainPanelClick}>
         {loading && !error ? (
           <Spinner />
         ) : (
@@ -285,7 +239,7 @@ function MainContent({
           </>
         )}
       </div>
-      {detailsId && <BookDetails />}
+      {detailsId && <BookDetails results={results} />}
     </div>
   );
 }

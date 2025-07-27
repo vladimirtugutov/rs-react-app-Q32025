@@ -1,0 +1,106 @@
+.results-table {
+  max-width: 100%;
+  padding: 1rem;
+}
+
+.result-card {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-card:hover {
+  background-color: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #2563eb;
+}
+
+.result-card.selected {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+  border-width: 3px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.book-cover-small {
+  width: 40px !important;
+  height: 60px !important;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.book-info-minimal {
+  flex: 1;
+  min-width: 0;
+}
+
+.book-title {
+  margin: 0 0 0.5rem 0 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.book-author {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+}
+
+/* Пагинация */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.pagination button.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button:not(:disabled):not(.active):hover {
+  background-color: #f3f4f6;
+  border-color: #2563eb;
+}
