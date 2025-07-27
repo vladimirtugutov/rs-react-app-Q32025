@@ -1,52 +1,26 @@
 import './BookDetails.css';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Book } from '../app/App';
 import { API_ENDPOINTS, API_CONFIG } from '../constants/api';
 import Spinner from '../spinner/Spinner';
-
-type BookDetailsProps = {
-  results: Book[];
-};
-
-type BookDetailsAPI = {
-  title?: string;
-  description?: string | { value: string };
-  subjects?: string[];
-  covers?: number[];
-  authors?: Array<{
-    author: {
-      key: string;
-    };
-  }>;
-  publishers?: string[];
-  publish_date?: string;
-  isbn_10?: string[];
-  isbn_13?: string[];
-  number_of_pages?: number;
-  languages?: Array<{
-    key: string;
-  }>;
-};
+import { BookDetailsAPI } from '../types/book';
+import { BookDetailsProps } from '../types/components';
 
 function BookDetails({ results }: BookDetailsProps) {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
-  // Состояния для дополнительного API запроса
   const [bookDetailsAPI, setBookDetailsAPI] = useState<BookDetailsAPI | null>(
     null
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Находим книгу из основного списка
   const bookFromList = results.find((book) => {
     const cleanKey = book.key?.replace('/works/', '');
     return cleanKey === detailsId;
   });
 
-  // Дополнительный API запрос для получения детальной информации
   useEffect(() => {
     if (!detailsId) return;
 
@@ -67,7 +41,6 @@ function BookDetails({ results }: BookDetailsProps) {
 
         const data: BookDetailsAPI = await response.json();
 
-        // Гарантируем минимум 1.5 секунды показа лоадера
         const elapsedTime = Date.now() - startTime;
         const minLoadingTime = 1500;
 
@@ -152,7 +125,6 @@ function BookDetails({ results }: BookDetailsProps) {
       </div>
 
       <div className="book-details-content">
-        {/* ЛОАДЕР НАВЕРХУ - показывается во время загрузки */}
         {loading && (
           <div className="loading-section-top">
             <Spinner />
@@ -160,10 +132,8 @@ function BookDetails({ results }: BookDetailsProps) {
           </div>
         )}
 
-        {/* Контент показывается только когда НЕ загружается */}
         {!loading && (
           <>
-            {/* Обложка книги */}
             {bookFromList.cover_i && (
               <img
                 src={getCoverUrl(bookFromList.cover_i)}
@@ -175,7 +145,6 @@ function BookDetails({ results }: BookDetailsProps) {
               />
             )}
 
-            {/* Основная информация из списка результатов */}
             <div className="book-main-info">
               <h3>{bookFromList.title}</h3>
 
@@ -216,7 +185,6 @@ function BookDetails({ results }: BookDetailsProps) {
               )}
             </div>
 
-            {/* Дополнительная информация из API */}
             <div className="book-additional-info">
               <h4>Additional Information:</h4>
 
@@ -230,7 +198,6 @@ function BookDetails({ results }: BookDetailsProps) {
 
               {bookDetailsAPI && (
                 <div className="api-details">
-                  {/* Полное описание */}
                   {getDescription(bookDetailsAPI.description) && (
                     <div className="info-section">
                       <h4>Full Description:</h4>
@@ -240,7 +207,6 @@ function BookDetails({ results }: BookDetailsProps) {
                     </div>
                   )}
 
-                  {/* Количество страниц */}
                   {bookDetailsAPI.number_of_pages && (
                     <div className="info-section">
                       <h4>Pages:</h4>
@@ -248,7 +214,6 @@ function BookDetails({ results }: BookDetailsProps) {
                     </div>
                   )}
 
-                  {/* Языки */}
                   {bookDetailsAPI.languages &&
                     bookDetailsAPI.languages.length > 0 && (
                       <div className="info-section">
@@ -257,7 +222,6 @@ function BookDetails({ results }: BookDetailsProps) {
                       </div>
                     )}
 
-                  {/* ISBN */}
                   {(bookDetailsAPI.isbn_10 || bookDetailsAPI.isbn_13) && (
                     <div className="info-section">
                       <h4>ISBN:</h4>
@@ -278,7 +242,6 @@ function BookDetails({ results }: BookDetailsProps) {
                     </div>
                   )}
 
-                  {/* Дополнительные темы из API */}
                   {bookDetailsAPI.subjects &&
                     bookDetailsAPI.subjects.length > 0 && (
                       <div className="info-section">
@@ -287,7 +250,6 @@ function BookDetails({ results }: BookDetailsProps) {
                       </div>
                     )}
 
-                  {/* Дата публикации */}
                   {bookDetailsAPI.publish_date && (
                     <div className="info-section">
                       <h4>Publish Date:</h4>
@@ -297,7 +259,6 @@ function BookDetails({ results }: BookDetailsProps) {
                 </div>
               )}
 
-              {/* Если API не вернул дополнительных данных */}
               {bookDetailsAPI &&
                 !error &&
                 !getDescription(bookDetailsAPI.description) &&

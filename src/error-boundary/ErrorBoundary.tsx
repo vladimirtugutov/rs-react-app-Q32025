@@ -1,12 +1,5 @@
-import React, { ReactNode, ErrorInfo, Fragment } from 'react';
-
-interface ErrorBoundaryProps {
-  children: ReactNode;
-}
-
-interface ErrorBoundaryState {
-  errorMessage: string;
-}
+import React, { ErrorInfo, Fragment } from 'react';
+import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
 
 class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,

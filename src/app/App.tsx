@@ -10,36 +10,9 @@ import SearchContext from '../search/SearchContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 import { API_CONFIG } from '../constants/api';
+import { Book, OpenLibraryBook, OpenLibraryResponse } from '../types/book';
+import { MainContentProps, PaginationProps } from '../types/components';
 import './App.css';
-
-export type Book = {
-  title: string;
-  author_name?: string[];
-  first_publish_year?: number;
-  cover_i?: number;
-  isbn?: string[];
-  subject?: string[];
-  publisher?: string[];
-  description?: string;
-  key?: string;
-};
-
-type OpenLibraryBook = {
-  title?: string;
-  author_name?: string[];
-  first_publish_year?: number;
-  cover_i?: number;
-  isbn?: string[];
-  subject?: string[];
-  publisher?: string[];
-  key?: string;
-};
-
-type OpenLibraryResponse = {
-  docs: OpenLibraryBook[];
-  numFound: number;
-  start: number;
-};
 
 function App() {
   const [hasSimulatedError, setHasSimulatedError] = useState(false);
@@ -117,7 +90,7 @@ function MainLayout() {
           : `${API_CONFIG.BASE_URL}?q=*&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
 
         const res = await fetch(url);
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, API_CONFIG.REQUEST_DELAY));
 
         if (!res.ok) {
           throw new Error(`API Error: ${res.status}`);
@@ -139,10 +112,10 @@ function MainLayout() {
 
         setResults(results);
         setTotalResults(data.numFound);
-        setLoading(false);
       } catch (error) {
-        console.log(error, typeof error, (error as Error)?.message);
+        console.error('Error fetching results:', error);
         setError((error as Error).message);
+      } finally {
         setLoading(false);
       }
     },
@@ -196,15 +169,6 @@ function MainLayout() {
   );
 }
 
-type MainContentProps = {
-  loading: boolean;
-  error: string | null;
-  results: Book[];
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
-
 function MainContent({
   loading,
   error,
@@ -244,12 +208,6 @@ function MainContent({
     </div>
   );
 }
-
-type PaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
 
 function Pagination({
   currentPage,

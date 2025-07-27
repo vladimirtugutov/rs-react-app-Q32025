@@ -1,12 +1,8 @@
 import './results.css';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Book } from '../app/App';
 import { API_CONFIG } from '../constants/api';
-
-type ResultsProps = {
-  results: Book[];
-  error: string | null;
-};
+import { Book } from '../types/book';
+import { ResultsProps } from '../types/components';
 
 function Results({ results, error }: ResultsProps) {
   const { detailsId, page = '1' } = useParams();
@@ -37,7 +33,9 @@ function Results({ results, error }: ResultsProps) {
       {results.map((book, index) => (
         <div
           key={book.key || index}
-          className={`result-card ${detailsId === book.key?.replace('/works/', '') ? 'selected' : ''}`}
+          className={`result-card ${
+            detailsId === book.key?.replace('/works/', '') ? 'selected' : ''
+          }`}
           onClick={() => handleBookClick(book)}
         >
           {book.cover_i && (
