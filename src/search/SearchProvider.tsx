@@ -15,6 +15,11 @@ export const SearchProvider = ({
   const [searchValue, setSearchValueState] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
   });
+
+  const [savedSearchTerm, setSavedSearchTerm] = useState(() => {
+    return localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalResults, setTotalResults] = useState(0);
@@ -90,14 +95,15 @@ export const SearchProvider = ({
     },
     [generateDescription]
   );
-
   useEffect(() => {
-    getResults(searchValue, currentPage);
-  }, [getResults, currentPage]);
+    getResults(savedSearchTerm, currentPage);
+  }, [getResults, currentPage, savedSearchTerm]);
 
   const handleSearchButtonClick = useCallback(async () => {
     localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
+    setSavedSearchTerm(searchValue);
     navigate('/1');
+
     await getResults(searchValue, 1);
   }, [searchValue, getResults, navigate]);
 
