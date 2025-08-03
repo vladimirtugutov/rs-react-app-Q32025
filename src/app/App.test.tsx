@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import ErrorBoundary from '../error-boundary/ErrorBoundary';
@@ -16,15 +15,11 @@ const localStorageMock = {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
+  return render(component);
 };
 
 const renderWithRouterAndErrorBoundary = (component: React.ReactElement) => {
-  return render(
-    <BrowserRouter>
-      <ErrorBoundary>{component}</ErrorBoundary>
-    </BrowserRouter>
-  );
+  return render(<ErrorBoundary>{component}</ErrorBoundary>);
 };
 
 const mockOpenLibraryResponse = {

@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { About } from '../about/About';
-import { NotFound } from '../not-found/NotFound';
-import { ValidatedMainLayout } from './ValidatedMainLayout';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
 import './App.css';
 
 export const App = () => {
@@ -18,11 +16,7 @@ export const App = () => {
 
   return (
     <div className="app-container">
-      <Routes>
-        <Route path="/about" element={<About />} />
-        <Route path="/:page?/:detailsId?" element={<ValidatedMainLayout />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <RouterProvider router={router} />
       <div className="error-button-container">
         <button onClick={handleErrorButtonClick}>Error Button</button>
       </div>
