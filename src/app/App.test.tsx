@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import App from './App';
+import { App } from './App';
 import ErrorBoundary from '../error-boundary/ErrorBoundary';
 
 const mockFetch = vi.fn();
