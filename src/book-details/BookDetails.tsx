@@ -13,7 +13,7 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
-  const { bookDetailsAPI, loading, error } = useBookDetails(detailsId);
+  const { bookDetailsAPI, isLoading, error } = useBookDetails(detailsId);
 
   const bookFromList = results.find((book) => {
     const cleanKey = book.key?.replace('/works/', '');
@@ -64,14 +64,14 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
       </div>
 
       <div className="book-details-content">
-        {loading && (
+        {isLoading && (
           <div className="loading-section-top">
             <Spinner />
             <p>Loading detailed information...</p>
           </div>
         )}
 
-        {!loading && (
+        {!isLoading && (
           <>
             <BookMainInfo book={bookFromList} getCoverUrl={getCoverUrl} />
 

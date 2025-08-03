@@ -1,3 +1,4 @@
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Spinner from '../spinner/Spinner';
 import Results from '../results/Results';
@@ -6,7 +7,7 @@ import { BookDetails } from '../book-details/BookDetails';
 import { MainContentProps } from '../types/components';
 
 export const MainContent = ({
-  loading,
+  isLoading,
   error,
   results,
   currentPage,
@@ -25,10 +26,10 @@ export const MainContent = ({
   return (
     <div className="main-content">
       <div className="results-section" onClick={handleMainPanelClick}>
-        {loading && !error ? (
+        {isLoading && !error ? (
           <Spinner />
         ) : (
-          <>
+          <React.Fragment>
             <Results results={results} error={error} />
             {results.length > 0 && totalPages > 1 && (
               <Pagination
@@ -37,7 +38,7 @@ export const MainContent = ({
                 onPageChange={onPageChange}
               />
             )}
-          </>
+          </React.Fragment>
         )}
       </div>
       {detailsId && <BookDetails results={results} />}

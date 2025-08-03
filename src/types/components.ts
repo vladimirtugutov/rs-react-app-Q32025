@@ -25,7 +25,7 @@ export type PaginationProps = {
 };
 
 export type MainContentProps = {
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   results: Book[];
   currentPage: number;
@@ -54,4 +54,20 @@ export type BookAdditionalInfoProps = {
   error: string | null;
   getDescription: (desc: string | { value: string } | undefined) => string;
   formatLanguages: (langs?: Array<{ key: string }>) => string;
+};
+
+type SearchProviderChildrenProps = {
+  isLoading: boolean;
+  error: string | null;
+  results: Book[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
+
+export type SearchProviderProps = {
+  currentPage: number;
+  detailsId?: string;
+  navigate: (url: string) => void;
+  children: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
 };

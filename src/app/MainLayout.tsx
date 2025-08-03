@@ -1,140 +1,41 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TopControls from '../topcontrols/TopControls';
-import SearchContext from '../search/SearchContext';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { STORAGE_KEYS } from '../constants/storageKeys';
-import { API_CONFIG } from '../constants/api';
-import { Book, OpenLibraryBook, OpenLibraryResponse } from '../types/book';
 import { MainContent } from './MainContent';
+import { SearchProvider } from '../search/SearchProvider';
 import './App.css';
 
 export const MainLayout = () => {
-  const [results, setResults] = useState<Book[]>([]);
-  const [searchValue, setSearchValueState] = useLocalStorage(
-    STORAGE_KEYS.PREV_SEARCH_VALUE,
-    ''
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [totalResults, setTotalResults] = useState(0);
-
   const { page = '1', detailsId } = useParams();
   const navigate = useNavigate();
 
   const currentPage = parseInt(page, 10);
 
-  const generateDescription = useCallback((book: OpenLibraryBook): string => {
-    const parts: string[] = [];
-
-    if (book.author_name && book.author_name.length > 0) {
-      parts.push(`Author: ${book.author_name.slice(0, 2).join(', ')}`);
-    }
-
-    if (book.first_publish_year) {
-      parts.push(`First publish year: ${book.first_publish_year}`);
-    }
-
-    if (book.publisher && book.publisher.length > 0) {
-      parts.push(`Publisher: ${book.publisher[0]}`);
-    }
-
-    if (book.subject && book.subject.length > 0) {
-      parts.push(`Subject: ${book.subject.slice(0, 3).join(', ')}`);
-    }
-
-    return parts.join(' • ');
-  }, []);
-
-  const getResults = useCallback(
-    async (searchTerm = '', pageNum = 1): Promise<void> => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        searchTerm = searchTerm.trim();
-        const offset = (pageNum - 1) * API_CONFIG.ITEMS_PER_PAGE;
-
-        const url = searchTerm
-          ? `${API_CONFIG.BASE_URL}?title=${encodeURIComponent(searchTerm)}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
-          : `${API_CONFIG.BASE_URL}?q=*&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
-
-        const res = await fetch(url);
-        await new Promise((r) => setTimeout(r, API_CONFIG.REQUEST_DELAY));
-
-        if (!res.ok) {
-          throw new Error(`API Error: ${res.status}`);
-        }
-
-        const data: OpenLibraryResponse = await res.json();
-
-        const results: Book[] = data.docs.map((book: OpenLibraryBook) => ({
-          title: book.title || 'Название не указано',
-          author_name: book.author_name || [],
-          first_publish_year: book.first_publish_year,
-          cover_i: book.cover_i,
-          isbn: book.isbn,
-          subject: book.subject,
-          publisher: book.publisher,
-          key: book.key,
-          description: generateDescription(book),
-        }));
-
-        setResults(results);
-        setTotalResults(data.numFound);
-      } catch (error) {
-        console.error('Error fetching results:', error);
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [generateDescription]
-  );
-
-  useEffect(() => {
-    const savedSearchValue =
-      localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
-    getResults(savedSearchValue, currentPage);
-  }, [getResults, currentPage]);
-
-  const handleSearchButtonClick = useCallback(async () => {
-    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
-    navigate('/1');
-    await getResults(searchValue, 1);
-  }, [searchValue, getResults, navigate]);
-
-  const setSearchValue = useCallback(
-    (newValue: string) => {
-      setSearchValueState(newValue);
-    },
-    [setSearchValueState]
-  );
-
-  const handlePageChange = (newPage: number) => {
-    const newUrl = detailsId ? `/${newPage}/${detailsId}` : `/${newPage}`;
-    navigate(newUrl);
-  };
-
-  const totalPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
-
   return (
-    <SearchContext.Provider
-      value={{
-        searchValue,
-        handleSearchButtonClick,
-        setSearchValue,
-      }}
+    <SearchProvider
+      currentPage={currentPage}
+      detailsId={detailsId}
+      navigate={navigate}
     >
-      <TopControls />
-      <MainContent
-        loading={loading}
-        error={error}
-        results={results}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-    </SearchContext.Provider>
+      {({
+        isLoading,
+        error,
+        results,
+        currentPage,
+        totalPages,
+        onPageChange,
+      }) => (
+        <>
+          <TopControls />
+          <MainContent
+            isLoading={isLoading}
+            error={error}
+            results={results}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </>
+      )}
+    </SearchProvider>
   );
 };

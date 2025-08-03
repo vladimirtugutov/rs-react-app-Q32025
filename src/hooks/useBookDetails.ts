@@ -6,14 +6,14 @@ export const useBookDetails = (detailsId?: string | null) => {
   const [bookDetailsAPI, setBookDetailsAPI] = useState<BookDetailsAPI | null>(
     null
   );
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!detailsId) return;
 
     const fetchBookDetails = async () => {
-      setLoading(true);
+      setIsLoading(true);
       setError(null);
 
       try {
@@ -31,12 +31,12 @@ export const useBookDetails = (detailsId?: string | null) => {
         setError((err as Error).message);
         console.error('Error fetching book details:', err);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchBookDetails();
   }, [detailsId]);
 
-  return { bookDetailsAPI, loading, error };
+  return { bookDetailsAPI, isLoading, error };
 };
