@@ -1,9 +1,9 @@
 import './Results.css';
 import { useParams } from 'react-router-dom';
-import { ResultsProps } from '../types/components';
-import { useAppSelector } from '../store/hooks';
-import { selectSelectedItems } from '../store/selectedItemsSlice';
-import { BookItem } from '../components/BookItem';
+import { ResultsProps } from '../../types/components';
+import { useAppSelector } from '../../store/hooks';
+import { selectSelectedItems } from '../../store/selectedItemsSlice';
+import { BookItem } from '../../components/BookItem';
 
 export const Results = ({ results, error }: ResultsProps) => {
   const { detailsId } = useParams();

@@ -1,13 +1,13 @@
 import './BookDetails.css';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '../constants/api';
-import Spinner from '../spinner/Spinner';
-import { BookDetailsProps } from '../types/components';
-import { useBookDetails } from '../hooks/useBookDetails';
-import { BookMainInfo } from '../components/BookMainInfo';
-import { BookAdditionalInfo } from '../components/BookAdditionalInfo';
-import { getDescription } from '../utils/getDescription';
-import { formatLanguages } from '../utils/formatLanguages';
+import { API_CONFIG } from '../../constants/api';
+import Spinner from '../../components/Spinner/Spinner';
+import { BookDetailsProps } from '../../types/components';
+import { useBookDetails } from '../../hooks/useBookDetails';
+import { BookMainInfo } from '../../components/BookMainInfo';
+import { BookAdditionalInfo } from '../../components/BookAdditionalInfo';
+import { getDescription } from '../../utils/getDescription';
+import { formatLanguages } from '../../utils/formatLanguages';
 
 export const BookDetails = ({ results }: BookDetailsProps) => {
   const { detailsId, page = '1' } = useParams();

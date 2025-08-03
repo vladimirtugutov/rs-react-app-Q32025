@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { STORAGE_KEYS } from '../constants/storageKeys';
-import { API_CONFIG } from '../constants/api';
-import { Book, OpenLibraryBook, OpenLibraryResponse } from '../types/book';
+import { STORAGE_KEYS } from '../../constants/storageKeys';
+import { API_CONFIG } from '../../constants/api';
+import { Book, OpenLibraryBook, OpenLibraryResponse } from '../../types/book';
 
 type UseBookSearchProps = {
   currentPage: number;

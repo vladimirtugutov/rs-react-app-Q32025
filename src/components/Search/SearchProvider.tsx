@@ -1,6 +1,6 @@
 import SearchContext from './SearchContext';
-import { STORAGE_KEYS } from '../constants/storageKeys';
-import { SearchProviderProps } from '../types/components';
+import { STORAGE_KEYS } from '../../constants/storageKeys';
+import { SearchProviderProps } from '../../types/components';
 import { useBookSearch } from './useBookSearch';
 
 export const SearchProvider = ({
