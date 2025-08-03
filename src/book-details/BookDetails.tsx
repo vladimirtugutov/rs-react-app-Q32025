@@ -1,64 +1,28 @@
 import './BookDetails.css';
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS, API_CONFIG } from '../constants/api';
+import { API_CONFIG } from '../constants/api';
 import Spinner from '../spinner/Spinner';
-import { BookDetailsAPI } from '../types/book';
 import { BookDetailsProps } from '../types/components';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
 import { InfoSection } from '../components/InfoSection';
+import { useBookDetails } from '../hooks/useBookDetails';
 
 const MAX_SUBJECTS_DISPLAY = 8;
 const MAX_PUBLISHERS_DISPLAY = 8;
 const MAX_ISBN_DISPLAY = 3;
 const MAX_ADD_SUBJECTS_DISPLAY = 8;
+const MAX_LANG = 3;
 
 function BookDetails({ results }: BookDetailsProps) {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
-  const [bookDetailsAPI, setBookDetailsAPI] = useState<BookDetailsAPI | null>(
-    null
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { bookDetailsAPI, loading, error } = useBookDetails(detailsId);
 
   const bookFromList = results.find((book) => {
     const cleanKey = book.key?.replace('/works/', '');
     return cleanKey === detailsId;
   });
-
-  useEffect(() => {
-    if (!detailsId) return;
-
-    const fetchBookDetails = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `${API_ENDPOINTS.BOOK_DETAILS}/${detailsId}.json`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch book details: ${response.status}`);
-        }
-
-        const data: BookDetailsAPI = await response.json();
-
-        console.log(data);
-
-        setBookDetailsAPI(data);
-      } catch (err) {
-        setError((err as Error).message);
-        console.error('Error fetching book details:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBookDetails();
-  }, [detailsId]);
 
   const handleClose = () => {
     navigate(`/${page}`);
@@ -77,10 +41,10 @@ function BookDetails({ results }: BookDetailsProps) {
   };
 
   const formatLanguages = (languages?: Array<{ key: string }>): string => {
-    if (!languages || languages.length === 0) return 'Unknown';
+    if (!isArrayWithItems(languages)) return 'Unknown';
     return languages
       .map((lang) => lang.key.replace('/languages/', '').toUpperCase())
-      .slice(0, 3)
+      .slice(0, MAX_LANG)
       .join(', ');
   };
 
