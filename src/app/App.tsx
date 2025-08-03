@@ -3,7 +3,7 @@ import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import TopControls from '../topcontrols/TopControls';
 import Results from '../results/Results';
 import Spinner from '../spinner/Spinner';
-import BookDetails from '../book-details/BookDetails';
+import { BookDetails } from '../book-details/BookDetails';
 import { About } from '../about/About';
 import NotFound from '../not-found/NotFound';
 import SearchContext from '../search/SearchContext';

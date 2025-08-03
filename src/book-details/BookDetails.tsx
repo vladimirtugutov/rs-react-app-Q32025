@@ -3,14 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../constants/api';
 import Spinner from '../spinner/Spinner';
 import { BookDetailsProps } from '../types/components';
-import { isArrayWithItems } from '../utils/isArrayWithItems';
 import { useBookDetails } from '../hooks/useBookDetails';
 import { BookMainInfo } from '../components/BookMainInfo';
 import { BookAdditionalInfo } from '../components/BookAdditionalInfo';
+import { getDescription } from '../utils/getDescription';
+import { formatLanguages } from '../utils/formatLanguages';
 
-const MAX_LANG = 3;
-
-function BookDetails({ results }: BookDetailsProps) {
+export const BookDetails = ({ results }: BookDetailsProps) => {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
@@ -25,25 +24,8 @@ function BookDetails({ results }: BookDetailsProps) {
     navigate(`/${page}`);
   };
 
-  const getCoverUrl = (coverId: number) => {
-    return `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
-  };
-
-  const getDescription = (
-    description: string | { value: string } | undefined
-  ): string => {
-    if (!description) return '';
-    if (typeof description === 'string') return description;
-    return description.value || '';
-  };
-
-  const formatLanguages = (languages?: Array<{ key: string }>): string => {
-    if (!isArrayWithItems(languages)) return 'Unknown';
-    return languages
-      .map((lang) => lang.key.replace('/languages/', '').toUpperCase())
-      .slice(0, MAX_LANG)
-      .join(', ');
-  };
+  const getCoverUrl = (coverId: number) =>
+    `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
 
   if (!detailsId) return null;
 
@@ -108,6 +90,4 @@ function BookDetails({ results }: BookDetailsProps) {
       </div>
     </div>
   );
-}
-
-export default BookDetails;
+};

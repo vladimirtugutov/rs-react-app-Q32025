@@ -1,11 +1,6 @@
-import { Book } from '../types/book';
+import { BookMainInfoProps } from '../types/components';
 import { InfoSection } from './InfoSection';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
-
-type BookMainInfoProps = {
-  book: Book;
-  getCoverUrl: (coverId: number) => string;
-};
 
 const MAX_SUBJECTS_DISPLAY = 8;
 const MAX_PUBLISHERS_DISPLAY = 8;

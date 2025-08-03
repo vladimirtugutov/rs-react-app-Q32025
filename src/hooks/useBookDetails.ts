@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BookDetailsAPI } from '../types/book';
 import { API_ENDPOINTS } from '../constants/api';
 
-export function useBookDetails(detailsId?: string | null) {
+export const useBookDetails = (detailsId?: string | null) => {
   const [bookDetailsAPI, setBookDetailsAPI] = useState<BookDetailsAPI | null>(
     null
   );
@@ -39,4 +39,4 @@ export function useBookDetails(detailsId?: string | null) {
   }, [detailsId]);
 
   return { bookDetailsAPI, loading, error };
-}
+};

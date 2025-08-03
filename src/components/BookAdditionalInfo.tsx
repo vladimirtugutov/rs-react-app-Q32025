@@ -1,13 +1,6 @@
-import { BookDetailsAPI } from '../types/book';
+import { BookAdditionalInfoProps } from '../types/components';
 import { InfoSection } from './InfoSection';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
-
-type Props = {
-  data: BookDetailsAPI | null;
-  error: string | null;
-  getDescription: (desc: string | { value: string } | undefined) => string;
-  formatLanguages: (langs?: Array<{ key: string }>) => string;
-};
 
 const MAX_ISBN_DISPLAY = 3;
 const MAX_ADD_SUBJECTS_DISPLAY = 8;
@@ -17,7 +10,7 @@ export const BookAdditionalInfo = ({
   error,
   getDescription,
   formatLanguages,
-}: Props) => {
+}: BookAdditionalInfoProps) => {
   if (error) {
     return (
       <div className="error-section">
