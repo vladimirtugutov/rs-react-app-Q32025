@@ -4,12 +4,10 @@ import { API_CONFIG } from '../constants/api';
 import Spinner from '../spinner/Spinner';
 import { BookDetailsProps } from '../types/components';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
-import { InfoSection } from '../components/InfoSection';
 import { useBookDetails } from '../hooks/useBookDetails';
 import { BookMainInfo } from '../components/BookMainInfo';
+import { BookAdditionalInfo } from '../components/BookAdditionalInfo';
 
-const MAX_ISBN_DISPLAY = 3;
-const MAX_ADD_SUBJECTS_DISPLAY = 8;
 const MAX_LANG = 3;
 
 function BookDetails({ results }: BookDetailsProps) {
@@ -98,85 +96,12 @@ function BookDetails({ results }: BookDetailsProps) {
             <div className="book-additional-info">
               <h4>Additional Information:</h4>
 
-              {error && (
-                <div className="error-section">
-                  <p className="error-message">
-                    Error loading additional details: {error}
-                  </p>
-                </div>
-              )}
-
-              {bookDetailsAPI && (
-                <div className="api-details">
-                  {getDescription(bookDetailsAPI.description) && (
-                    <InfoSection title="Full Description:">
-                      <div className="description-content">
-                        <p>{getDescription(bookDetailsAPI.description)}</p>
-                      </div>
-                    </InfoSection>
-                  )}
-
-                  {bookDetailsAPI.number_of_pages && (
-                    <InfoSection title="Pages:">
-                      <p>{bookDetailsAPI.number_of_pages}</p>
-                    </InfoSection>
-                  )}
-
-                  {isArrayWithItems<string>(bookDetailsAPI.languages) && (
-                    <InfoSection title="Languages:">
-                      <p>{formatLanguages(bookDetailsAPI.languages)}</p>
-                    </InfoSection>
-                  )}
-
-                  {(bookDetailsAPI.isbn_10 || bookDetailsAPI.isbn_13) && (
-                    <InfoSection title="ISBN:">
-                      <div className="isbn-list">
-                        {bookDetailsAPI.isbn_10 && (
-                          <p>
-                            <strong>ISBN-10:</strong>{' '}
-                            {bookDetailsAPI.isbn_10
-                              .slice(0, MAX_ISBN_DISPLAY)
-                              .join(', ')}
-                          </p>
-                        )}
-                        {bookDetailsAPI.isbn_13 && (
-                          <p>
-                            <strong>ISBN-13:</strong>{' '}
-                            {bookDetailsAPI.isbn_13
-                              .slice(0, MAX_ISBN_DISPLAY)
-                              .join(', ')}
-                          </p>
-                        )}
-                      </div>
-                    </InfoSection>
-                  )}
-
-                  {isArrayWithItems<string>(bookDetailsAPI.subjects) && (
-                    <InfoSection title="Additional Subjects:">
-                      <p>
-                        {bookDetailsAPI.subjects
-                          .slice(0, MAX_ADD_SUBJECTS_DISPLAY)
-                          .join(', ')}
-                      </p>
-                    </InfoSection>
-                  )}
-
-                  {bookDetailsAPI.publish_date && (
-                    <InfoSection title="Publish Date:">
-                      <p>{bookDetailsAPI.publish_date}</p>
-                    </InfoSection>
-                  )}
-                </div>
-              )}
-
-              {bookDetailsAPI &&
-                !error &&
-                !getDescription(bookDetailsAPI.description) &&
-                !bookDetailsAPI.number_of_pages && (
-                  <div className="no-additional-info">
-                    <p>No additional information available from the API</p>
-                  </div>
-                )}
+              <BookAdditionalInfo
+                data={bookDetailsAPI}
+                error={error}
+                getDescription={getDescription}
+                formatLanguages={formatLanguages}
+              />
             </div>
           </>
         )}
