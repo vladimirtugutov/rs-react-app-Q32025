@@ -1,8 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import { App } from './App';
-import ErrorBoundary from '../error-boundary/ErrorBoundary';
+import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
+import selectedItemsReducer from '../store/selectedItemsSlice';
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch as typeof fetch;
@@ -14,12 +17,26 @@ const localStorageMock = {
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(component);
+const createTestStore = () => {
+  return configureStore({
+    reducer: {
+      selectedItems: selectedItemsReducer,
+    },
+  });
 };
 
-const renderWithRouterAndErrorBoundary = (component: React.ReactElement) => {
-  return render(<ErrorBoundary>{component}</ErrorBoundary>);
+const renderWithProviders = (component: React.ReactElement) => {
+  const store = createTestStore();
+  return render(<Provider store={store}>{component}</Provider>);
+};
+
+const renderWithProvidersAndErrorBoundary = (component: React.ReactElement) => {
+  const store = createTestStore();
+  return render(
+    <Provider store={store}>
+      <ErrorBoundary>{component}</ErrorBoundary>
+    </Provider>
+  );
 };
 
 const mockOpenLibraryResponse = {
@@ -67,7 +84,7 @@ describe('App', () => {
       json: async () => mockOpenLibraryResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled();
@@ -86,7 +103,7 @@ describe('App', () => {
       };
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     expect(screen.getByRole('status')).toBeInTheDocument();
 
@@ -100,15 +117,15 @@ describe('App', () => {
       json: async () => ({}),
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     expect(await screen.findByText(/API Error: 500/)).toBeInTheDocument();
   });
 
   it('should simulate error button click and be caught by ErrorBoundary', async () => {
-    renderWithRouterAndErrorBoundary(<App />);
+    renderWithProvidersAndErrorBoundary(<App />);
 
-    const errorButton = screen.getByText(/error button/i);
+    const errorButton = screen.getByText('Error Button');
     await userEvent.click(errorButton);
 
     expect(
@@ -122,9 +139,9 @@ describe('App', () => {
       json: async () => ({ docs: [], numFound: 0, start: 0 }),
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
-    expect(screen.getByText(/error button/i)).toBeInTheDocument();
+    expect(screen.getByText('Error Button')).toBeInTheDocument();
   });
 
   it('should load saved search value from localStorage', async () => {
@@ -136,7 +153,7 @@ describe('App', () => {
       json: async () => mockOpenLibraryResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(localStorageMock.getItem).toHaveBeenCalledWith('prevSearchValue');
@@ -149,7 +166,7 @@ describe('App', () => {
       json: async () => mockOpenLibraryResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -169,7 +186,7 @@ describe('App', () => {
       json: async () => largeResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -191,7 +208,7 @@ describe('App', () => {
       json: async () => smallResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -207,7 +224,7 @@ describe('App', () => {
       json: async () => ({ docs: [], numFound: 0, start: 0 }),
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     expect(await screen.findByText(/нет результатов/i)).toBeInTheDocument();
   });
@@ -218,7 +235,7 @@ describe('App', () => {
       json: async () => mockOpenLibraryResponse,
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -234,7 +251,7 @@ describe('App', () => {
   it('should handle network errors correctly', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     expect(await screen.findByText(/Network error/)).toBeInTheDocument();
   });
@@ -245,11 +262,33 @@ describe('App', () => {
       json: async () => ({ docs: [], numFound: 0, start: 0 }),
     });
 
-    renderWithRouter(<App />);
+    renderWithProviders(<App />);
 
     const appContainer = screen
-      .getByText(/error button/i)
+      .getByText('Error Button')
       .closest('.app-container');
     expect(appContainer).toBeInTheDocument();
+  });
+
+  it('should render theme selector', () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    });
+
+    renderWithProviders(<App />);
+
+    expect(screen.getByLabelText('Theme:')).toBeInTheDocument();
+  });
+
+  it('should not show flyout when no items selected', () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    });
+
+    renderWithProviders(<App />);
+
+    expect(screen.queryByText(/items selected/)).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { NotFound } from '../not-found/NotFound';
+import { NotFound } from '../pages/not-found/NotFound';
 import { MainLayout } from './MainLayout';
 
 export const ValidatedMainLayout: React.FC = () => {

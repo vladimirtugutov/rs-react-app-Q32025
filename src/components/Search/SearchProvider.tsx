@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import SearchContext from './SearchContext';
-import { STORAGE_KEYS } from '../constants/storageKeys';
-import { API_CONFIG } from '../constants/api';
-import { Book, OpenLibraryBook, OpenLibraryResponse } from '../types/book';
-import { SearchProviderProps } from '../types/components';
+import { STORAGE_KEYS } from '../../constants/storageKeys';
+import { API_CONFIG } from '../../constants/api';
+import { Book, OpenLibraryBook, OpenLibraryResponse } from '../../types/book';
+import { SearchProviderProps } from '../../types/components';
 
 export const SearchProvider = ({
   children,

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import TopControls from '../topcontrols/TopControls';
+import TopControls from '../components/topcontrols/TopControls';
 import { MainContent } from './MainContent';
-import { SearchProvider } from '../search/SearchProvider';
+import { SearchProvider } from '../components/Search/SearchProvider';
 import './App.css';
 
 export const MainLayout = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchContextType } from '../types/components';
+import { SearchContextType } from '../../types/components';
 
 const defaultValues: SearchContextType = {
   searchValue: '',

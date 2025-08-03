@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppRoutes } from '../constants/routes';
-import { About } from '../about/About';
-import { NotFound } from '../not-found/NotFound';
+import { About } from '../pages/about/About';
+import { NotFound } from '../pages/not-found/NotFound';
 import { ValidatedMainLayout } from './ValidatedMainLayout';
 
 export type RouteConfig = {

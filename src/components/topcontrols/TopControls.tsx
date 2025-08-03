@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import SearchInput from '../search/SearchInput';
-import SearchButton from '../search/SearchButton';
+import SearchInput from '../Search/SearchInput';
+import SearchButton from '../Search/SearchButton';
 
 function TopControls() {
   return (
