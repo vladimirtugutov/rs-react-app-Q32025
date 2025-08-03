@@ -1,21 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-// import { Book } from '../types/book';
-
-interface SelectedItem {
-  id: string;
-  title: string;
-  authors?: string[];
-  description?: string;
-  publishedDate?: string;
-  pageCount?: number;
-  categories?: string[];
-  thumbnail?: string;
-  previewLink?: string;
-}
-
-interface SelectedItemsState {
-  items: SelectedItem[];
-}
+import { SelectedItem, SelectedItemsState } from '../types/selectedItems';
 
 const initialState: SelectedItemsState = {
   items: [],
@@ -48,9 +32,11 @@ export default selectedItemsSlice.reducer;
 export const selectSelectedItems = (state: {
   selectedItems: SelectedItemsState;
 }) => state.selectedItems.items;
+
 export const selectSelectedItemsCount = (state: {
   selectedItems: SelectedItemsState;
 }) => state.selectedItems.items.length;
+
 export const selectIsItemSelected =
   (itemId: string) => (state: { selectedItems: SelectedItemsState }) =>
     state.selectedItems.items.some((item) => item.id === itemId);
