@@ -1,24 +1,20 @@
-export type Book = {
+type BaseBook = Partial<{
+  author_name: string[];
+  first_publish_year: number;
+  cover_i: number;
+  isbn: string[];
+  subject: string[];
+  publisher: string[];
+  key: string;
+}>;
+
+export type Book = BaseBook & {
   title: string;
-  author_name?: string[];
-  first_publish_year?: number;
-  cover_i?: number;
-  isbn?: string[];
-  subject?: string[];
-  publisher?: string[];
   description?: string;
-  key?: string;
 };
 
-export type OpenLibraryBook = {
+export type OpenLibraryBook = BaseBook & {
   title?: string;
-  author_name?: string[];
-  first_publish_year?: number;
-  cover_i?: number;
-  isbn?: string[];
-  subject?: string[];
-  publisher?: string[];
-  key?: string;
 };
 
 export type OpenLibraryResponse = {
@@ -27,22 +23,26 @@ export type OpenLibraryResponse = {
   start: number;
 };
 
-export type BookDetailsAPI = {
-  title?: string;
-  description?: string | { value: string };
-  subjects?: string[];
-  covers?: number[];
-  authors?: Array<{
-    author: {
-      key: string;
-    };
-  }>;
-  publishers?: string[];
-  publish_date?: string;
-  isbn_10?: string[];
-  isbn_13?: string[];
-  number_of_pages?: number;
-  languages?: Array<{
+export type BookAuthor = {
+  author: {
     key: string;
-  }>;
+  };
 };
+
+export type BookLanguage = {
+  key: string;
+};
+
+export type BookDetailsAPI = Partial<{
+  title: string;
+  description: string | { value: string };
+  subjects: string[];
+  covers: number[];
+  authors: BookAuthor[];
+  publishers: string[];
+  publish_date: string;
+  isbn_10: string[];
+  isbn_13: string[];
+  number_of_pages: number;
+  languages: BookLanguage[];
+}>;
