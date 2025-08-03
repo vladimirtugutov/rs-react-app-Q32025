@@ -4,6 +4,8 @@ import { router } from './router';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
+import { useAppSelector } from '../store/hooks';
+import { selectSelectedItemsCount } from '../store/selectedItemsSlice';
 import './App.css';
 
 export const App = () => {
@@ -12,6 +14,8 @@ export const App = () => {
   const handleErrorButtonClick = () => {
     setHasSimulatedError(true);
   };
+
+  const selectedCount = useAppSelector(selectSelectedItemsCount);
 
   if (hasSimulatedError) {
     throw new Error('Simulated error by Error Button click.');
@@ -26,7 +30,9 @@ export const App = () => {
 
         <RouterProvider router={router} />
 
-        <div className="error-button-container">
+        <div
+          className={`error-button-container ${selectedCount > 0 ? 'flyout-active' : ''}`}
+        >
           <button onClick={handleErrorButtonClick}>Error Button</button>
         </div>
 

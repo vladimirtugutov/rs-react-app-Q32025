@@ -1,4 +1,5 @@
 import React from 'react';
+import { saveAs } from 'file-saver';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
   selectSelectedItems,
@@ -20,17 +21,14 @@ export const SelectedItemsFlyout: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const csvContent = generateCSV(selectedItems);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
+    try {
+      const csvContent = generateCSV(selectedItems);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${selectedCount}_items.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      saveAs(blob, `${selectedCount}_items.csv`);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+    }
   };
 
   const generateCSV = (items: typeof selectedItems) => {
