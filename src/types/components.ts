@@ -38,3 +38,8 @@ export type SearchContextType = {
   setSearchValue: (value: string) => void;
   handleSearchButtonClick: () => void;
 };
+
+export type InfoSectionProps = {
+  title: string;
+  children: React.ReactNode;
+};

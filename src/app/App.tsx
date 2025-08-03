@@ -4,7 +4,7 @@ import TopControls from '../topcontrols/TopControls';
 import Results from '../results/Results';
 import Spinner from '../spinner/Spinner';
 import BookDetails from '../book-details/BookDetails';
-import About from '../about/About';
+import { About } from '../about/About';
 import NotFound from '../not-found/NotFound';
 import SearchContext from '../search/SearchContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';

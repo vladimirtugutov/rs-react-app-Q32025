@@ -18,13 +18,16 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-weight: 500;
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
 }
 
 .about-nav a:hover {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-white);
   text-decoration: none;
 }
 
@@ -68,7 +71,7 @@
   gap: 0.5rem;
   padding: 1rem 2rem;
   background-color: var(--color-primary);
-  color: white;
+  color: var(--color-white);
   border-radius: var(--radius-md);
   font-weight: 600;
   text-decoration: none;

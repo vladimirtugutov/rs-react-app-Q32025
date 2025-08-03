@@ -18,10 +18,10 @@
   background-color: var(--color-background);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 1;
 }
 
-.book-details-header h2 {
+.book-details-title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;

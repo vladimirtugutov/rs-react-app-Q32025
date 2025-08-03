@@ -5,6 +5,13 @@ import { API_ENDPOINTS, API_CONFIG } from '../constants/api';
 import Spinner from '../spinner/Spinner';
 import { BookDetailsAPI } from '../types/book';
 import { BookDetailsProps } from '../types/components';
+import { isArrayWithItems } from '../utils/isArrayWithItems';
+import { InfoSection } from '../components/InfoSection';
+
+const MAX_SUBJECTS_DISPLAY = 8;
+const MAX_PUBLISHERS_DISPLAY = 8;
+const MAX_ISBN_DISPLAY = 3;
+const MAX_ADD_SUBJECTS_DISPLAY = 8;
 
 function BookDetails({ results }: BookDetailsProps) {
   const { detailsId, page = '1' } = useParams();
@@ -28,8 +35,6 @@ function BookDetails({ results }: BookDetailsProps) {
       setLoading(true);
       setError(null);
 
-      const startTime = Date.now();
-
       try {
         const response = await fetch(
           `${API_ENDPOINTS.BOOK_DETAILS}/${detailsId}.json`
@@ -41,14 +46,7 @@ function BookDetails({ results }: BookDetailsProps) {
 
         const data: BookDetailsAPI = await response.json();
 
-        const elapsedTime = Date.now() - startTime;
-        const minLoadingTime = 1500;
-
-        if (elapsedTime < minLoadingTime) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, minLoadingTime - elapsedTime)
-          );
-        }
+        console.log(data);
 
         setBookDetailsAPI(data);
       } catch (err) {
@@ -66,7 +64,7 @@ function BookDetails({ results }: BookDetailsProps) {
     navigate(`/${page}`);
   };
 
-  const getCoverUrl = (coverId: number): string => {
+  const getCoverUrl = (coverId: number) => {
     return `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
   };
 
@@ -78,9 +76,7 @@ function BookDetails({ results }: BookDetailsProps) {
     return description.value || '';
   };
 
-  const formatLanguages = (
-    languages: Array<{ key: string }> | undefined
-  ): string => {
+  const formatLanguages = (languages?: Array<{ key: string }>): string => {
     if (!languages || languages.length === 0) return 'Unknown';
     return languages
       .map((lang) => lang.key.replace('/languages/', '').toUpperCase())
@@ -94,7 +90,7 @@ function BookDetails({ results }: BookDetailsProps) {
     return (
       <div className="book-details-panel">
         <div className="book-details-header">
-          <h2>Book Details</h2>
+          <h2 className="book-details-title">Book Details</h2>
           <button
             className="close-button"
             onClick={handleClose}
@@ -148,40 +144,38 @@ function BookDetails({ results }: BookDetailsProps) {
             <div className="book-main-info">
               <h3>{bookFromList.title}</h3>
 
-              {bookFromList.author_name &&
-                bookFromList.author_name.length > 0 && (
-                  <div className="info-section">
-                    <h4>Authors:</h4>
-                    <p>{bookFromList.author_name.join(', ')}</p>
-                  </div>
-                )}
-
-              {bookFromList.first_publish_year && (
-                <div className="info-section">
-                  <h4>First Published:</h4>
-                  <p>{bookFromList.first_publish_year}</p>
-                </div>
+              {isArrayWithItems<string>(bookFromList.author_name) && (
+                <InfoSection title="Authors:">
+                  {bookFromList.author_name.join(', ')}
+                </InfoSection>
               )}
 
-              {bookFromList.publisher && bookFromList.publisher.length > 0 && (
-                <div className="info-section">
-                  <h4>Publishers:</h4>
-                  <p>{bookFromList.publisher.join(', ')}</p>
-                </div>
+              {bookFromList.first_publish_year && (
+                <InfoSection title="First Published:">
+                  {bookFromList.first_publish_year}
+                </InfoSection>
+              )}
+
+              {isArrayWithItems<string>(bookFromList.publisher) && (
+                <InfoSection title="Publishers:">
+                  {bookFromList.publisher
+                    .slice(0, MAX_PUBLISHERS_DISPLAY)
+                    .join(', ')}
+                </InfoSection>
               )}
 
               {bookFromList.description && (
-                <div className="info-section">
-                  <h4>Generated Description:</h4>
-                  <p>{bookFromList.description}</p>
-                </div>
+                <InfoSection title="Generated Description:">
+                  {bookFromList.description}
+                </InfoSection>
               )}
 
-              {bookFromList.subject && bookFromList.subject.length > 0 && (
-                <div className="info-section">
-                  <h4>Subjects:</h4>
-                  <p>{bookFromList.subject.slice(0, 8).join(', ')}</p>
-                </div>
+              {isArrayWithItems<string>(bookFromList.subject) && (
+                <InfoSection title="Subjects:">
+                  {bookFromList.subject
+                    .slice(0, MAX_SUBJECTS_DISPLAY)
+                    .join(', ')}
+                </InfoSection>
               )}
             </div>
 
@@ -199,62 +193,62 @@ function BookDetails({ results }: BookDetailsProps) {
               {bookDetailsAPI && (
                 <div className="api-details">
                   {getDescription(bookDetailsAPI.description) && (
-                    <div className="info-section">
-                      <h4>Full Description:</h4>
+                    <InfoSection title="Full Description:">
                       <div className="description-content">
                         <p>{getDescription(bookDetailsAPI.description)}</p>
                       </div>
-                    </div>
+                    </InfoSection>
                   )}
 
                   {bookDetailsAPI.number_of_pages && (
-                    <div className="info-section">
-                      <h4>Pages:</h4>
+                    <InfoSection title="Pages:">
                       <p>{bookDetailsAPI.number_of_pages}</p>
-                    </div>
+                    </InfoSection>
                   )}
 
-                  {bookDetailsAPI.languages &&
-                    bookDetailsAPI.languages.length > 0 && (
-                      <div className="info-section">
-                        <h4>Languages:</h4>
-                        <p>{formatLanguages(bookDetailsAPI.languages)}</p>
-                      </div>
-                    )}
+                  {isArrayWithItems<string>(bookDetailsAPI.languages) && (
+                    <InfoSection title="Languages:">
+                      <p>{formatLanguages(bookDetailsAPI.languages)}</p>
+                    </InfoSection>
+                  )}
 
                   {(bookDetailsAPI.isbn_10 || bookDetailsAPI.isbn_13) && (
-                    <div className="info-section">
-                      <h4>ISBN:</h4>
+                    <InfoSection title="ISBN:">
                       <div className="isbn-list">
                         {bookDetailsAPI.isbn_10 && (
                           <p>
                             <strong>ISBN-10:</strong>{' '}
-                            {bookDetailsAPI.isbn_10.slice(0, 3).join(', ')}
+                            {bookDetailsAPI.isbn_10
+                              .slice(0, MAX_ISBN_DISPLAY)
+                              .join(', ')}
                           </p>
                         )}
                         {bookDetailsAPI.isbn_13 && (
                           <p>
                             <strong>ISBN-13:</strong>{' '}
-                            {bookDetailsAPI.isbn_13.slice(0, 3).join(', ')}
+                            {bookDetailsAPI.isbn_13
+                              .slice(0, MAX_ISBN_DISPLAY)
+                              .join(', ')}
                           </p>
                         )}
                       </div>
-                    </div>
+                    </InfoSection>
                   )}
 
-                  {bookDetailsAPI.subjects &&
-                    bookDetailsAPI.subjects.length > 0 && (
-                      <div className="info-section">
-                        <h4>Additional Subjects:</h4>
-                        <p>{bookDetailsAPI.subjects.slice(0, 10).join(', ')}</p>
-                      </div>
-                    )}
+                  {isArrayWithItems<string>(bookDetailsAPI.subjects) && (
+                    <InfoSection title="Additional Subjects:">
+                      <p>
+                        {bookDetailsAPI.subjects
+                          .slice(0, MAX_ADD_SUBJECTS_DISPLAY)
+                          .join(', ')}
+                      </p>
+                    </InfoSection>
+                  )}
 
                   {bookDetailsAPI.publish_date && (
-                    <div className="info-section">
-                      <h4>Publish Date:</h4>
+                    <InfoSection title="Publish Date:">
                       <p>{bookDetailsAPI.publish_date}</p>
-                    </div>
+                    </InfoSection>
                   )}
                 </div>
               )}
