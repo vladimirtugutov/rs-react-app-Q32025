@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { BookDetails } from './BookDetails';
-import { Book } from '../types/book';
+import { Book } from '../../types/book';
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch as typeof fetch;
