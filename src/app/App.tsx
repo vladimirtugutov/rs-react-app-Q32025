@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
+import { ThemeProvider } from '../context/ThemeProvider';
+import { ThemeSelector } from '../components/ThemeSelector';
+import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import './App.css';
 
 export const App = () => {
@@ -15,11 +18,20 @@ export const App = () => {
   }
 
   return (
-    <div className="app-container">
-      <RouterProvider router={router} />
-      <div className="error-button-container">
-        <button onClick={handleErrorButtonClick}>Error Button</button>
+    <ThemeProvider>
+      <div className="app-container">
+        <header className="app-header">
+          <ThemeSelector />
+        </header>
+
+        <RouterProvider router={router} />
+
+        <div className="error-button-container">
+          <button onClick={handleErrorButtonClick}>Error Button</button>
+        </div>
+
+        <SelectedItemsFlyout />
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
