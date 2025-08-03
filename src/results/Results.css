@@ -108,7 +108,7 @@
 }
 
 [data-theme='dark'] .result-card {
-  background-color: var(--bg-color, #1a1a1a);
+  background-color: var(--color-background, #1a1a1a);
   border-color: var(--border-color, #404040);
   color: var(--text-color, #ffffff);
 }
@@ -193,12 +193,12 @@
 }
 
 [data-theme='dark'] .pagination {
-  background-color: var(--bg-color, #1a1a1a);
+  background-color: var(--color-background, #1a1a1a);
   border-color: var(--border-color, #404040);
 }
 
 [data-theme='dark'] .pagination button {
-  background-color: var(--bg-color, #1a1a1a);
+  background-color: var(--color-background, #1a1a1a);
   border-color: var(--border-color, #404040);
   color: var(--text-color, #ffffff);
 }
