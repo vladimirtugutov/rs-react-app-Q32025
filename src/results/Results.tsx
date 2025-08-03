@@ -4,7 +4,7 @@ import { API_CONFIG } from '../constants/api';
 import { Book } from '../types/book';
 import { ResultsProps } from '../types/components';
 
-function Results({ results, error }: ResultsProps) {
+export const Results = ({ results, error }: ResultsProps) => {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
@@ -60,6 +60,4 @@ function Results({ results, error }: ResultsProps) {
       ))}
     </div>
   );
-}
-
-export default Results;
+};
