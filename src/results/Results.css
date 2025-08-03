@@ -4,6 +4,7 @@
 }
 
 .result-card {
+  position: relative;
   padding: 16px;
   margin-bottom: 16px;
   border: 2px solid #e2e8f0;
@@ -20,7 +21,7 @@
 .result-card:hover {
   background-color: #f8fafc;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(27, 18, 18, 0.15);
   border-color: #2563eb;
 }
 
@@ -31,9 +32,49 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
-.result-card .book-cover-small {
-  width: 40px;
-  height: 60px;
+.result-card.checked {
+  border: 2px solid var(--accent-color, #2563eb);
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.result-card.checked:hover {
+  background-color: rgba(37, 99, 235, 0.15);
+}
+
+.book-checkbox-container {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.book-checkbox-container:hover {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.book-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent-color, #2563eb);
+  margin: 0;
+}
+
+.book-checkbox:focus {
+  outline: 2px solid var(--accent-color, #2563eb);
+  outline-offset: 2px;
+}
+
+.book-cover-small {
+  width: 40px !important;
+  height: 60px !important;
   object-fit: cover;
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -64,6 +105,53 @@
   color: #64748b;
   font-size: 14px;
   font-weight: 400;
+}
+
+[data-theme='dark'] .result-card {
+  background-color: var(--bg-color, #1a1a1a);
+  border-color: var(--border-color, #404040);
+  color: var(--text-color, #ffffff);
+}
+
+[data-theme='dark'] .result-card:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-color, #66b3ff);
+}
+
+[data-theme='dark'] .result-card.selected {
+  background-color: rgba(102, 179, 255, 0.1);
+  border-color: var(--accent-color, #66b3ff);
+}
+
+[data-theme='dark'] .result-card.checked {
+  border-color: var(--accent-color, #66b3ff);
+  background-color: rgba(102, 179, 255, 0.15);
+}
+
+[data-theme='dark'] .result-card.checked:hover {
+  background-color: rgba(102, 179, 255, 0.2);
+}
+
+[data-theme='dark'] .book-checkbox-container {
+  background-color: rgba(26, 26, 26, 0.9);
+  border-color: var(--border-color, #404040);
+}
+
+[data-theme='dark'] .book-checkbox-container:hover {
+  background-color: rgba(26, 26, 26, 1);
+}
+
+[data-theme='dark'] .book-title {
+  color: var(--text-color, #ffffff) !important;
+}
+
+[data-theme='dark'] .book-author {
+  color: #94a3b8 !important;
+}
+
+[data-theme='dark'] .book-cover-small {
+  background-color: #2d3748;
+  border-color: #4a5568;
 }
 
 .pagination {
@@ -102,4 +190,89 @@
 .pagination button:not(:disabled):not(.active):hover {
   background-color: #f3f4f6;
   border-color: #2563eb;
+}
+
+[data-theme='dark'] .pagination {
+  background-color: var(--bg-color, #1a1a1a);
+  border-color: var(--border-color, #404040);
+}
+
+[data-theme='dark'] .pagination button {
+  background-color: var(--bg-color, #1a1a1a);
+  border-color: var(--border-color, #404040);
+  color: var(--text-color, #ffffff);
+}
+
+[data-theme='dark'] .pagination button.active {
+  background-color: var(--accent-color, #66b3ff);
+  border-color: var(--accent-color, #66b3ff);
+  color: #1a1a1a;
+}
+
+[data-theme='dark'] .pagination button:not(:disabled):not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-color, #66b3ff);
+}
+
+@media (max-width: 768px) {
+  .results-table {
+    padding: 8px;
+  }
+
+  .result-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .book-checkbox-container {
+    top: 4px;
+    right: 4px;
+    padding: 2px;
+  }
+
+  .book-checkbox {
+    width: 16px;
+    height: 16px;
+  }
+
+  .book-cover-small {
+    width: 35px !important;
+    height: 52px !important;
+  }
+
+  .book-title {
+    font-size: 14px !important;
+  }
+
+  .book-author {
+    font-size: 13px !important;
+  }
+
+  .pagination {
+    padding: 16px 8px;
+  }
+
+  .pagination button {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-card {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .book-checkbox-container {
+    top: 2px;
+    right: 2px;
+    padding: 1px;
+  }
+
+  .book-checkbox {
+    width: 14px;
+    height: 14px;
+  }
 }
