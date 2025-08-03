@@ -6,9 +6,8 @@ import { BookDetailsProps } from '../types/components';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
 import { InfoSection } from '../components/InfoSection';
 import { useBookDetails } from '../hooks/useBookDetails';
+import { BookMainInfo } from '../components/BookMainInfo';
 
-const MAX_SUBJECTS_DISPLAY = 8;
-const MAX_PUBLISHERS_DISPLAY = 8;
 const MAX_ISBN_DISPLAY = 3;
 const MAX_ADD_SUBJECTS_DISPLAY = 8;
 const MAX_LANG = 3;
@@ -94,54 +93,7 @@ function BookDetails({ results }: BookDetailsProps) {
 
         {!loading && (
           <>
-            {bookFromList.cover_i && (
-              <img
-                src={getCoverUrl(bookFromList.cover_i)}
-                alt={bookFromList.title}
-                className="book-cover-large"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
-
-            <div className="book-main-info">
-              <h3>{bookFromList.title}</h3>
-
-              {isArrayWithItems<string>(bookFromList.author_name) && (
-                <InfoSection title="Authors:">
-                  {bookFromList.author_name.join(', ')}
-                </InfoSection>
-              )}
-
-              {bookFromList.first_publish_year && (
-                <InfoSection title="First Published:">
-                  {bookFromList.first_publish_year}
-                </InfoSection>
-              )}
-
-              {isArrayWithItems<string>(bookFromList.publisher) && (
-                <InfoSection title="Publishers:">
-                  {bookFromList.publisher
-                    .slice(0, MAX_PUBLISHERS_DISPLAY)
-                    .join(', ')}
-                </InfoSection>
-              )}
-
-              {bookFromList.description && (
-                <InfoSection title="Generated Description:">
-                  {bookFromList.description}
-                </InfoSection>
-              )}
-
-              {isArrayWithItems<string>(bookFromList.subject) && (
-                <InfoSection title="Subjects:">
-                  {bookFromList.subject
-                    .slice(0, MAX_SUBJECTS_DISPLAY)
-                    .join(', ')}
-                </InfoSection>
-              )}
-            </div>
+            <BookMainInfo book={bookFromList} getCoverUrl={getCoverUrl} />
 
             <div className="book-additional-info">
               <h4>Additional Information:</h4>
