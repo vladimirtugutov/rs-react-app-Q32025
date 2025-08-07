@@ -41,16 +41,17 @@ export const SelectedItemsFlyout: React.FC = () => {
       'Categories',
       'Preview Link',
     ];
+
     const csvRows = [
       headers.join(','),
       ...items.map((item) =>
         [
-          `"${item.title?.replace(/"/g, '""') || ''}"`,
-          `"${item.authors?.join('; ') || ''}"`,
-          `"${item.description?.replace(/"/g, '""') || ''}"`,
+          `"${(item.title || '').replace(/"/g, '""')}"`,
+          `"${(item.authors?.join('; ') || '').replace(/"/g, '""')}"`,
+          `"${(item.description || '').replace(/"/g, '""')}"`,
           `"${item.publishedDate || ''}"`,
           `"${item.pageCount || ''}"`,
-          `"${item.categories?.join('; ') || ''}"`,
+          `"${(item.categories?.join('; ') || '').replace(/"/g, '""')}"`,
           `"${item.previewLink || ''}"`,
         ].join(',')
       ),
