@@ -18,12 +18,6 @@ export type BookDetailsProps = {
   results: Book[];
 };
 
-export type PaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
-
 export type MainContentProps = {
   isLoading: boolean;
   error: string | null;

@@ -1,55 +1,43 @@
-import { PaginationProps } from '../types/components';
+import { getVisiblePages } from '../utils/pagination';
+
+type PaginationProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
 
 export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
 }: PaginationProps) => {
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+  const handlePreviousClick = () => {
+    onPageChange(currentPage - 1);
+  };
 
-    for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
-      i++
-    ) {
-      range.push(i);
+  const handleNextClick = () => {
+    onPageChange(currentPage + 1);
+  };
+
+  const handlePageClick = (page: number | string) => {
+    if (typeof page === 'number') {
+      onPageChange(page);
     }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
   };
 
   return (
     <div className="pagination">
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={handlePreviousClick}
         disabled={currentPage === 1}
       >
         Previous
       </button>
 
-      {getVisiblePages().map((page, index) => (
+      {getVisiblePages(currentPage, totalPages).map((page, index) => (
         <button
           key={index}
-          onClick={() =>
-            typeof page === 'number' ? onPageChange(page) : undefined
-          }
+          onClick={() => handlePageClick(page)}
           className={currentPage === page ? 'active' : ''}
           disabled={typeof page !== 'number'}
         >
@@ -58,7 +46,7 @@ export const Pagination = ({
       ))}
 
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={handleNextClick}
         disabled={currentPage === totalPages}
       >
         Next
