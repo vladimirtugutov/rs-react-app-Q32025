@@ -138,7 +138,6 @@ describe('Router Configuration', () => {
         { path: '/2', expectedTestId: 'main-layout' },
         { path: '/1/book123', expectedTestId: 'main-layout' },
         { path: '/5/details456', expectedTestId: 'main-layout' },
-        // ✅ Эти роуты тоже попадают в main-layout из-за гибкого паттерна
         { path: '/random-page', expectedTestId: 'main-layout' },
         { path: '/anything', expectedTestId: 'main-layout' },
       ];
