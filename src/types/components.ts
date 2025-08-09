@@ -18,12 +18,6 @@ export type BookDetailsProps = {
   results?: Book[];
 };
 
-export type PaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
-
 export type MainContentProps = {
   isLoading: boolean;
   error: string | null;
@@ -70,3 +64,9 @@ export type SearchProviderProps = PropsWithChildren<{
   navigate: (url: string) => void;
   children?: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
 }>;
+
+export type PaginationProps = {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+};
