@@ -1,39 +1,39 @@
 .results-table {
   max-width: 100%;
-  padding: 16px;
+  padding: 1rem;
 }
 
 .result-card {
   position: relative;
-  padding: 16px;
-  margin-bottom: 16px;
-  border: 2px solid #e2e8f0;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 1rem;
   cursor: pointer;
   transition: all 0.25s ease;
-  background-color: var(--color-background, #ffffff);
+  background-color: var(--color-background);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .result-card:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-surface);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(27, 18, 18, 0.15);
-  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-primary);
 }
 
 .result-card.selected {
   background-color: #eff6ff;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
   border-width: 3px;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .result-card.checked {
-  border: 2px solid var(--accent-color, #2563eb);
+  border: 2px solid var(--color-primary);
   background-color: rgba(37, 99, 235, 0.1);
 }
 
@@ -52,10 +52,12 @@
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
 }
 
 .book-checkbox-container:hover {
-  background-color: rgba(255, 255, 255, 1);
+  background-color: var(--color-white);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -63,12 +65,12 @@
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: var(--accent-color, #2563eb);
+  accent-color: var(--color-primary);
   margin: 0;
 }
 
 .book-checkbox:focus {
-  outline: 2px solid var(--accent-color, #2563eb);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -79,20 +81,21 @@
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .book-info-minimal {
   flex: 1;
   min-width: 0;
+  padding-right: 40px;
 }
 
 .result-card .book-info-minimal .book-title {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -102,29 +105,29 @@
 
 .result-card .book-info-minimal .book-author {
   margin: 0;
-  color: #64748b;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
   font-weight: 400;
 }
 
 [data-theme='dark'] .result-card {
-  background-color: var(--color-background, #1a1a1a);
-  border-color: var(--border-color, #404040);
-  color: var(--text-color, #ffffff);
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+  color: var(--color-text);
 }
 
 [data-theme='dark'] .result-card:hover {
   background-color: rgba(255, 255, 255, 0.05);
-  border-color: var(--accent-color, #66b3ff);
+  border-color: var(--color-primary);
 }
 
 [data-theme='dark'] .result-card.selected {
   background-color: rgba(102, 179, 255, 0.1);
-  border-color: var(--accent-color, #66b3ff);
+  border-color: var(--color-primary);
 }
 
 [data-theme='dark'] .result-card.checked {
-  border-color: var(--accent-color, #66b3ff);
+  border-color: var(--color-primary);
   background-color: rgba(102, 179, 255, 0.15);
 }
 
@@ -134,7 +137,7 @@
 
 [data-theme='dark'] .book-checkbox-container {
   background-color: rgba(26, 26, 26, 0.9);
-  border-color: var(--border-color, #404040);
+  border-color: var(--color-border);
 }
 
 [data-theme='dark'] .book-checkbox-container:hover {
@@ -142,7 +145,7 @@
 }
 
 [data-theme='dark'] .result-card .book-info-minimal .book-title {
-  color: var(--text-color, #ffffff);
+  color: var(--color-text);
 }
 
 [data-theme='dark'] .result-card .book-info-minimal .book-author {
@@ -158,28 +161,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  padding: 32px 16px;
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  background-color: var(--color-background);
+  border-top: 1px solid var(--color-border);
 }
 
 .pagination button {
   min-width: 40px;
   height: 40px;
-  padding: 8px;
+  padding: 0.5rem;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
-  border: 1px solid #d1d5db;
-  background-color: #ffffff;
-  color: #374151;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 .pagination button.active {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  color: white;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .pagination button:disabled {
@@ -188,40 +191,40 @@
 }
 
 .pagination button:not(:disabled):not(.active):hover {
-  background-color: #f3f4f6;
-  border-color: #2563eb;
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 [data-theme='dark'] .pagination {
-  background-color: var(--color-background, #1a1a1a);
-  border-color: var(--border-color, #404040);
+  background-color: var(--color-background);
+  border-color: var(--color-border);
 }
 
 [data-theme='dark'] .pagination button {
-  background-color: var(--color-background, #1a1a1a);
-  border-color: var(--border-color, #404040);
-  color: var(--text-color, #ffffff);
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+  color: var(--color-text);
 }
 
 [data-theme='dark'] .pagination button.active {
-  background-color: var(--accent-color, #66b3ff);
-  border-color: var(--accent-color, #66b3ff);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   color: #1a1a1a;
 }
 
 [data-theme='dark'] .pagination button:not(:disabled):not(.active):hover {
   background-color: rgba(255, 255, 255, 0.05);
-  border-color: var(--accent-color, #66b3ff);
+  border-color: var(--color-primary);
 }
 
 @media (max-width: 768px) {
   .results-table {
-    padding: 8px;
+    padding: 0.5rem;
   }
 
   .result-card {
-    padding: 12px;
-    gap: 12px;
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
 
   .book-checkbox-container {
@@ -241,28 +244,28 @@
   }
 
   .result-card .book-info-minimal .book-title {
-    font-size: 14px;
+    font-size: 0.9rem;
   }
 
   .result-card .book-info-minimal .book-author {
-    font-size: 13px;
+    font-size: 0.8rem;
   }
 
   .pagination {
-    padding: 16px 8px;
+    padding: 1rem 0.5rem;
   }
 
   .pagination button {
     min-width: 36px;
     height: 36px;
-    font-size: 13px;
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .result-card {
-    padding: 8px;
-    gap: 8px;
+    padding: 0.5rem;
+    gap: 0.5rem;
   }
 
   .book-checkbox-container {

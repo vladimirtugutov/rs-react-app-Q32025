@@ -20,9 +20,10 @@ export const BookItem = ({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const getCoverUrl = (coverId: number | undefined): string | undefined => {
-    if (!coverId) return undefined;
-    return `${API_CONFIG.COVER_BASE_URL}/${coverId}-M.jpg`;
+  const getCoverUrl = (coverId: number | undefined) => {
+    return coverId
+      ? `${API_CONFIG.COVER_BASE_URL}/${coverId}-M.jpg`
+      : undefined;
   };
 
   const handleBookClick = () => {
@@ -31,7 +32,7 @@ export const BookItem = ({
     navigate(`/${page}/${bookId}`);
   };
 
-  const handleCheckboxChange = (event: React.MouseEvent) => {
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.stopPropagation();
     if (!book.key) return;
 
@@ -55,15 +56,16 @@ export const BookItem = ({
       className={`result-card ${isDetailSelected ? 'selected' : ''} ${isSelected ? 'checked' : ''}`}
       onClick={handleBookClick}
     >
-      <div className="book-checkbox-container" onClick={handleCheckboxChange}>
+      <label className="book-checkbox-container" htmlFor={`book-${book.key}`}>
         <input
+          id={`book-${book.key}`}
           type="checkbox"
           checked={isSelected}
-          onChange={() => {}}
+          onChange={handleCheckboxChange}
           className="book-checkbox"
           aria-label={`Select ${book.title}`}
         />
-      </div>
+      </label>
 
       {book.cover_i && (
         <img
