@@ -27,10 +27,7 @@ export const Pagination = ({
 
   return (
     <div className="pagination">
-      <button
-        onClick={handlePreviousClick}
-        disabled={currentPage === 1}
-      >
+      <button onClick={handlePreviousClick} disabled={currentPage === 1}>
         Previous
       </button>
 
@@ -45,10 +42,7 @@ export const Pagination = ({
         </button>
       ))}
 
-      <button
-        onClick={handleNextClick}
-        disabled={currentPage === totalPages}
-      >
+      <button onClick={handleNextClick} disabled={currentPage === totalPages}>
         Next
       </button>
     </div>
