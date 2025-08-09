@@ -11,14 +11,12 @@ export const SearchProvider = ({
   detailsId,
   navigate,
 }: SearchProviderProps) => {
-  const [results, setResults] = useState<Book[]>([]);
-  const [searchValue, setSearchValueState] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
-  });
+  const initialSearchValue =
+    localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
 
-  const [savedSearchTerm, setSavedSearchTerm] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
-  });
+  const [results, setResults] = useState<Book[]>([]);
+  const [searchValue, setSearchValueState] = useState(initialSearchValue);
+  const [savedSearchTerm, setSavedSearchTerm] = useState(initialSearchValue);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +93,7 @@ export const SearchProvider = ({
     },
     [generateDescription]
   );
+
   useEffect(() => {
     getResults(savedSearchTerm, currentPage);
   }, [getResults, currentPage, savedSearchTerm]);

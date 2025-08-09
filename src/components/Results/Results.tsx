@@ -25,14 +25,13 @@ export const Results = ({ results, error }: ResultsProps) => {
     <div className="results-table">
       {results.map((book) => {
         const bookId = book.key?.replace('/works/', '') || '';
-        const isSelected = isItemSelected(bookId);
         const isDetailSelected = detailsId === bookId;
 
         return (
           <BookItem
             key={book.key || `book-${bookId}`}
             book={book}
-            isSelected={isSelected}
+            isSelected={isItemSelected(bookId)}
             isDetailSelected={isDetailSelected}
           />
         );
