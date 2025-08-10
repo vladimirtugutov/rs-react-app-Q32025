@@ -1,27 +1,44 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import { BookDetails } from './BookDetails';
-import { Book } from '../types/book';
+import { OpenLibraryBook } from '../../types/book';
+import { booksApi } from '../../store/api/booksApi';
+
+vi.mock('../../hooks/useBookDetails', () => ({
+  useBookDetails: vi.fn(),
+}));
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch as typeof fetch;
 
 const mockNavigate = vi.fn();
+const mockUseParams = vi.fn();
+const mockUseOutletContext = vi.fn();
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-    useParams: () => ({
-      detailsId: 'OL123456W',
-      page: '1',
-    }),
+    useParams: () => mockUseParams(),
+    useOutletContext: () => mockUseOutletContext(),
   };
 });
 
-const mockBookFromList: Book = {
+const createMockStore = () => {
+  return configureStore({
+    reducer: {
+      [booksApi.reducerPath]: booksApi.reducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(booksApi.middleware),
+  });
+};
+
+const mockBookFromList: OpenLibraryBook = {
   key: '/works/OL123456W',
   title: 'Test Book Title',
   author_name: ['Test Author', 'Second Author'],
@@ -29,8 +46,6 @@ const mockBookFromList: Book = {
   cover_i: 123456,
   publisher: ['Test Publisher', 'Another Publisher'],
   subject: ['Fiction', 'Adventure', 'Mystery'],
-  description:
-    'Author: Test Author • First publish year: 2020 • Publisher: Test Publisher',
 };
 
 const mockBookDetailsAPI = {
@@ -46,8 +61,13 @@ const mockBookDetailsAPI = {
   publish_date: '2020-01-01',
 };
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(<MemoryRouter>{component}</MemoryRouter>);
+const renderWithProviders = (component: React.ReactElement) => {
+  const store = createMockStore();
+  return render(
+    <Provider store={store}>
+      <MemoryRouter>{component}</MemoryRouter>
+    </Provider>
+  );
 };
 
 describe('BookDetails', () => {
@@ -55,33 +75,74 @@ describe('BookDetails', () => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     mockNavigate.mockClear();
+
+    mockUseParams.mockReturnValue({
+      detailsId: 'OL123456W',
+      page: '1',
+    });
+
+    mockUseOutletContext.mockReturnValue({
+      results: [mockBookFromList],
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should return null when detailsId is not provided', () => {
-    const { container } = renderWithRouter(<BookDetails results={[]} />);
-    expect(container.querySelector('.book-details-panel')).toBeInTheDocument();
+  it('should return null when detailsId is not provided', async () => {
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    mockUseParams.mockReturnValue({
+      page: '1',
+    });
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: false,
+      error: null,
+    });
+
+    const { container } = renderWithProviders(<BookDetails />);
+    expect(container.firstChild).toBeNull();
   });
 
-  it('should display book not found message when book is not in results', () => {
-    renderWithRouter(<BookDetails results={[]} />);
+  it('should display book not found message when book is not in results', async () => {
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
 
-    expect(screen.getByText('Book Details')).toBeInTheDocument();
-    expect(
-      screen.getByText('Book not found in current search results')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Try searching for this book again')
-    ).toBeInTheDocument();
+    mockUseOutletContext.mockReturnValue({
+      results: [],
+    });
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: false,
+      error: null,
+    });
+
+    renderWithProviders(<BookDetails />);
+
+    expect(screen.getByTestId('book-details-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-title')).toBeInTheDocument();
+    expect(screen.getByTestId('book-not-found')).toBeInTheDocument();
   });
 
-  it('should render close button with correct functionality', () => {
-    renderWithRouter(<BookDetails results={[]} />);
+  it('should render close button with correct functionality', async () => {
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
 
-    const closeButton = screen.getByText('×');
+    mockUseOutletContext.mockReturnValue({
+      results: [],
+    });
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: false,
+      error: null,
+    });
+
+    renderWithProviders(<BookDetails />);
+
+    const closeButton = screen.getByTestId('close-button');
     expect(closeButton).toBeInTheDocument();
     expect(closeButton).toHaveAttribute('title', 'Close details');
 
@@ -90,44 +151,32 @@ describe('BookDetails', () => {
   });
 
   it('should display loading spinner during API fetch', async () => {
-    mockFetch.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: async () => mockBookDetailsAPI,
-              } as Response),
-            100
-          )
-        )
-    );
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: true,
+      error: null,
+    });
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    renderWithProviders(<BookDetails />);
+
+    expect(screen.getByTestId('loading-section')).toBeInTheDocument();
     expect(
       screen.getByText('Loading detailed information...')
     ).toBeInTheDocument();
-
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
   });
 
   it('should display book information from results list', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(screen.getByText('Test Book Title')).toBeInTheDocument();
     expect(screen.getByText('Test Author, Second Author')).toBeInTheDocument();
@@ -138,19 +187,15 @@ describe('BookDetails', () => {
   });
 
   it('should display book cover with correct URL', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     const coverImage = screen.getByAltText('Test Book Title');
     expect(coverImage).toBeInTheDocument();
@@ -161,19 +206,15 @@ describe('BookDetails', () => {
   });
 
   it('should handle image load error correctly', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     const coverImage = screen.getByAltText('Test Book Title');
 
@@ -183,73 +224,72 @@ describe('BookDetails', () => {
   });
 
   it('should fetch and display additional book details from API', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithProviders(<BookDetails />);
 
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('OL123456W.json')
-      );
-    });
-
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText(
-            'This is a detailed description from the API about the test book.'
-          )
-        ).toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    expect(
+      screen.getByText(
+        'This is a detailed description from the API about the test book.'
+      )
+    ).toBeInTheDocument();
 
     expect(screen.getByText('300')).toBeInTheDocument();
     expect(screen.getByText('ENG, SPA')).toBeInTheDocument();
   });
 
   it('should handle API fetch error gracefully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: false,
+      error: 'Failed to fetch book details: Unknown error',
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithProviders(<BookDetails />);
 
     expect(
-      await screen.findByText(
-        /Error loading additional details: Failed to fetch book details: 404/
+      screen.getByText(
+        /Error loading additional details: Failed to fetch book details: Unknown error/
       )
     ).toBeInTheDocument();
   });
 
   it('should handle network error gracefully', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: null,
+      isLoading: false,
+      error: 'Failed to fetch book details: FETCH_ERROR',
+    });
+
+    renderWithProviders(<BookDetails />);
 
     expect(
-      await screen.findByText(/Error loading additional details: Network error/)
+      screen.getByText(
+        /Error loading additional details: Failed to fetch book details: FETCH_ERROR/
+      )
     ).toBeInTheDocument();
   });
 
   it('should display no additional info message when API returns empty data', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: {},
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(
       screen.getByText('No additional information available from the API')
@@ -257,133 +297,108 @@ describe('BookDetails', () => {
   });
 
   it('should format languages correctly', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(screen.getByText('ENG, SPA')).toBeInTheDocument();
   });
 
   it('should handle empty languages array', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: {
         ...mockBookDetailsAPI,
         languages: [],
-      }),
+      },
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(screen.queryByText('Languages:')).not.toBeInTheDocument();
   });
 
   it('should handle string description format', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: {
         ...mockBookDetailsAPI,
         description: 'Simple string description',
-      }),
+      },
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(screen.getByText('Simple string description')).toBeInTheDocument();
   });
 
   it('should display all info sections when book has complete data', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
-
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     expect(screen.getByText('Authors:')).toBeInTheDocument();
     expect(screen.getByText('First Published:')).toBeInTheDocument();
     expect(screen.getByText('Publishers:')).toBeInTheDocument();
-    expect(screen.getByText('Generated Description:')).toBeInTheDocument();
     expect(screen.getByText('Subjects:')).toBeInTheDocument();
     expect(screen.getByText('Additional Information:')).toBeInTheDocument();
   });
 
   it('should have correct CSS classes applied', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithProviders(<BookDetails />);
 
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
-
-    expect(
-      screen.getByText('Book Details').closest('.book-details-panel')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Book Details').closest('.book-details-header')
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-header')).toBeInTheDocument();
     expect(
       screen.getByText('Test Book Title').closest('.book-main-info')
     ).toBeInTheDocument();
   });
 
   it('should limit displayed subjects to 8 items', async () => {
+    const { useBookDetails } = await import('../../hooks/useBookDetails');
+
     const bookWithManySubjects = {
       ...mockBookFromList,
       subject: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
     };
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockBookDetailsAPI,
+    mockUseOutletContext.mockReturnValue({
+      results: [bookWithManySubjects],
     });
 
-    renderWithRouter(<BookDetails results={[bookWithManySubjects]} />);
+    vi.mocked(useBookDetails).mockReturnValue({
+      bookDetailsAPI: mockBookDetailsAPI,
+      isLoading: false,
+      error: null,
+    });
 
-    await waitFor(
-      () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    renderWithProviders(<BookDetails />);
 
     const subjectsText = screen.getByText(/1, 2, 3, 4, 5, 6, 7, 8/);
     expect(subjectsText).toBeInTheDocument();
