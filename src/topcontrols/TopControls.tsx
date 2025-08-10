@@ -1,20 +1,22 @@
 import { Link } from 'react-router-dom';
-import SearchInput from '../search/SearchInput';
-import SearchButton from '../search/SearchButton';
-import { AppRoutes } from '../constants/routes';
+import SearchInput from '../Search/SearchInput';
+import SearchButton from '../Search/SearchButton';
+import RefreshButton from './RefreshButton';
+import './TopControls.css';
 
-function TopControls() {
+export const TopControls = () => {
   return (
     <div className="top-controls">
       <div className="search-controls">
         <SearchInput />
         <SearchButton />
+        <RefreshButton />
       </div>
       <nav className="navigation">
-        <Link to={AppRoutes.ABOUT}>About</Link>
+        <Link to="/about">About</Link>
       </nav>
     </div>
   );
-}
+};
 
 export default TopControls;
