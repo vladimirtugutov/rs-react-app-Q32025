@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import TopControls from '../components/topcontrols/TopControls';
 import { MainContent } from './MainContent';
 import { SearchProvider } from '../components/Search/SearchProvider';
@@ -24,17 +24,22 @@ export const MainLayout = () => {
         totalPages,
         onPageChange,
       }) => (
-        <>
-          <TopControls />
-          <MainContent
-            isLoading={isLoading}
-            error={error}
-            results={results}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </>
+        <div className="main-content">
+          <div className="left-section">
+            <TopControls />
+            <MainContent
+              isLoading={isLoading}
+              error={error}
+              results={results}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
+          <div className="right-section">
+            <Outlet context={{ results }} />
+          </div>
+        </div>
       )}
     </SearchProvider>
   );
