@@ -24,6 +24,7 @@ export const useBooks = ({
   const {
     data,
     isLoading,
+    isFetching,
     error: queryError,
     refetch,
   } = useGetBooksQuery({ searchTerm, page }, { skip: !enabled });
@@ -32,7 +33,7 @@ export const useBooks = ({
     books: data?.books || [],
     totalResults: data?.totalResults || 0,
     totalPages: data?.totalPages || 0,
-    isLoading,
+    isLoading: isLoading || isFetching,
     error: queryError ? 'Failed to fetch books' : null,
     refetch,
   };

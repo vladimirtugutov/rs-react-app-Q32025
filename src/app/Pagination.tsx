@@ -11,15 +11,18 @@ export const Pagination = ({
   totalPages,
   onPageChange,
 }: PaginationProps) => {
-  const handlePreviousClick = () => {
+  const handlePreviousClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
     onPageChange(currentPage - 1);
   };
 
-  const handleNextClick = () => {
+  const handleNextClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
     onPageChange(currentPage + 1);
   };
 
-  const handlePageClick = (page: number | string) => {
+  const handlePageClick = (page: number | string, event: React.MouseEvent) => {
+    event.stopPropagation();
     if (typeof page === 'number') {
       onPageChange(page);
     }
@@ -34,7 +37,7 @@ export const Pagination = ({
       {getVisiblePages(currentPage, totalPages).map((page, index) => (
         <button
           key={index}
-          onClick={() => handlePageClick(page)}
+          onClick={(event) => handlePageClick(page, event)}
           className={currentPage === page ? 'active' : ''}
           disabled={typeof page !== 'number'}
         >
