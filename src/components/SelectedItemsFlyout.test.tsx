@@ -110,7 +110,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '2 items selected';
         })
       ).toBeInTheDocument();
@@ -147,7 +147,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '3 items selected';
         })
       ).toBeInTheDocument();
@@ -356,7 +356,7 @@ describe('SelectedItemsFlyout', () => {
       const { rerender } = renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -371,7 +371,7 @@ describe('SelectedItemsFlyout', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText((content, element) => {
+          screen.getByText((_content, element) => {
             return element?.textContent === '2 items selected';
           })
         ).toBeInTheDocument();
@@ -383,7 +383,7 @@ describe('SelectedItemsFlyout', () => {
       const { rerender } = renderWithStore(store);
 
       expect(
-        screen.getByText((content, element) => {
+        screen.getByText((_content, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -398,7 +398,7 @@ describe('SelectedItemsFlyout', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText((content, element) => {
+          screen.queryByText((_content, element) => {
             return element?.textContent === '1 item selected';
           })
         ).not.toBeInTheDocument();
@@ -426,7 +426,7 @@ describe('SelectedItemsFlyout', () => {
 
       expect(
         screen
-          .getByText((content, element) => {
+          .getByText((_content, element) => {
             return element?.textContent === '1 item selected';
           })
           .closest('.selected-items-flyout')

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import SearchInput from './SearchInput';
 import SearchContext from './SearchContext';
-import { SearchContextType } from '../../types/components';
+import { SearchContextType } from './SearchContext';
 
 const mockSearchContext: SearchContextType = {
   searchValue: '',
