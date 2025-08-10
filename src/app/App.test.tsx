@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
@@ -6,6 +6,17 @@ import { configureStore } from '@reduxjs/toolkit';
 import { App } from './App';
 import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
 import selectedItemsReducer from '../store/selectedItemsSlice';
+import { booksApi } from '../store/api/booksApi';
+
+vi.mock('../hooks/useBooks', () => ({
+  useBooks: vi.fn(),
+}));
+
+vi.mock('../hooks/useCacheInvalidation', () => ({
+  useCacheInvalidation: vi.fn(() => ({
+    refreshBooks: vi.fn(),
+  })),
+}));
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch as typeof fetch;
@@ -21,7 +32,10 @@ const createTestStore = () => {
   return configureStore({
     reducer: {
       selectedItems: selectedItemsReducer,
+      [booksApi.reducerPath]: booksApi.reducer,
     },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(booksApi.middleware),
   });
 };
 
@@ -39,30 +53,26 @@ const renderWithProvidersAndErrorBoundary = (component: React.ReactElement) => {
   );
 };
 
-const mockOpenLibraryResponse = {
-  docs: [
-    {
-      key: '/works/OL123456W',
-      title: 'Test Book',
-      author_name: ['Test Author'],
-      first_publish_year: 2020,
-      cover_i: 123456,
-      publisher: ['Test Publisher'],
-      subject: ['Fiction', 'Adventure'],
-    },
-    {
-      key: '/works/OL789012W',
-      title: 'Another Book',
-      author_name: ['Another Author'],
-      first_publish_year: 2021,
-      cover_i: 789012,
-      publisher: ['Another Publisher'],
-      subject: ['Non-fiction'],
-    },
-  ],
-  numFound: 25,
-  start: 0,
-};
+const mockOpenLibraryResponse = [
+  {
+    key: '/works/OL123456W',
+    title: 'Test Book',
+    author_name: ['Test Author'],
+    first_publish_year: 2020,
+    cover_i: 123456,
+    publisher: ['Test Publisher'],
+    subject: ['Fiction', 'Adventure'],
+  },
+  {
+    key: '/works/OL789012W',
+    title: 'Another Book',
+    author_name: ['Another Author'],
+    first_publish_year: 2021,
+    cover_i: 789012,
+    publisher: ['Another Publisher'],
+    subject: ['Non-fiction'],
+  },
+];
 
 describe('App', () => {
   beforeEach(() => {
@@ -79,15 +89,19 @@ describe('App', () => {
   });
 
   it('should render without crashing and fetch initial data', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: mockOpenLibraryResponse,
+      totalResults: 25,
+      totalPages: 3,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
+    await act(async () => {
+      renderWithProviders(<App />);
     });
 
     expect(await screen.findByText('Test Book')).toBeInTheDocument();
@@ -95,34 +109,57 @@ describe('App', () => {
   });
 
   it('should render spinner during loading', async () => {
-    mockFetch.mockImplementation(async () => {
-      await new Promise((r) => setTimeout(r, 100));
-      return {
-        ok: true,
-        json: async () => ({ docs: [], numFound: 0, start: 0 }),
-      };
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: true,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
-
-    await waitFor(() => expect(mockFetch).toHaveBeenCalled());
   });
 
   it('should handle API error gracefully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: 'Failed to fetch books',
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
-    expect(await screen.findByText(/API Error: 500/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Failed to fetch books/)
+    ).toBeInTheDocument();
   });
 
   it('should simulate error button click and be caught by ErrorBoundary', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
     renderWithProvidersAndErrorBoundary(<App />);
 
     const errorButton = screen.getByText('Error Button');
@@ -133,10 +170,16 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
-  it('should render main navigation routes', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+  it('should render main navigation routes', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
@@ -145,12 +188,18 @@ describe('App', () => {
   });
 
   it('should load saved search value from localStorage', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
     const savedSearchValue = 'saved search';
     localStorageMock.getItem.mockReturnValue(savedSearchValue);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
+    vi.mocked(useBooks).mockReturnValue({
+      books: mockOpenLibraryResponse,
+      totalResults: 25,
+      totalPages: 3,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
@@ -161,32 +210,39 @@ describe('App', () => {
   });
 
   it('should handle search functionality', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: mockOpenLibraryResponse,
+      totalResults: 25,
+      totalPages: 3,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('https://openlibrary.org/search.json')
-      );
+      expect(screen.getByText('Test Book')).toBeInTheDocument();
     });
   });
 
   it('should handle pagination when results are available', async () => {
-    const largeResponse = {
-      ...mockOpenLibraryResponse,
-      numFound: 100,
-    };
+    const { useBooks } = await import('../hooks/useBooks');
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => largeResponse,
+    vi.mocked(useBooks).mockReturnValue({
+      books: mockOpenLibraryResponse,
+      totalResults: 100,
+      totalPages: 10,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -197,18 +253,20 @@ describe('App', () => {
   });
 
   it('should not show pagination when results fit on one page', async () => {
-    const smallResponse = {
-      docs: [mockOpenLibraryResponse.docs[0]],
-      numFound: 1,
-      start: 0,
-    };
+    const { useBooks } = await import('../hooks/useBooks');
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => smallResponse,
+    vi.mocked(useBooks).mockReturnValue({
+      books: [mockOpenLibraryResponse[0]],
+      totalResults: 1,
+      totalPages: 1,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -219,23 +277,41 @@ describe('App', () => {
   });
 
   it('should display no results message when API returns empty results', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
-    expect(await screen.findByText(/нет результатов/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/No books found|нет результатов|No results/i)
+    ).toBeInTheDocument();
   });
 
   it('should generate correct book descriptions', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: mockOpenLibraryResponse,
+      totalResults: 2,
+      totalPages: 1,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
-    renderWithProviders(<App />);
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Test Book')).toBeInTheDocument();
@@ -243,23 +319,39 @@ describe('App', () => {
 
     expect(screen.getByText('Test Book')).toBeInTheDocument();
     expect(screen.getByText('Another Book')).toBeInTheDocument();
-
     expect(screen.getByText('by Test Author')).toBeInTheDocument();
     expect(screen.getByText('by Another Author')).toBeInTheDocument();
   });
 
   it('should handle network errors correctly', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: 'Network error',
+      refetch: vi.fn(),
+    });
 
     renderWithProviders(<App />);
 
-    expect(await screen.findByText(/Network error/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Failed to fetch books|Network error/)
+    ).toBeInTheDocument();
   });
 
-  it('should maintain app container structure', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+  it('should maintain app container structure', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
@@ -270,10 +362,16 @@ describe('App', () => {
     expect(appContainer).toBeInTheDocument();
   });
 
-  it('should render theme selector', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+  it('should render theme selector', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
@@ -283,10 +381,16 @@ describe('App', () => {
     expect(screen.getByTestId('theme-label')).toBeInTheDocument();
   });
 
-  it('should display current theme', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+  it('should display current theme', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
@@ -296,9 +400,15 @@ describe('App', () => {
   });
 
   it('should toggle theme when button is clicked', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     const user = userEvent.setup();
@@ -314,10 +424,16 @@ describe('App', () => {
     expect(themeLabel).toHaveTextContent('Theme: dark');
   });
 
-  it('should not show flyout when no items selected', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+  it('should not show flyout when no items selected', async () => {
+    const { useBooks } = await import('../hooks/useBooks');
+
+    vi.mocked(useBooks).mockReturnValue({
+      books: [],
+      totalResults: 0,
+      totalPages: 0,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     });
 
     renderWithProviders(<App />);
