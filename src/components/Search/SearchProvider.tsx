@@ -27,7 +27,6 @@ export type SearchProviderProps = {
 export const SearchProvider = ({
   children,
   currentPage,
-  detailsId,
   navigate,
 }: SearchProviderProps) => {
   const initialSearchValue =
@@ -65,10 +64,10 @@ export const SearchProvider = ({
 
   const handlePageChange = useCallback(
     (newPage: number) => {
-      const newUrl = detailsId ? `/${newPage}/${detailsId}` : `/${newPage}`;
+      const newUrl = `/${newPage}`;
       navigate(newUrl);
     },
-    [detailsId, navigate]
+    [navigate]
   );
 
   const handleManualRefresh = useCallback(() => {
