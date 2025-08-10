@@ -278,7 +278,40 @@ describe('App', () => {
 
     renderWithProviders(<App />);
 
-    expect(screen.getByLabelText('Theme:')).toBeInTheDocument();
+    expect(screen.getByTestId('theme-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('theme-toggle-button')).toBeInTheDocument();
+    expect(screen.getByTestId('theme-label')).toBeInTheDocument();
+  });
+
+  it('should display current theme', () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    });
+
+    renderWithProviders(<App />);
+
+    const themeLabel = screen.getByTestId('theme-label');
+    expect(themeLabel).toHaveTextContent('Theme: light');
+  });
+
+  it('should toggle theme when button is clicked', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ docs: [], numFound: 0, start: 0 }),
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<App />);
+
+    const toggleButton = screen.getByTestId('theme-toggle-button');
+    const themeLabel = screen.getByTestId('theme-label');
+
+    expect(themeLabel).toHaveTextContent('Theme: light');
+
+    await user.click(toggleButton);
+
+    expect(themeLabel).toHaveTextContent('Theme: dark');
   });
 
   it('should not show flyout when no items selected', () => {

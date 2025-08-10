@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { ThemeProvider } from '../context/ThemeProvider';
-import { ThemeSelector } from '../components/ThemeSelector';
+import { ThemeSelector } from '../components/ThemeSelector/ThemeSelector';
 import { SelectedItemsFlyout } from '../components/SelectedItemsFlyout';
 import { useAppSelector } from '../store/hooks';
 import { selectSelectedItemsCount } from '../store/selectedItemsSlice';
