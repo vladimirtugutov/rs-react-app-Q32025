@@ -1,15 +1,20 @@
 import './BookDetails.css';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { API_CONFIG } from '../../constants/api';
 import Spinner from '../../components/Spinner/Spinner';
-import { BookDetailsProps } from '../../types/components';
 import { useBookDetails } from '../../hooks/useBookDetails';
 import { BookMainInfo } from '../../components/BookMainInfo';
 import { BookAdditionalInfo } from '../../components/BookAdditionalInfo';
 import { getDescription } from '../../utils/getDescription';
 import { formatLanguages } from '../../utils/formatLanguages';
+import { OpenLibraryBook, Book } from '../../types/book';
 
-export const BookDetails = ({ results }: BookDetailsProps) => {
+type OutletContext = {
+  results: OpenLibraryBook[];
+};
+
+export const BookDetails = () => {
+  const { results } = useOutletContext<OutletContext>();
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
@@ -31,18 +36,21 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
 
   if (!bookFromList) {
     return (
-      <div className="book-details-panel">
-        <div className="book-details-header">
-          <h2 className="book-details-title">Book Details</h2>
+      <div className="book-details-panel" data-testid="book-details-panel">
+        <div className="book-details-header" data-testid="book-details-header">
+          <h2 className="book-details-title" data-testid="book-details-title">
+            Book Details
+          </h2>
           <button
             className="close-button"
             onClick={handleClose}
             title="Close details"
+            data-testid="close-button"
           >
             ×
           </button>
         </div>
-        <div className="book-not-found">
+        <div className="book-not-found" data-testid="book-not-found">
           <p>Book not found in current search results</p>
           <p>Try searching for this book again</p>
         </div>
@@ -50,14 +58,20 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
     );
   }
 
+  const bookForMainInfo: Book = {
+    ...bookFromList,
+    title: bookFromList.title || 'Untitled Book',
+  };
+
   return (
-    <div className="book-details-panel">
-      <div className="book-details-header">
+    <div className="book-details-panel" data-testid="book-details-panel">
+      <div className="book-details-header" data-testid="book-details-header">
         <h2>Book Details</h2>
         <button
           className="close-button"
           onClick={handleClose}
           title="Close details"
+          data-testid="close-button"
         >
           ×
         </button>
@@ -65,7 +79,7 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
 
       <div className="book-details-content">
         {isLoading && (
-          <div className="loading-section-top">
+          <div className="loading-section-top" data-testid="loading-section">
             <Spinner />
             <p>Loading detailed information...</p>
           </div>
@@ -73,7 +87,7 @@ export const BookDetails = ({ results }: BookDetailsProps) => {
 
         {!isLoading && (
           <>
-            <BookMainInfo book={bookFromList} getCoverUrl={getCoverUrl} />
+            <BookMainInfo book={bookForMainInfo} getCoverUrl={getCoverUrl} />
 
             <div className="book-additional-info">
               <h4>Additional Information:</h4>

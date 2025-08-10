@@ -3,6 +3,7 @@ import { AppRoutes } from '../constants/routes';
 import { About } from '../pages/about/About';
 import { NotFound } from '../pages/not-found/NotFound';
 import { ValidatedMainLayout } from './ValidatedMainLayout';
+import { BookDetails } from '../pages/book-details/BookDetails';
 
 export const router = createBrowserRouter([
   {
@@ -10,8 +11,12 @@ export const router = createBrowserRouter([
     element: <About />,
   },
   {
-    path: AppRoutes.MAIN,
+    path: '/:page?',
     element: <ValidatedMainLayout />,
+    children: [
+      { index: true, element: null },
+      { path: ':detailsId', element: <BookDetails /> },
+    ],
   },
   {
     path: AppRoutes.NOT_FOUND,
