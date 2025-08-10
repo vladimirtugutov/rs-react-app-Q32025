@@ -231,12 +231,6 @@ body {
   gap: 1rem;
 }
 
-.theme-selector {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 [data-theme='dark'] button {
   background-color: var(--bg-color, #2d3748);
   color: var(--color-white, #ffffff);
