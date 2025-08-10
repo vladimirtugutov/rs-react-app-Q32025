@@ -120,16 +120,29 @@
   justify-content: center;
   padding: 3rem 2rem;
   text-align: center;
-  background-color: #f8fafc;
-  border-radius: 8px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
   margin-bottom: 2rem;
   min-height: 200px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .loading-section-top p {
   margin-top: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 1rem;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+[data-theme='dark'] .loading-section-top {
+  background-color: var(--color-background, #1a1a1a);
+  border-color: var(--border-color, #404040);
+}
+
+[data-theme='dark'] .loading-section-top p {
+  color: var(--text-color, #ffffff);
 }
