@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Outlet } from 'react-router-dom';
-import TopControls from '../components/topcontrols/TopControls';
+import { TopControls } from '../components/Topcontrols/TopControls';
 import { MainContent } from './MainContent';
 import { SearchProvider } from '../components/Search/SearchProvider';
 import './App.css';
