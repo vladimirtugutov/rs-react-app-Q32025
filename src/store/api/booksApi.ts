@@ -95,7 +95,7 @@ export const booksApi = createApi({
         };
       },
 
-      providesTags: (result, error, { searchTerm, page }) => [
+      providesTags: (_result, _error, { searchTerm, page }) => [
         { type: 'Books' as const, id: `${searchTerm || 'all'}-${page}` },
         { type: 'Books' as const, id: 'LIST' },
       ],
@@ -109,7 +109,7 @@ export const booksApi = createApi({
         method: 'GET',
       }),
 
-      providesTags: (result, error, bookId) => [
+      providesTags: (_result, _error, bookId) => [
         { type: 'BookDetails' as const, id: bookId },
       ],
 
