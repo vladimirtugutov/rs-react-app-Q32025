@@ -276,3 +276,7 @@ body {
 [data-theme='dark'] .error-button-container button:hover {
   background-color: var(--color-error);
 }
+
+.top-controls-button {
+  width: 130px;
+}
