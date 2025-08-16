@@ -3,7 +3,6 @@ import SearchContext from './SearchContext';
 import { STORAGE_KEYS } from '../../constants/storageKeys';
 import { API_CONFIG } from '../../constants/api';
 import { useBooks } from '../../hooks/useBooks';
-import { useCacheInvalidation } from '../../hooks/useCacheInvalidation';
 import { ReactNode } from 'react';
 import { Book } from '../../types/book';
 
@@ -19,9 +18,9 @@ type SearchProviderChildrenProps = {
 
 export type SearchProviderProps = {
   currentPage: number;
-  detailsId?: string;
   navigate: (url: string) => void;
   children: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
+  detailsId?: string;
 };
 
 export const SearchProvider = ({
@@ -48,15 +47,11 @@ export const SearchProvider = ({
     enabled: true,
   });
 
-  const { refreshBooks } = useCacheInvalidation();
-
-  const handleSearchButtonClick = useCallback(async () => {
+  const handleSearchButtonClick = useCallback(() => {
     localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
     setSavedSearchTerm(searchValue);
     navigate('/1');
-
-    refreshBooks();
-  }, [searchValue, navigate, refreshBooks]);
+  }, [searchValue, navigate]);
 
   const setSearchValue = useCallback((newValue: string) => {
     setSearchValueState(newValue);
@@ -70,11 +65,6 @@ export const SearchProvider = ({
     [navigate]
   );
 
-  const handleManualRefresh = useCallback(() => {
-    refreshBooks();
-    refetch();
-  }, [refreshBooks, refetch]);
-
   const totalPages =
     calculatedTotalPages || Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
 
@@ -83,9 +73,8 @@ export const SearchProvider = ({
       searchValue,
       setSearchValue,
       handleSearchButtonClick,
-      handleManualRefresh,
     }),
-    [searchValue, setSearchValue, handleSearchButtonClick, handleManualRefresh]
+    [searchValue, setSearchValue, handleSearchButtonClick]
   );
 
   return (
@@ -98,7 +87,7 @@ export const SearchProvider = ({
             currentPage,
             totalPages,
             onPageChange: handlePageChange,
-            onManualRefresh: handleManualRefresh,
+            onManualRefresh: refetch,
           })
         : children}
     </SearchContext.Provider>

@@ -23,10 +23,14 @@ export const MainLayout = () => {
         currentPage,
         totalPages,
         onPageChange,
+        onManualRefresh,
       }) => (
         <div className="main-content">
           <div className="left-section">
-            <TopControls />
+            <TopControls
+              onManualRefresh={onManualRefresh}
+              isLoading={isLoading}
+            />
             <MainContent
               isLoading={isLoading}
               error={error}

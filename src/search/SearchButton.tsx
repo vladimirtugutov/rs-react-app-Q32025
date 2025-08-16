@@ -5,7 +5,12 @@ function SearchButton() {
   const context = useContext(SearchContext);
 
   return (
-    <button onClick={context.handleSearchButtonClick}>Search Button</button>
+    <button
+      onClick={context.handleSearchButtonClick}
+      className="top-controls-button"
+    >
+      Search Button
+    </button>
   );
 }
 

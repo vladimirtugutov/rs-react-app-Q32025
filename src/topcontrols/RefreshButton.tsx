@@ -1,29 +1,16 @@
-import { useState } from 'react';
-import { useCacheInvalidation } from '../../hooks/useCacheInvalidation';
+type RefreshButtonProps = {
+  onRefresh: () => void;
+  isLoading: boolean;
+};
 
-export const RefreshButton = () => {
-  const { refreshBooks } = useCacheInvalidation();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      refreshBooks();
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
+export const RefreshButton = ({ onRefresh, isLoading }: RefreshButtonProps) => {
   return (
     <button
-      type="button"
-      onClick={handleRefresh}
-      disabled={isRefreshing}
-      title="Refresh results"
+      onClick={onRefresh}
+      disabled={isLoading}
+      className="top-controls-button"
     >
-      {isRefreshing ? 'Refreshing...' : 'Refresh'}
+      {isLoading ? 'Refreshing...' : 'Refresh'}
     </button>
   );
 };
-
-export default RefreshButton;
