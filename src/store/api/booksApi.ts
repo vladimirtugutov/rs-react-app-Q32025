@@ -6,74 +6,24 @@ import {
   OpenLibraryBook,
   OpenLibraryResponse,
 } from '../../types/book';
-
-type GetBooksParams = {
-  searchTerm?: string;
-  page: number;
-};
-
-type GetBooksResponse = {
-  books: Book[];
-  totalResults: number;
-  totalPages: number;
-};
-
-type BooksApiState = {
-  booksApi: ReturnType<typeof booksApi.reducer>;
-};
-
-const generateDescription = (book: OpenLibraryBook): string => {
-  const parts: string[] = [];
-
-  if (book.author_name && book.author_name.length > 0) {
-    parts.push(`Author: ${book.author_name.slice(0, 2).join(', ')}`);
-  }
-
-  if (book.first_publish_year) {
-    parts.push(`First publish year: ${book.first_publish_year}`);
-  }
-
-  if (book.publisher && book.publisher.length > 0) {
-    parts.push(`Publisher: ${book.publisher[0]}`);
-  }
-
-  if (book.subject && book.subject.length > 0) {
-    parts.push(`Subject: ${book.subject.slice(0, 3).join(', ')}`);
-  }
-
-  return parts.join(' • ');
-};
+import { getBooksQueryUrl, generateDescription } from './booksApiHelpers';
+import { BooksApiTags } from './booksApiTags';
+import { GetBooksParams, GetBooksResponse } from '../../types/bookApi';
 
 export const booksApi = createApi({
   reducerPath: 'booksApi',
   baseQuery: fetchBaseQuery({
     baseUrl: API_CONFIG.BASE_URL,
-    prepareHeaders: (headers) => {
-      return headers;
-    },
   }),
 
-  tagTypes: ['Books', 'BookDetails'],
+  tagTypes: [BooksApiTags.Books, BooksApiTags.BookDetails],
 
   endpoints: (builder) => ({
     getBooks: builder.query<GetBooksResponse, GetBooksParams>({
-      query: ({ searchTerm = '', page = 1 }) => {
-        const offset = (page - 1) * API_CONFIG.ITEMS_PER_PAGE;
+      query: ({ searchTerm = '', page = 1 }) =>
+        getBooksQueryUrl(searchTerm, page, API_CONFIG.ITEMS_PER_PAGE),
 
-        const url = searchTerm.trim()
-          ? `?title=${encodeURIComponent(searchTerm.trim())}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
-          : `?q=*&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
-
-        return url;
-      },
-
-      transformResponse: async (
-        response: OpenLibraryResponse
-      ): Promise<GetBooksResponse> => {
-        await new Promise((resolve) =>
-          setTimeout(resolve, API_CONFIG.REQUEST_DELAY)
-        );
-
+      transformResponse: (response: OpenLibraryResponse): GetBooksResponse => {
         const mappedResults: Book[] = response.docs.map(
           (book: OpenLibraryBook) => ({
             title: book.title || 'Название не указано',
@@ -96,8 +46,8 @@ export const booksApi = createApi({
       },
 
       providesTags: (_result, _error, { searchTerm, page }) => [
-        { type: 'Books' as const, id: `${searchTerm || 'all'}-${page}` },
-        { type: 'Books' as const, id: 'LIST' },
+        { type: BooksApiTags.Books, id: `${searchTerm || 'all'}-${page}` },
+        { type: BooksApiTags.Books, id: 'LIST' },
       ],
 
       keepUnusedDataFor: 300,
@@ -110,7 +60,7 @@ export const booksApi = createApi({
       }),
 
       providesTags: (_result, _error, bookId) => [
-        { type: 'BookDetails' as const, id: bookId },
+        { type: BooksApiTags.BookDetails, id: bookId },
       ],
 
       keepUnusedDataFor: 600,
@@ -128,7 +78,5 @@ export const {
 export const {
   util: { invalidateTags, resetApiState },
 } = booksApi;
-
-export const selectBooksApiState = (state: BooksApiState) => state.booksApi;
 
 export default booksApi;

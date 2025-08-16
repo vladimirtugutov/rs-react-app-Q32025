@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { booksApi, selectBooksApiState } from './booksApi';
+import { booksApi } from './booksApi';
+import { selectBooksApiState } from './booksApiSelectors';
+
 import type { OpenLibraryBook } from '../../types/book';
 
 const generateDescription = (book: Partial<OpenLibraryBook>): string => {
