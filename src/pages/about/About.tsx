@@ -1,10 +1,10 @@
 import './About.css';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export const About = () => (
   <div className="about-page">
     <nav className="about-nav">
-      <Link to="/">← Back to Search</Link>
+      <Link href="/">← Back to Search</Link>
     </nav>
 
     <div className="about-content">
