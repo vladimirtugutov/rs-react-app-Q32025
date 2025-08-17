@@ -1,26 +1,54 @@
 // src/app/[locale]/layout.tsx
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { routing } from '../../i18n/routing';
 import { ThemeProvider } from '../../context/ThemeProvider';
 import { StoreProvider } from '../../store/StoreProvider';
 import { SelectedItemsFlyout } from '../../components/SelectedItemsFlyout';
 import { ErrorButton } from '../../components/ErrorBoundary/ErrorButton';
 import { ThemeSelector } from '../../components/ThemeSelector/ThemeSelector';
 
-const LocaleLayout = ({ children }: { children: React.ReactNode }) => {
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+type Locale = (typeof routing.locales)[number];
+
+interface Props {
+  children: React.ReactNode;
+  params: Promise<{ locale: Locale }>;
+}
+
+const LocaleLayout = async ({ children, params }: Props) => {
+  const { locale } = await params;
+
+  // Проверяем валидность локали без any
+  if (!routing.locales.includes(locale)) {
+    notFound();
+  }
+
+  const messages = await getMessages();
+
   return (
-    <StoreProvider>
-      <ThemeProvider>
-        <div className="app-container">
-          <header className="app-header">
-            <ThemeSelector />
-          </header>
-
-          {children}
-
-          <ErrorButton />
-          <SelectedItemsFlyout />
-        </div>
-      </ThemeProvider>
-    </StoreProvider>
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <StoreProvider>
+            <ThemeProvider>
+              <div className="app-container">
+                <header className="app-header">
+                  <ThemeSelector />
+                </header>
+                {children}
+                <ErrorButton />
+                <SelectedItemsFlyout />
+              </div>
+            </ThemeProvider>
+          </StoreProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 };
 

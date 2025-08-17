@@ -1,40 +1,31 @@
+'use client';
 import './BookDetails.css';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../constants/api';
-import Spinner from '../../components/Spinner/Spinner';
+import Spinner from '../Spinner/Spinner';
 import { useBookDetails } from '../../hooks/useBookDetails';
-import { BookMainInfo } from '../../components/BookMainInfo';
-import { BookAdditionalInfo } from '../../components/BookAdditionalInfo';
+import { BookMainInfo } from '../BookMainInfo';
+import { BookAdditionalInfo } from '../BookAdditionalInfo';
 import { getDescription } from '../../utils/getDescription';
 import { formatLanguages } from '../../utils/formatLanguages';
-import { OpenLibraryBook, Book } from '../../types/book';
-
-type OutletContext = {
-  results: OpenLibraryBook[];
-};
+import { Book } from '../../types/book';
 
 export const BookDetails = () => {
-  const { results } = useOutletContext<OutletContext>();
-  const { detailsId, page = '1' } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const params = useParams() as { locale: string; page: string; id: string };
 
-  const { bookDetailsAPI, isLoading, error } = useBookDetails(detailsId);
-
-  const bookFromList = results.find((book) => {
-    const cleanKey = book.key?.replace('/works/', '');
-    return cleanKey === detailsId;
-  });
+  const { bookDetailsAPI, isLoading, error } = useBookDetails(params.id);
 
   const handleClose = () => {
-    navigate(`/${page}`);
+    router.push(`/${params.locale}/${params.page}`);
   };
 
   const getCoverUrl = (coverId: number) =>
     `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
 
-  if (!detailsId) return null;
+  if (!params.id) return null;
 
-  if (!bookFromList) {
+  if (error) {
     return (
       <div className="book-details-panel" data-testid="book-details-panel">
         <div className="book-details-header" data-testid="book-details-header">
@@ -51,17 +42,36 @@ export const BookDetails = () => {
           </button>
         </div>
         <div className="book-not-found" data-testid="book-not-found">
-          <p>Book not found in current search results</p>
+          <p>Book not found</p>
           <p>Try searching for this book again</p>
         </div>
       </div>
     );
   }
 
-  const bookForMainInfo: Book = {
-    ...bookFromList,
-    title: bookFromList.title || 'Untitled Book',
-  };
+  const bookForMainInfo: Book | null = bookDetailsAPI
+    ? {
+        key: `/works/${params.id}`,
+        title: bookDetailsAPI.title || 'Untitled Book',
+        author_name: Array.isArray(bookDetailsAPI.authors)
+          ? bookDetailsAPI.authors.map((a): string => {
+              if (typeof a === 'object' && a !== null && 'name' in a) {
+                return (a as { name: string }).name;
+              }
+              return '';
+            })
+          : [],
+        first_publish_year: bookDetailsAPI.publish_date
+          ? new Date(bookDetailsAPI.publish_date).getFullYear()
+          : undefined,
+        cover_i: bookDetailsAPI.covers?.[0],
+        description:
+          typeof bookDetailsAPI.description === 'string'
+            ? bookDetailsAPI.description
+            : bookDetailsAPI.description?.value || undefined,
+        subject: bookDetailsAPI.subjects || [],
+      }
+    : null;
 
   return (
     <div className="book-details-panel" data-testid="book-details-panel">
@@ -85,7 +95,7 @@ export const BookDetails = () => {
           </div>
         )}
 
-        {!isLoading && (
+        {!isLoading && bookForMainInfo && (
           <>
             <BookMainInfo book={bookForMainInfo} getCoverUrl={getCoverUrl} />
 
@@ -105,3 +115,5 @@ export const BookDetails = () => {
     </div>
   );
 };
+
+export default BookDetails;
