@@ -33,7 +33,6 @@ export const BookItem = ({
   const handleBookClick = () => {
     if (!book.key) return;
     const bookId = book.key.replace('/works/', '');
-    // Используем router.push вместо navigate
     router.push(`/${page}/${bookId}`);
   };
 
