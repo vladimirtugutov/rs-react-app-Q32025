@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
+'use client';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import SearchContext from './SearchContext';
 import { STORAGE_KEYS } from '../../constants/storageKeys';
 import { API_CONFIG } from '../../constants/api';
 import { useBooks } from '../../hooks/useBooks';
 import { ReactNode } from 'react';
-import { Book } from '../../types/book';
+import { Book, OpenLibraryResponse, OpenLibraryBook } from '@/types/book';
 
 type SearchProviderChildrenProps = {
   isLoading: boolean;
@@ -21,35 +22,90 @@ export type SearchProviderProps = {
   navigate: (url: string) => void;
   children: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
   detailsId?: string;
+  initialData?: OpenLibraryResponse;
+  initialQuery?: string;
+  initialError?: string | null;
 };
+
+const transformOpenLibraryBook = (doc: OpenLibraryBook): Book => ({
+  key: doc.key,
+  title: doc.title || '',
+  author_name: doc.author_name ?? [],
+  first_publish_year: doc.first_publish_year,
+  cover_i: doc.cover_i,
+  subject: doc.subject ?? [],
+  isbn: doc.isbn ?? [],
+  publisher: doc.publisher ?? [],
+});
 
 export const SearchProvider = ({
   children,
   currentPage,
   navigate,
+  initialData,
+  initialQuery,
+  initialError,
 }: SearchProviderProps) => {
-  const initialSearchValue =
-    localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
+  const [searchValue, setSearchValueState] = useState(initialQuery || '');
+  const [savedSearchTerm, setSavedSearchTerm] = useState(initialQuery || '');
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [shouldUseInitialData, setShouldUseInitialData] =
+    useState(!!initialData);
 
-  const [searchValue, setSearchValueState] = useState(initialSearchValue);
-  const [savedSearchTerm, setSavedSearchTerm] = useState(initialSearchValue);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !hasInitialized) {
+      if (!initialQuery) {
+        const storedSearchValue =
+          localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
+        setSearchValueState(storedSearchValue);
+        setSavedSearchTerm(storedSearchValue);
+      } else {
+        localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, initialQuery);
+      }
+      setHasInitialized(true);
+    }
+  }, [initialQuery, hasInitialized]);
+
+  useEffect(() => {
+    if (savedSearchTerm !== initialQuery || currentPage !== 1) {
+      setShouldUseInitialData(false);
+    }
+  }, [savedSearchTerm, initialQuery, currentPage]);
 
   const {
-    books: results,
+    books: apiResults,
     totalResults,
     totalPages: calculatedTotalPages,
     isLoading,
-    error,
+    error: apiError,
     refetch,
   } = useBooks({
     searchTerm: savedSearchTerm,
     page: currentPage,
-    enabled: true,
+    enabled: hasInitialized && !shouldUseInitialData,
   });
+
+  const results = useMemo(() => {
+    if (shouldUseInitialData && initialData) {
+      return initialData.docs.map(transformOpenLibraryBook);
+    }
+    return apiResults || [];
+  }, [shouldUseInitialData, initialData, apiResults]);
+
+  const totalPages = useMemo(() => {
+    if (shouldUseInitialData && initialData) {
+      return Math.ceil(initialData.numFound / API_CONFIG.ITEMS_PER_PAGE);
+    }
+    return (
+      calculatedTotalPages ||
+      Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE)
+    );
+  }, [shouldUseInitialData, initialData, calculatedTotalPages, totalResults]);
 
   const handleSearchButtonClick = useCallback(() => {
     localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
     setSavedSearchTerm(searchValue);
+    setShouldUseInitialData(false);
     navigate('/1');
   }, [searchValue, navigate]);
 
@@ -59,14 +115,12 @@ export const SearchProvider = ({
 
   const handlePageChange = useCallback(
     (newPage: number) => {
+      setShouldUseInitialData(false);
       const newUrl = `/${newPage}`;
       navigate(newUrl);
     },
     [navigate]
   );
-
-  const totalPages =
-    calculatedTotalPages || Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
 
   const contextValue = useMemo(
     () => ({
@@ -77,12 +131,15 @@ export const SearchProvider = ({
     [searchValue, setSearchValue, handleSearchButtonClick]
   );
 
+  const shouldShowLoading = !shouldUseInitialData && isLoading;
+  const finalError = initialError || apiError;
+
   return (
     <SearchContext.Provider value={contextValue}>
       {typeof children === 'function'
         ? children({
-            isLoading,
-            error,
+            isLoading: shouldShowLoading,
+            error: finalError,
             results,
             currentPage,
             totalPages,

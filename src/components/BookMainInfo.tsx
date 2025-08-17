@@ -1,6 +1,7 @@
 import { BookMainInfoProps } from '../types/components';
 import { InfoSection } from './InfoSection';
 import { isArrayWithItems } from '../utils/isArrayWithItems';
+import Image from 'next/image';
 
 const MAX_SUBJECTS_DISPLAY = 8;
 const MAX_PUBLISHERS_DISPLAY = 8;
@@ -8,13 +9,12 @@ const MAX_PUBLISHERS_DISPLAY = 8;
 export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
   <>
     {book.cover_i && (
-      <img
+      <Image
         src={getCoverUrl(book.cover_i)}
         alt={book.title}
+        width={300}
+        height={450}
         className="book-cover-large"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
-        }}
       />
     )}
 

@@ -1,0 +1,57 @@
+{
+  "Navigation": {
+    "home": "Home",
+    "about": "About"
+  },
+  "NotFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist.",
+    "goHome": "Go back to Home"
+  },
+  "Search": {
+    "placeholder": "Search books...",
+    "button": "Search",
+    "noResults": "No results found",
+    "refresh": "Refresh"
+  },
+  "Pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
+  },
+  "BookDetails": {
+    "title": "Book Details",
+    "notFound": "Book not found",
+    "tryAgain": "Try searching for this book again",
+    "loading": "Loading detailed information..."
+  },
+  "About": {
+    "backToSearch": "← Back to Search",
+    "title": "About This Application",
+    "authorInfo": "Author Information",
+    "name": "Name",
+    "github": "GitHub",
+    "course": "Course",
+    "courseInfo": "Course Information",
+    "courseDescription": "This application was created as part of the RS School React course.",
+    "courseLink": "RS School React Course",
+    "appFeatures": "Application Features",
+    "feature1": "Search books using Open Library API",
+    "feature2": "Pagination support",
+    "feature3": "Detailed book view",
+    "feature4": "URL-based navigation",
+    "feature5": "Next.js App Router integration",
+    "feature6": "Custom hooks for localStorage"
+  },
+  "Export": {
+    "noItems": "No items selected for export",
+    "button": "Export Selected Books ({count}) to CSV",
+    "exporting": "Exporting..."
+  },
+  "Theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "toggleAriaLabel": "Toggle theme"
+  }
+}

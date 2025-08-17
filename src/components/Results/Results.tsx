@@ -1,12 +1,15 @@
 import './Results.css';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
 import { ResultsProps } from '../../types/components';
 import { useAppSelector } from '../../store/hooks';
 import { selectSelectedItems } from '../../store/selectedItemsSlice';
 import { BookItem } from '../../components/BookItem';
+import { useTranslations } from 'next-intl';
 
 export const Results = ({ results, error }: ResultsProps) => {
-  const { detailsId } = useParams();
+  const t = useTranslations('Search');
+  const params = useParams() as { detailsId?: string };
+  const detailsId = params.detailsId;
   const selectedItems = useAppSelector(selectSelectedItems);
 
   const isItemSelected = (bookId: string): boolean => {
@@ -18,7 +21,7 @@ export const Results = ({ results, error }: ResultsProps) => {
   }
 
   if (!results || results.length === 0) {
-    return <div className="no-results">Нет результатов.</div>;
+    return <div className="no-results">{t('noResults')}</div>;
   }
 
   return (
