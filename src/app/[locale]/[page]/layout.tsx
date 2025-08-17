@@ -1,7 +1,6 @@
-// src/app/[locale]/[page]/layout.tsx
 export default function MasterDetailLayout({
-  children, // левая часть
-  details, // @details slot
+  children,
+  details,
 }: {
   children: React.ReactNode;
   details: React.ReactNode;
