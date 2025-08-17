@@ -47,5 +47,11 @@
     "noItems": "No items selected for export",
     "button": "Export Selected Books ({count}) to CSV",
     "exporting": "Exporting..."
+  },
+  "Theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "toggleAriaLabel": "Toggle theme"
   }
 }
