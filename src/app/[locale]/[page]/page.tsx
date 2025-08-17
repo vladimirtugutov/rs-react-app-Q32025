@@ -1,20 +1,26 @@
+import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { BooksListClient } from '@/components/BooksListClient';
 import { API_CONFIG } from '@/constants/api';
+import { OpenLibraryResponse } from '@/types/book';
 
-interface Props {
+type Props = {
   params: Promise<{ locale: string; page: string }>;
   searchParams: Promise<{ q?: string; filter?: string }>;
-}
+};
 
 export default async function BooksListPage({ params, searchParams }: Props) {
   const { locale, page } = await params;
-  const { q = '' } = await searchParams;
+  const { q = '', filter } = await searchParams;
 
-  const currentPage = Number(page) || 1;
+  const currentPage = Number(page);
 
-  let initialData = null;
-  let error = null;
+  if (!currentPage || currentPage < 1 || !Number.isInteger(currentPage)) {
+    notFound();
+  }
+
+  let initialData: OpenLibraryResponse;
+  let error: string | null = null;
 
   try {
     const searchQuery = q || 'javascript';
@@ -28,7 +34,7 @@ export default async function BooksListPage({ params, searchParams }: Props) {
       throw new Error(`Failed to fetch: ${response.status}`);
     }
 
-    initialData = await response.json();
+    initialData = (await response.json()) as OpenLibraryResponse;
   } catch (fetchError) {
     console.error('Failed to fetch books:', fetchError);
     error =
@@ -38,9 +44,8 @@ export default async function BooksListPage({ params, searchParams }: Props) {
 
     initialData = {
       docs: [],
-      num_found: 0,
+      numFound: 0,
       start: 0,
-      num_pages: 1,
     };
   }
 
@@ -63,20 +68,9 @@ export async function generateStaticParams() {
   return [
     { locale: 'en', page: '1' },
     { locale: 'ru', page: '1' },
+    { locale: 'en', page: '2' },
+    { locale: 'ru', page: '2' },
   ];
 }
 
-export async function generateMetadata({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { q } = await searchParams;
-
-  const title = q ? `Search: ${q}` : 'Book Search';
-
-  return {
-    title: `${title} - Page ${(await params).page}`,
-    description: 'Search and discover books using OpenLibrary API',
-    alternates: {
-      canonical: `/${locale}/${(await params).page}${q ? `?q=${q}` : ''}`,
-    },
-  };
-}
+export const dynamicParams = false;
