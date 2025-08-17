@@ -6,6 +6,7 @@ interface Props {
 
 const BookDetailsPage = ({ params }: Props) => {
   const { id } = params;
+  console.log(id);
 
   return <BookDetails />;
 };

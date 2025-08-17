@@ -1,4 +1,5 @@
-import { getVisiblePages } from '../utils/pagination';
+import { getVisiblePages } from '../../utils/pagination';
+import './Pagination.css';
 
 type PaginationProps = {
   currentPage: number;
