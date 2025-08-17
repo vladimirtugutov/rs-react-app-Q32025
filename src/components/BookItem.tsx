@@ -1,5 +1,6 @@
+'use client';
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { API_CONFIG } from '../constants/api';
 import { Book } from '../types/book';
 import { useAppDispatch } from '../store/hooks';
@@ -16,9 +17,12 @@ export const BookItem = ({
   isSelected,
   isDetailSelected,
 }: BookItemProps) => {
-  const { page = '1' } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
+
+  // Получаем page из URL параметров вместо useParams
+  const page = searchParams.get('page') || '1';
 
   const getCoverUrl = (coverId: number | undefined) => {
     return coverId
@@ -29,7 +33,8 @@ export const BookItem = ({
   const handleBookClick = () => {
     if (!book.key) return;
     const bookId = book.key.replace('/works/', '');
-    navigate(`/${page}/${bookId}`);
+    // Используем router.push вместо navigate
+    router.push(`/${page}/${bookId}`);
   };
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {

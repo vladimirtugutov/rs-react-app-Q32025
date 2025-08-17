@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { saveAs } from 'file-saver';
 import { useAppSelector, useAppDispatch } from '../store/hooks';

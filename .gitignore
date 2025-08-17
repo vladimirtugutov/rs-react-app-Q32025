@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Next.js
+.next/
+out/
+
 coverage/
 
 # Editor directories and files

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import SearchInput from '../Search/SearchInput';
 import SearchButton from '../Search/SearchButton';
 import { RefreshButton } from './RefreshButton';
@@ -24,7 +24,7 @@ export const TopControls = ({
         />
       </div>
       <nav className="navigation">
-        <Link to="/about">About</Link>
+        <Link href="/about">About</Link>
       </nav>
     </div>
   );

@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+'use client';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import SearchContext from './SearchContext';
 import { STORAGE_KEYS } from '../../constants/storageKeys';
 import { API_CONFIG } from '../../constants/api';
@@ -28,11 +29,17 @@ export const SearchProvider = ({
   currentPage,
   navigate,
 }: SearchProviderProps) => {
-  const initialSearchValue =
-    localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
+  const [searchValue, setSearchValueState] = useState('');
+  const [savedSearchTerm, setSavedSearchTerm] = useState('');
 
-  const [searchValue, setSearchValueState] = useState(initialSearchValue);
-  const [savedSearchTerm, setSavedSearchTerm] = useState(initialSearchValue);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const initialSearchValue =
+        localStorage.getItem(STORAGE_KEYS.PREV_SEARCH_VALUE) || '';
+      setSearchValueState(initialSearchValue);
+      setSavedSearchTerm(initialSearchValue);
+    }
+  }, []);
 
   const {
     books: results,

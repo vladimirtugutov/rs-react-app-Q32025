@@ -1,4 +1,6 @@
-import { useTheme } from '../../hooks/useTheme';
+// src/components/ThemeSelector/ThemeSelector.tsx
+'use client';
+import { useTheme } from '../../context/ThemeProvider'; // ← Теперь из ThemeProvider!
 import './ThemeSelector.css';
 
 type Theme = 'light' | 'dark';
