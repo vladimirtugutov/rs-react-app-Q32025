@@ -18,7 +18,8 @@
       "@/*": ["*"],
       "@/components/*": ["components/*"],
       "@/context/*": ["context/*"],
-      "@/store/*": ["store/*"]
+      "@/store/*": ["store/*"],
+      "@/types/*": ["types/*"]
     },
     "plugins": [
       {

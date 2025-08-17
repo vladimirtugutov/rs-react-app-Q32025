@@ -17,7 +17,7 @@ export const BookDetails = () => {
   const { bookDetailsAPI, isLoading, error } = useBookDetails(params.id);
 
   const handleClose = () => {
-    router.push(`/${params.locale}/${params.page}`);
+    router.back();
   };
 
   const getCoverUrl = (coverId: number) =>

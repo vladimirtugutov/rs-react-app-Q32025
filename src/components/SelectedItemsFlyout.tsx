@@ -1,15 +1,13 @@
 'use client';
 import React from 'react';
-import { saveAs } from 'file-saver';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
-  selectSelectedItems,
   selectSelectedItemsCount,
   clearAllItems,
 } from '../store/selectedItemsSlice';
+import { ExportCsvForm } from './ExportCsvForm';
 
 export const SelectedItemsFlyout: React.FC = () => {
-  const selectedItems = useAppSelector(selectSelectedItems);
   const selectedCount = useAppSelector(selectSelectedItemsCount);
   const dispatch = useAppDispatch();
 
@@ -19,45 +17,6 @@ export const SelectedItemsFlyout: React.FC = () => {
 
   const handleUnselectAll = () => {
     dispatch(clearAllItems());
-  };
-
-  const handleDownload = () => {
-    try {
-      const csvContent = generateCSV(selectedItems);
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-      saveAs(blob, `${selectedCount}_items.csv`);
-    } catch (error) {
-      console.error('Error downloading CSV:', error);
-    }
-  };
-
-  const generateCSV = (items: typeof selectedItems) => {
-    const headers = [
-      'Title',
-      'Authors',
-      'Description',
-      'Published Date',
-      'Page Count',
-      'Categories',
-      'Preview Link',
-    ];
-
-    const csvRows = [
-      headers.join(','),
-      ...items.map((item) =>
-        [
-          `"${(item.title || '').replace(/"/g, '""')}"`,
-          `"${(item.authors?.join('; ') || '').replace(/"/g, '""')}"`,
-          `"${(item.description || '').replace(/"/g, '""')}"`,
-          `"${item.publishedDate || ''}"`,
-          `"${item.pageCount || ''}"`,
-          `"${(item.categories?.join('; ') || '').replace(/"/g, '""')}"`,
-          `"${item.previewLink || ''}"`,
-        ].join(',')
-      ),
-    ];
-    return csvRows.join('\n');
   };
 
   return (
@@ -70,9 +29,9 @@ export const SelectedItemsFlyout: React.FC = () => {
           <button onClick={handleUnselectAll} className="unselect-btn">
             Unselect all
           </button>
-          <button onClick={handleDownload} className="download-btn">
-            Download
-          </button>
+        </div>
+        <div className="export-section">
+          <ExportCsvForm />
         </div>
       </div>
     </div>

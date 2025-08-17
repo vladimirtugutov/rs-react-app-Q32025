@@ -5,6 +5,7 @@ import { API_CONFIG } from '../constants/api';
 import { Book } from '../types/book';
 import { useAppDispatch } from '../store/hooks';
 import { toggleItem } from '../store/selectedItemsSlice';
+import Image from 'next/image';
 
 type BookItemProps = {
   book: Book;
@@ -21,7 +22,6 @@ export const BookItem = ({
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
-  // Получаем page из URL параметров вместо useParams
   const page = searchParams.get('page') || '1';
 
   const getCoverUrl = (coverId: number | undefined) => {
@@ -61,25 +61,32 @@ export const BookItem = ({
       className={`result-card ${isDetailSelected ? 'selected' : ''} ${isSelected ? 'checked' : ''}`}
       onClick={handleBookClick}
     >
-      <label className="book-checkbox-container" htmlFor={`book-${book.key}`}>
+      <label
+        className="book-checkbox-container"
+        htmlFor={`book-${book.key}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <input
           id={`book-${book.key}`}
           type="checkbox"
           checked={isSelected}
-          onChange={handleCheckboxChange}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleCheckboxChange(e);
+          }}
           className="book-checkbox"
           aria-label={`Select ${book.title}`}
         />
       </label>
 
       {book.cover_i && (
-        <img
+        <Image
           src={getCoverUrl(book.cover_i)}
           alt={book.title}
+          width={128}
+          height={192}
           className="book-cover-small"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
         />
       )}
 
