@@ -1,7 +1,9 @@
 import { useContext } from 'react';
 import SearchContext from './SearchContext';
+import { useTranslations } from 'next-intl';
 
-function SearchButton() {
+export const SearchButton = () => {
+  const t = useTranslations('Search');
   const context = useContext(SearchContext);
 
   return (
@@ -9,9 +11,9 @@ function SearchButton() {
       onClick={context.handleSearchButtonClick}
       className="top-controls-button"
     >
-      Search Button
+      {t('button')}
     </button>
   );
-}
+};
 
 export default SearchButton;

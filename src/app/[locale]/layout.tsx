@@ -1,4 +1,3 @@
-// src/app/[locale]/layout.tsx
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -8,6 +7,7 @@ import { StoreProvider } from '../../store/StoreProvider';
 import { SelectedItemsFlyout } from '../../components/SelectedItemsFlyout';
 import { ErrorButton } from '../../components/ErrorBoundary/ErrorButton';
 import { ThemeSelector } from '../../components/ThemeSelector/ThemeSelector';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -23,7 +23,6 @@ interface Props {
 const LocaleLayout = async ({ children, params }: Props) => {
   const { locale } = await params;
 
-  // Проверяем валидность локали без any
   if (!routing.locales.includes(locale)) {
     notFound();
   }
@@ -39,6 +38,7 @@ const LocaleLayout = async ({ children, params }: Props) => {
               <div className="app-container">
                 <header className="app-header">
                   <ThemeSelector />
+                  <LanguageSwitcher />
                 </header>
                 {children}
                 <ErrorButton />

@@ -1,11 +1,51 @@
 {
   "Navigation": {
     "home": "Главная",
-    "about": "О нас"
+    "about": "О проекте"
   },
   "NotFound": {
     "title": "Страница не найдена",
     "description": "Запрашиваемая страница не существует.",
     "goHome": "Вернуться на главную"
+  },
+  "Search": {
+    "placeholder": "Поиск книг...",
+    "button": "Поиск",
+    "noResults": "Результатов не найдено",
+    "refresh": "Обновить"
+  },
+  "Pagination": {
+    "previous": "Предыдущая",
+    "next": "Следующая",
+    "page": "Страница"
+  },
+  "BookDetails": {
+    "title": "Детали книги",
+    "notFound": "Книга не найдена",
+    "tryAgain": "Попробуйте найти эту книгу снова",
+    "loading": "Загрузка подробной информации..."
+  },
+  "About": {
+    "backToSearch": "← Назад к поиску",
+    "title": "О приложении",
+    "authorInfo": "Информация об авторе",
+    "name": "Имя",
+    "github": "GitHub",
+    "course": "Курс",
+    "courseInfo": "Информация о курсе",
+    "courseDescription": "Это приложение было создано в рамках курса RS School React.",
+    "courseLink": "Курс RS School React",
+    "appFeatures": "Возможности приложения",
+    "feature1": "Поиск книг через Open Library API",
+    "feature2": "Поддержка пагинации",
+    "feature3": "Детальный просмотр книг",
+    "feature4": "Навигация на основе URL",
+    "feature5": "Интеграция с Next.js App Router",
+    "feature6": "Пользовательские хуки для localStorage"
+  },
+  "Export": {
+    "noItems": "Нет выбранных элементов для экспорта",
+    "button": "Экспортировать выбранные книги ({count}) в CSV",
+    "exporting": "Экспорт..."
   }
 }

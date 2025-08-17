@@ -1,5 +1,6 @@
 import { getVisiblePages } from '../../utils/pagination';
 import './Pagination.css';
+import { useTranslations } from 'next-intl';
 
 type PaginationProps = {
   currentPage: number;
@@ -12,6 +13,7 @@ export const Pagination = ({
   totalPages,
   onPageChange,
 }: PaginationProps) => {
+  const t = useTranslations('Pagination');
   const handlePreviousClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onPageChange(currentPage - 1);
@@ -32,7 +34,7 @@ export const Pagination = ({
   return (
     <div className="pagination">
       <button onClick={handlePreviousClick} disabled={currentPage === 1}>
-        Previous
+        {t('previous')}
       </button>
 
       {getVisiblePages(currentPage, totalPages).map((page, index) => (
@@ -47,7 +49,7 @@ export const Pagination = ({
       ))}
 
       <button onClick={handleNextClick} disabled={currentPage === totalPages}>
-        Next
+        {t('next')}
       </button>
     </div>
   );
