@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface FormData {
+type FormData = {
   id: string;
   name: string;
   age: number;
@@ -8,14 +8,14 @@ interface FormData {
   password: string;
   gender: string;
   termsAccepted: boolean;
-  imageBase64?: string;
+  imageBase64: string;
   country: string;
-}
+};
 
-interface FormState {
+type FormState = {
   formData: FormData[];
   highlightedId: string | null;
-}
+};
 
 const initialState: FormState = {
   formData: [],
@@ -41,5 +41,6 @@ const formSlice = createSlice({
   },
 });
 
+export type { FormData, FormState };
 export const { addFormData, clearHighlight, clearFormData } = formSlice.actions;
 export default formSlice.reducer;

@@ -3,10 +3,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { addFormData } from '../store/formSlice';
-import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store/store';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import './ControlledForm.css';
+
+interface Props {
+  onSuccess: () => void;
+}
 
 const schema = z
   .object({
@@ -32,16 +36,15 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-export default function ControlledForm() {
-  const navigate = useNavigate();
+export default function ControlledForm({ onSuccess }: Props) {
   const dispatch = useDispatch();
-
   const countries = useSelector((state: RootState) => state.countries || []);
 
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -50,17 +53,43 @@ export default function ControlledForm() {
 
   const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
 
+  // Watch password for strength calculation
+  const password = watch('password', '');
+
+  // Calculate password strength
+  const getPasswordStrength = (pwd: string): string => {
+    let strength = 0;
+    if (pwd.length >= 6) strength++;
+    if (/[A-Z]/.test(pwd)) strength++;
+    if (/[a-z]/.test(pwd)) strength++;
+    if (/\d/.test(pwd)) strength++;
+    if (/\W/.test(pwd)) strength++;
+
+    switch (strength) {
+      case 0:
+      case 1:
+        return 'Very Weak';
+      case 2:
+        return 'Weak';
+      case 3:
+        return 'Medium';
+      case 4:
+        return 'Strong';
+      case 5:
+        return 'Very Strong';
+      default:
+        return 'Very Weak';
+    }
+  };
+
+  const getPasswordStrengthClass = (strength: string): string => {
+    return `strength-${strength.toLowerCase().replace(' ', '-')}`;
+  };
+
   const onSubmit = (data: FormData) => {
     const newEntry = { ...data, id: uuidv4() };
     dispatch(addFormData(newEntry));
-
-    if (
-      window.confirm(
-        'Form submitted successfully! Press OK to go to main page.'
-      )
-    ) {
-      navigate('/');
-    }
+    onSuccess();
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +99,13 @@ export default function ControlledForm() {
         alert('Invalid file type! Only PNG and JPEG allowed.');
         return;
       }
+
+      // Check file size (optional: limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size too large! Maximum 5MB allowed.');
+        return;
+      }
+
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
@@ -98,81 +134,134 @@ export default function ControlledForm() {
     setFilteredCountries([]);
   };
 
+  const passwordStrength = getPasswordStrength(password);
+
   return (
-    <div>
-      <h1>Controlled Form</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="name">Name:</label>
-        <input id="name" type="text" {...register('name')} />
-        {errors.name && <p>{errors.name.message}</p>}
+    <div className="controlled-form">
+      <h1>Controlled Form (React Hook Form)</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="form">
+        <div className="form-field">
+          <label htmlFor="name">Name:</label>
+          <input id="name" type="text" {...register('name')} />
+          {errors.name && (
+            <p className="error-message">{errors.name.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="age">Age:</label>
-        <input
-          id="age"
-          type="number"
-          {...register('age', { valueAsNumber: true })}
-        />
-        {errors.age && <p>{errors.age.message}</p>}
+        <div className="form-field">
+          <label htmlFor="age">Age:</label>
+          <input
+            id="age"
+            type="number"
+            {...register('age', { valueAsNumber: true })}
+          />
+          {errors.age && <p className="error-message">{errors.age.message}</p>}
+        </div>
 
-        <label htmlFor="email">Email:</label>
-        <input id="email" type="email" {...register('email')} />
-        {errors.email && <p>{errors.email.message}</p>}
+        <div className="form-field">
+          <label htmlFor="email">Email:</label>
+          <input id="email" type="email" {...register('email')} />
+          {errors.email && (
+            <p className="error-message">{errors.email.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="password">Password:</label>
-        <input id="password" type="password" {...register('password')} />
-        {errors.password && <p>{errors.password.message}</p>}
+        <div className="form-field">
+          <label htmlFor="password">Password:</label>
+          <input id="password" type="password" {...register('password')} />
+          {password && (
+            <div className="password-strength">
+              Password Strength:{' '}
+              <span className={getPasswordStrengthClass(passwordStrength)}>
+                {passwordStrength}
+              </span>
+            </div>
+          )}
+          {errors.password && (
+            <p className="error-message">{errors.password.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="confirmPassword">Confirm Password:</label>
-        <input
-          id="confirmPassword"
-          type="password"
-          {...register('confirmPassword')}
-        />
-        {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
+        <div className="form-field">
+          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            {...register('confirmPassword')}
+          />
+          {errors.confirmPassword && (
+            <p className="error-message">{errors.confirmPassword.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="gender">Gender:</label>
-        <select id="gender" {...register('gender')}>
-          <option value="">Select...</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-        {errors.gender && <p>{errors.gender.message}</p>}
+        <div className="form-field">
+          <label htmlFor="gender">Gender:</label>
+          <select id="gender" {...register('gender')}>
+            <option value="">Select...</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+          {errors.gender && (
+            <p className="error-message">{errors.gender.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="termsAccepted">Accept T&C:</label>
-        <input
-          id="termsAccepted"
-          type="checkbox"
-          {...register('termsAccepted')}
-        />
-        {errors.termsAccepted && <p>{errors.termsAccepted.message}</p>}
+        <div className="form-field">
+          <label htmlFor="termsAccepted" className="checkbox-label">
+            <input
+              id="termsAccepted"
+              type="checkbox"
+              {...register('termsAccepted')}
+            />
+            Accept Terms and Conditions
+          </label>
+          {errors.termsAccepted && (
+            <p className="error-message">{errors.termsAccepted.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="country">Country:</label>
-        <input
-          id="country"
-          type="text"
-          {...register('country')}
-          onChange={handleCountryChange}
-          placeholder="Start typing..."
-        />
-        {errors.country && <p>{errors.country.message}</p>}
+        <div className="form-field">
+          <label htmlFor="country">Country:</label>
+          <div className="autocomplete-container">
+            <input
+              id="country"
+              type="text"
+              {...register('country')}
+              onChange={handleCountryChange}
+              placeholder="Start typing..."
+              autoComplete="off"
+            />
+            {filteredCountries.length > 0 && (
+              <ul className="autocomplete-dropdown">
+                {filteredCountries.slice(0, 10).map((c) => (
+                  <li key={c} onClick={() => handleSelectCountry(c)}>
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {errors.country && (
+            <p className="error-message">{errors.country.message}</p>
+          )}
+        </div>
 
-        {filteredCountries.length > 0 && (
-          <ul className="autocomplete-dropdown">
-            {filteredCountries.map((c) => (
-              <li key={c} onClick={() => handleSelectCountry(c)}>
-                {c}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="form-field">
+          <label htmlFor="imageFile">Upload Image (PNG/JPEG):</label>
+          <input
+            id="imageFile"
+            type="file"
+            onChange={handleFileUpload}
+            accept="image/png,image/jpeg"
+          />
+          {errors.imageBase64 && (
+            <p className="error-message">{errors.imageBase64.message}</p>
+          )}
+        </div>
 
-        <label htmlFor="imageBase64">Upload Image:</label>
-        <input id="imageBase64" type="file" onChange={handleFileUpload} />
-        {errors.imageBase64 && <p>{errors.imageBase64.message}</p>}
-
-        <button type="submit" disabled={!isValid}>
-          Submit
+        <button type="submit" disabled={!isValid} className="submit-button">
+          Submit Form
         </button>
       </form>
     </div>

@@ -1,29 +1,34 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useState } from 'react';
 import MainRoute from './pages/MainRoute';
 import UncontrolledForm from './pages/UncontrolledForm';
 import ControlledForm from './pages/ControlledForm';
+import Modal from './components/Modal';
 
 export default function App() {
+  const [modalType, setModalType] = useState<
+    'uncontrolled' | 'controlled' | null
+  >(null);
+
   return (
-    <Router>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/">Main</Link>
-          </li>
-          <li>
-            <Link to="/uncontrolled-form">Uncontrolled Form</Link>
-          </li>
-          <li>
-            <Link to="/controlled-form">Controlled Form</Link>
-          </li>
-        </ul>
-      </nav>
-      <Routes>
-        <Route path="/" element={<MainRoute />} />
-        <Route path="/uncontrolled-form" element={<UncontrolledForm />} />
-        <Route path="/controlled-form" element={<ControlledForm />} />
-      </Routes>
-    </Router>
+    <div>
+      <MainRoute
+        onOpenUncontrolled={() => setModalType('uncontrolled')}
+        onOpenControlled={() => setModalType('controlled')}
+      />
+
+      <Modal
+        isOpen={modalType === 'uncontrolled'}
+        onClose={() => setModalType(null)}
+      >
+        <UncontrolledForm onSuccess={() => setModalType(null)} />
+      </Modal>
+
+      <Modal
+        isOpen={modalType === 'controlled'}
+        onClose={() => setModalType(null)}
+      >
+        <ControlledForm onSuccess={() => setModalType(null)} />
+      </Modal>
+    </div>
   );
 }

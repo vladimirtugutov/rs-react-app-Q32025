@@ -1,14 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
 import { clearHighlight, clearFormData } from '../store/formSlice';
+import { compressImage } from '../utils/imageUtils';
+import './MainRoute.css';
 
-export default function MainRoute() {
+type MainRouteProps = {
+  onOpenUncontrolled: () => void;
+  onOpenControlled: () => void;
+};
+
+export default function MainRoute({
+  onOpenUncontrolled,
+  onOpenControlled,
+}: MainRouteProps) {
   const dispatch = useDispatch();
   const formData = useSelector((state: RootState) => state.form.formData);
   const highlightedId = useSelector(
     (state: RootState) => state.form.highlightedId
   );
+
+  const [compressedImages, setCompressedImages] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     if (highlightedId) {
@@ -19,10 +33,48 @@ export default function MainRoute() {
     }
   }, [highlightedId, dispatch]);
 
+  useEffect(() => {
+    const compressImages = async () => {
+      const newCompressedImages: Record<string, string> = {};
+
+      for (const data of formData) {
+        if (data.imageBase64 && !compressedImages[data.id]) {
+          try {
+            const compressed = await compressImage(data.imageBase64, 200, 0.6);
+            newCompressedImages[data.id] = compressed;
+          } catch (error) {
+            console.error('Failed to compress image:', error);
+            newCompressedImages[data.id] = data.imageBase64;
+          }
+        }
+      }
+
+      if (Object.keys(newCompressedImages).length > 0) {
+        setCompressedImages((prev) => ({ ...prev, ...newCompressedImages }));
+      }
+    };
+
+    compressImages();
+  }, [formData, compressedImages]);
+
   return (
-    <div>
+    <div className="main-route">
       <h1>Main Page</h1>
-      <p>Here you can see submitted forms:</p>
+
+      <div className="action-buttons">
+        <button
+          onClick={onOpenUncontrolled}
+          className="open-form-button uncontrolled"
+        >
+          Open Uncontrolled Form
+        </button>
+        <button
+          onClick={onOpenControlled}
+          className="open-form-button controlled"
+        >
+          Open Controlled Form
+        </button>
+      </div>
 
       {formData.length > 0 && (
         <button
@@ -55,8 +107,18 @@ export default function MainRoute() {
               <p>
                 <strong>Country:</strong> {data.country}
               </p>
+
               {data.imageBase64 && (
-                <img src={data.imageBase64} alt="Uploaded" />
+                <div className="image-container">
+                  <img
+                    src={compressedImages[data.id] || data.imageBase64}
+                    alt="User upload"
+                    className="uploaded-image"
+                  />
+                  {!compressedImages[data.id] && (
+                    <div className="compression-loading">Compressing...</div>
+                  )}
+                </div>
               )}
             </div>
           ))
@@ -64,36 +126,6 @@ export default function MainRoute() {
           <p>No submitted forms yet.</p>
         )}
       </div>
-
-      <style>
-        {`
-          .cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-          }
-          .card {
-            border: 1px solid black;
-            padding: 10px;
-            transition: background-color 0.5s ease-in-out;
-          }
-          .highlighted {
-            border: 2px solid red;
-            background-color: #ffe6e6;
-          }
-          .clear-button {
-            margin-bottom: 10px;
-            padding: 8px;
-            background-color: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-          }
-          .clear-button:hover {
-            background-color: darkred;
-          }
-        `}
-      </style>
     </div>
   );
 }
