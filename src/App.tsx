@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { MainRoute } from './pages/MainRoute';
-import { UncontrolledForm } from './pages/UncontrolledForm';
-import { ControlledForm } from './pages/ControlledForm';
+import { MainRoute } from './pages/MainRoute/MainRoute';
+import { UncontrolledForm } from './pages/UncontrolledForm/UncontrolledForm';
+import { ControlledForm } from './pages/ControlledForm/ControlledForm';
 import Modal from './components/Modal';
 
 export const App = () => {

@@ -1,8 +1,8 @@
 import { FormEvent, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
-import { addFormData } from '../store/formSlice';
-import { RootState } from '../store/store';
+import { addFormData } from '../../store/formSlice';
+import { RootState } from '../../store/store';
 import { v4 as uuidv4 } from 'uuid';
 import './UncontrolledForm.css';
 

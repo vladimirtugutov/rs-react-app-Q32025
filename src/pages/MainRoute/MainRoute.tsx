@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store/store';
-import { clearHighlight, clearFormData } from '../store/formSlice';
-import { compressImage } from '../utils/imageUtils';
+import { RootState } from '../../store/store';
+import { clearHighlight, clearFormData } from '../../store/formSlice';
+import { compressImage } from '../../utils/imageUtils';
 import './MainRoute.css';
 
 type MainRouteProps = {
