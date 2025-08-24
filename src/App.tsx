@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import MainRoute from './pages/MainRoute';
-import UncontrolledForm from './pages/UncontrolledForm';
-import ControlledForm from './pages/ControlledForm';
+import { MainRoute } from './pages/MainRoute';
+import { UncontrolledForm } from './pages/UncontrolledForm';
+import { ControlledForm } from './pages/ControlledForm';
 import Modal from './components/Modal';
 
-export default function App() {
+export const App = () => {
   const [modalType, setModalType] = useState<
     'uncontrolled' | 'controlled' | null
   >(null);
@@ -31,4 +31,4 @@ export default function App() {
       </Modal>
     </div>
   );
-}
+};

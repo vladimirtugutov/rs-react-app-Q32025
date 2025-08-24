@@ -23,7 +23,7 @@ type FormData = {
   imageBase64: string;
 };
 
-export default function UncontrolledForm({ onSuccess }: Props) {
+export const UncontrolledForm = ({ onSuccess }: Props) => {
   const dispatch = useDispatch();
   const countries = useSelector((state: RootState) => state.countries);
 
@@ -132,7 +132,7 @@ export default function UncontrolledForm({ onSuccess }: Props) {
       gender: genderRef.current?.value || '',
       termsAccepted: termsRef.current?.checked || false,
       country: countryRef.current?.value || '',
-      imageBase64: '', // Будет обновлено ниже если файл выбран
+      imageBase64: '',
     };
 
     if (file) {
@@ -299,4 +299,4 @@ export default function UncontrolledForm({ onSuccess }: Props) {
       </form>
     </div>
   );
-}
+};

@@ -10,10 +10,10 @@ type MainRouteProps = {
   onOpenControlled: () => void;
 };
 
-export default function MainRoute({
+export const MainRoute = ({
   onOpenUncontrolled,
   onOpenControlled,
-}: MainRouteProps) {
+}: MainRouteProps) => {
   const dispatch = useDispatch();
   const formData = useSelector((state: RootState) => state.form.formData);
   const highlightedId = useSelector(
@@ -128,4 +128,4 @@ export default function MainRoute({
       </div>
     </div>
   );
-}
+};

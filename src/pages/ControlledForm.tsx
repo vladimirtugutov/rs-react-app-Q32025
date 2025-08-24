@@ -8,9 +8,9 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './ControlledForm.css';
 
-interface Props {
+type Props = {
   onSuccess: () => void;
-}
+};
 
 const schema = z
   .object({
@@ -27,7 +27,7 @@ const schema = z
     gender: z.enum(['male', 'female', 'other']),
     termsAccepted: z.boolean().refine((val) => val === true, 'Must accept T&C'),
     country: z.string().min(1, 'Country is required'),
-    imageBase64: z.string().optional(),
+    imageBase64: z.string().min(1, 'Image is required'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords must match',
@@ -36,7 +36,7 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
-export default function ControlledForm({ onSuccess }: Props) {
+export const ControlledForm = ({ onSuccess }: Props) => {
   const dispatch = useDispatch();
   const countries = useSelector((state: RootState) => state.countries || []);
 
@@ -45,18 +45,19 @@ export default function ControlledForm({ onSuccess }: Props) {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    mode: 'onChange',
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
   });
 
   const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
 
-  // Watch password for strength calculation
   const password = watch('password', '');
+  const confirmPassword = watch('confirmPassword', '');
 
-  // Calculate password strength
   const getPasswordStrength = (pwd: string): string => {
     let strength = 0;
     if (pwd.length >= 6) strength++;
@@ -86,6 +87,10 @@ export default function ControlledForm({ onSuccess }: Props) {
     return `strength-${strength.toLowerCase().replace(' ', '-')}`;
   };
 
+  const handlePasswordBlur = async () => {
+    await trigger(['password', 'confirmPassword']);
+  };
+
   const onSubmit = (data: FormData) => {
     const newEntry = { ...data, id: uuidv4() };
     dispatch(addFormData(newEntry));
@@ -96,13 +101,12 @@ export default function ControlledForm({ onSuccess }: Props) {
     const file = event.target.files?.[0];
     if (file) {
       if (!['image/png', 'image/jpeg'].includes(file.type)) {
-        alert('Invalid file type! Only PNG and JPEG allowed.');
+        alert('Image Upload: Invalid file type! Only PNG and JPEG allowed.');
         return;
       }
 
-      // Check file size (optional: limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size too large! Maximum 5MB allowed.');
+        alert('Image Upload: File size too large! Maximum 5MB allowed.');
         return;
       }
 
@@ -168,7 +172,12 @@ export default function ControlledForm({ onSuccess }: Props) {
 
         <div className="form-field">
           <label htmlFor="password">Password:</label>
-          <input id="password" type="password" {...register('password')} />
+          <input
+            id="password"
+            type="password"
+            {...register('password')}
+            onBlur={handlePasswordBlur}
+          />
           {password && (
             <div className="password-strength">
               Password Strength:{' '}
@@ -188,7 +197,18 @@ export default function ControlledForm({ onSuccess }: Props) {
             id="confirmPassword"
             type="password"
             {...register('confirmPassword')}
+            onBlur={handlePasswordBlur}
           />
+
+          {password && confirmPassword && (
+            <div
+              className={`password-match ${password === confirmPassword ? 'match' : 'no-match'}`}
+            >
+              {password === confirmPassword
+                ? '✓ Passwords match'
+                : '✗ Passwords do not match'}
+            </div>
+          )}
           {errors.confirmPassword && (
             <p className="error-message">{errors.confirmPassword.message}</p>
           )}
@@ -248,7 +268,7 @@ export default function ControlledForm({ onSuccess }: Props) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="imageFile">Upload Image (PNG/JPEG):</label>
+          <label htmlFor="imageFile">Upload Image (PNG/JPEG) *:</label>
           <input
             id="imageFile"
             type="file"
@@ -263,7 +283,16 @@ export default function ControlledForm({ onSuccess }: Props) {
         <button type="submit" disabled={!isValid} className="submit-button">
           Submit Form
         </button>
+
+        <div
+          className="debug-info"
+          style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}
+        >
+          Form valid: {isValid ? 'Yes' : 'No'} | Errors:{' '}
+          {Object.keys(errors).length} | Image loaded:{' '}
+          {watch('imageBase64') ? 'Yes' : 'No'}
+        </div>
       </form>
     </div>
   );
-}
+};
