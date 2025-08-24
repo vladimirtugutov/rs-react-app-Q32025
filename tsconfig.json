@@ -5,6 +5,7 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
-    "types": ["vitest/globals", "@testing-library/jest-dom", "vitest/jsdom"]
+    "types": ["vitest/globals", "@testing-library/jest-dom", "vitest/jsdom"],
+    "lib": ["DOM", "DOM.Iterable", "ES2020"]
   }
 }
