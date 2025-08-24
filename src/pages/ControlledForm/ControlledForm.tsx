@@ -7,6 +7,14 @@ import { RootState } from '../../store/store';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './ControlledForm.css';
+import { calculatePasswordStrength } from '../../utils/passwordUtils';
+import {
+  validateName,
+  validateEmail,
+  validateAge,
+} from '../../utils/validationUtils';
+import { filterCountries } from '../../utils/countryUtils';
+import { compressImage } from '../../utils/imageUtils';
 
 type Props = {
   onSuccess: () => void;
@@ -14,9 +22,11 @@ type Props = {
 
 const schema = z
   .object({
-    name: z.string().regex(/^[A-Z]/, 'Must start with an uppercase letter'),
-    age: z.number().positive('Must be a positive number'),
-    email: z.string().email('Invalid email'),
+    name: z
+      .string()
+      .refine(validateName, 'Must start with an uppercase letter'),
+    age: z.number().refine(validateAge, 'Must be a positive number'),
+    email: z.string().refine(validateEmail, 'Invalid email'),
     password: z
       .string()
       .min(6, 'Password must be at least 6 characters')
@@ -58,31 +68,6 @@ export const ControlledForm = ({ onSuccess }: Props) => {
   const password = watch('password', '');
   const confirmPassword = watch('confirmPassword', '');
 
-  const getPasswordStrength = (pwd: string): string => {
-    let strength = 0;
-    if (pwd.length >= 6) strength++;
-    if (/[A-Z]/.test(pwd)) strength++;
-    if (/[a-z]/.test(pwd)) strength++;
-    if (/\d/.test(pwd)) strength++;
-    if (/\W/.test(pwd)) strength++;
-
-    switch (strength) {
-      case 0:
-      case 1:
-        return 'Very Weak';
-      case 2:
-        return 'Weak';
-      case 3:
-        return 'Medium';
-      case 4:
-        return 'Strong';
-      case 5:
-        return 'Very Strong';
-      default:
-        return 'Very Weak';
-    }
-  };
-
   const getPasswordStrengthClass = (strength: string): string => {
     return `strength-${strength.toLowerCase().replace(' ', '-')}`;
   };
@@ -97,7 +82,9 @@ export const ControlledForm = ({ onSuccess }: Props) => {
     onSuccess();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       if (!['image/png', 'image/jpeg'].includes(file.type)) {
@@ -112,10 +99,19 @@ export const ControlledForm = ({ onSuccess }: Props) => {
 
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setValue('imageBase64', reader.result as string, {
-          shouldValidate: true,
-        });
+      reader.onloadend = async () => {
+        try {
+          const originalBase64 = reader.result as string;
+          const compressedBase64 = await compressImage(originalBase64);
+          setValue('imageBase64', compressedBase64, {
+            shouldValidate: true,
+          });
+        } catch (error) {
+          console.error('Image compression failed:', error);
+          setValue('imageBase64', reader.result as string, {
+            shouldValidate: true,
+          });
+        }
       };
     }
   };
@@ -124,13 +120,9 @@ export const ControlledForm = ({ onSuccess }: Props) => {
     const value = event.target.value;
     setValue('country', value, { shouldValidate: true });
 
-    if (value.length > 0) {
-      setFilteredCountries(
-        countries.filter((c) => c.toLowerCase().includes(value.toLowerCase()))
-      );
-    } else {
-      setFilteredCountries([]);
-    }
+    setFilteredCountries(
+      value.length > 0 ? filterCountries(countries, value) : []
+    );
   };
 
   const handleSelectCountry = (country: string) => {
@@ -138,7 +130,7 @@ export const ControlledForm = ({ onSuccess }: Props) => {
     setFilteredCountries([]);
   };
 
-  const passwordStrength = getPasswordStrength(password);
+  const passwordStrength = calculatePasswordStrength(password);
 
   return (
     <div className="controlled-form">
@@ -254,7 +246,7 @@ export const ControlledForm = ({ onSuccess }: Props) => {
             />
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
-                {filteredCountries.slice(0, 10).map((c) => (
+                {filteredCountries.map((c) => (
                   <li key={c} onClick={() => handleSelectCountry(c)}>
                     {c}
                   </li>

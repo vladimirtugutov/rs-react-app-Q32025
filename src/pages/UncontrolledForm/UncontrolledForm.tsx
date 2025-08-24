@@ -5,6 +5,14 @@ import { addFormData } from '../../store/formSlice';
 import { RootState } from '../../store/store';
 import { v4 as uuidv4 } from 'uuid';
 import './UncontrolledForm.css';
+import { calculatePasswordStrength } from '../../utils/passwordUtils';
+import {
+  validateName,
+  validateEmail,
+  validateAge,
+} from '../../utils/validationUtils';
+import { filterCountries } from '../../utils/countryUtils';
+import { compressImage } from '../../utils/imageUtils';
 
 type Props = {
   onSuccess: () => void;
@@ -42,12 +50,14 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
 
   const schema = z
     .object({
-      name: z.string().regex(/^[A-Z]/, 'Must start with an uppercase letter'),
+      name: z
+        .string()
+        .refine(validateName, 'Must start with an uppercase letter'),
       age: z.preprocess(
         (val) => Number(val),
-        z.number().positive('Must be a positive number')
+        z.number().refine(validateAge, 'Must be a positive number')
       ),
-      email: z.string().email('Invalid email'),
+      email: z.string().refine(validateEmail, 'Invalid email'),
       password: z
         .string()
         .min(6, 'Password must be at least 6 characters')
@@ -66,31 +76,6 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
       message: 'Passwords must match',
       path: ['confirmPassword'],
     });
-
-  const calculatePasswordStrength = (pwd: string): string => {
-    let strength = 0;
-    if (pwd.length >= 6) strength++;
-    if (/[A-Z]/.test(pwd)) strength++;
-    if (/[a-z]/.test(pwd)) strength++;
-    if (/\d/.test(pwd)) strength++;
-    if (/\W/.test(pwd)) strength++;
-
-    switch (strength) {
-      case 0:
-      case 1:
-        return 'Very Weak';
-      case 2:
-        return 'Weak';
-      case 3:
-        return 'Medium';
-      case 4:
-        return 'Strong';
-      case 5:
-        return 'Very Strong';
-      default:
-        return 'Very Weak';
-    }
-  };
 
   const getPasswordStrengthClass = (strength: string): string => {
     return `strength-${strength.toLowerCase().replace(' ', '-')}`;
@@ -148,9 +133,17 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
 
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        formData.imageBase64 = reader.result as string;
-        validateAndSubmit(formData);
+      reader.onloadend = async () => {
+        try {
+          const originalBase64 = reader.result as string;
+          const compressedBase64 = await compressImage(originalBase64);
+          formData.imageBase64 = compressedBase64;
+          validateAndSubmit(formData);
+        } catch (error) {
+          console.error('Image compression failed:', error);
+          formData.imageBase64 = reader.result as string;
+          validateAndSubmit(formData);
+        }
       };
     } else {
       validateAndSubmit(formData);
@@ -180,14 +173,9 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
 
   const handleCountryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-
-    if (value.length > 0) {
-      setFilteredCountries(
-        countries.filter((c) => c.toLowerCase().includes(value.toLowerCase()))
-      );
-    } else {
-      setFilteredCountries([]);
-    }
+    setFilteredCountries(
+      value.length > 0 ? filterCountries(countries, value) : []
+    );
   };
 
   const handleSelectCountry = (country: string) => {
@@ -273,7 +261,7 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
             />
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
-                {filteredCountries.slice(0, 10).map((c) => (
+                {filteredCountries.map((c) => (
                   <li key={c} onClick={() => handleSelectCountry(c)}>
                     {c}
                   </li>
