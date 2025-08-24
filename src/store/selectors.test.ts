@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { RootState } from './store';
 
-// Селекторы
 export const selectFormData = (state: RootState) => state.form.formData;
 export const selectHighlightedId = (state: RootState) =>
   state.form.highlightedId;
