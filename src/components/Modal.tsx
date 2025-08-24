@@ -1,11 +1,11 @@
 import { createPortal } from 'react-dom';
 import { useEffect } from 'react';
 
-interface ModalProps {
+type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-}
+};
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
   useEffect(() => {
