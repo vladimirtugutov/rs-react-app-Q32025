@@ -2,12 +2,14 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
+  background-color: transparent;
 }
 
 .uncontrolled-form h1 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 30px;
   text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .form {
@@ -24,15 +26,17 @@
 .form-field label {
   margin-bottom: 5px;
   font-weight: bold;
-  color: #555;
+  color: #e0e0e0;
 }
 
 .form-field input,
 .form-field select {
   padding: 10px 12px;
-  border: 2px solid #ddd;
+  border: 2px solid #555;
   border-radius: 6px;
   font-size: 14px;
+  background-color: #2d2d2d;
+  color: #ffffff;
   transition: border-color 0.3s ease;
 }
 
@@ -40,48 +44,55 @@
 .form-field select:focus {
   outline: none;
   border-color: #2e7d32;
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+}
+
+.form-field input::placeholder {
+  color: #aaa;
 }
 
 .checkbox-label {
   flex-direction: row !important;
   align-items: center;
   cursor: pointer;
+  color: #e0e0e0;
 }
 
 .checkbox-label input[type='checkbox'] {
   margin-right: 8px;
   width: auto;
+  accent-color: #2e7d32;
 }
 
 .password-strength {
   font-size: 12px;
   margin-top: 5px;
   font-weight: 500;
+  color: #e0e0e0;
 }
 
 .strength-very-weak {
-  color: #d32f2f;
+  color: #ff4444;
   font-weight: bold;
 }
 
 .strength-weak {
-  color: #f57c00;
+  color: #ff8800;
   font-weight: bold;
 }
 
 .strength-medium {
-  color: #fbc02d;
+  color: #ffcc00;
   font-weight: bold;
 }
 
 .strength-strong {
-  color: #388e3c;
+  color: #88cc00;
   font-weight: bold;
 }
 
 .strength-very-strong {
-  color: #1976d2;
+  color: #00cc88;
   font-weight: bold;
 }
 
@@ -94,8 +105,9 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 2px solid #ddd;
+  background: #2d2d2d;
+  color: #ffffff;
+  border: 2px solid #555;
   border-top: none;
   border-radius: 0 0 6px 6px;
   max-height: 200px;
@@ -104,18 +116,19 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .autocomplete-dropdown li {
   padding: 10px 12px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #555;
   transition: background-color 0.2s ease;
+  color: #ffffff;
 }
 
 .autocomplete-dropdown li:hover {
-  background-color: #f5f5f5;
+  background-color: #3a3a3a;
 }
 
 .autocomplete-dropdown li:last-child {
@@ -157,4 +170,20 @@
     padding: 10px 20px;
     font-size: 14px;
   }
+
+  .uncontrolled-form h1 {
+    font-size: 24px;
+  }
+}
+
+.form-field input[type='file'] {
+  padding: 8px;
+  border: 2px dashed #555;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.form-field input[type='file']:hover {
+  border-color: #2e7d32;
 }
