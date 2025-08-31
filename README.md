@@ -102,16 +102,36 @@
 **Critical Finding:** Individual YearlyTable components take 80-120ms each to render. With 240+ countries, this creates massive performance bottleneck.
 
 #### 4. Column Selection Performance
-**Action:** Remove "methane" column
-- **Commit Duration:** X.X ms
-- **Components Rendered:** X components
-- **Slowest Component:** ComponentName (X.X ms)
-- **Screenshot:** [Flame Graph]
+**Action:** Add "methane" column via modal
 
-### Key Findings (Baseline)
-- Most expensive operations: [List]
-- Components with unnecessary re-renders: [List]
-- Performance bottlenecks identified: [List]
+![alt text](image-7.png)
+
+![alt text](image-8.png)
+
+**Metrics:**
+- **Commit Duration:** 1s (single commit)
+- **Render Duration:** 4403.9ms (WORST PERFORMANCE!)
+- **Components Rendered:** All ~240 countries + all tables restructured
+
+**Interaction Details:**
+- **Triggered by:** ColumnsModal state change
+- **Total interaction time:** 1s (per commit, multiple commits)
+- **Root cause:** ColumnsModal → CountriesPage → all YearlyTables
+
+**Ranked Chart (Top 3):**
+1. YearSelector: 3.6ms
+2. CountriesList: 2.4ms  
+3. ColumnsModal: <1ms
+
+**Flame Graph:** [Screenshots attached]
+
+**Analysis:** Column changes trigger the worst performance because:
+1. Every YearlyTable component restructures its columns
+2. 240+ tables simultaneously add/remove DOM columns
+3. No memoization - all tables re-render from scratch
+4. Each table recalculates its entire column layout
+
+**CRITICAL:** This scenario shows 4.4 seconds render time - completely unacceptable UX.
 
 ---
 
