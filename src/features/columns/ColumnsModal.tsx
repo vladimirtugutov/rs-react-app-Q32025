@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import type { ColumnKey } from '../../types/owid';
 
 type Props = {
@@ -15,14 +14,13 @@ const DEFAULT_CHOICES: ColumnKey[] = [
   'temperature_change_from_co2',
 ];
 
-export function ColumnsModal({ selected, onChange }: Props) {
-  const choices = useMemo(() => DEFAULT_CHOICES, []);
+export const ColumnsModal = ({ selected, onChange }: Props) => {
   return (
-    <div>
-      {choices.map((key) => {
+    <>
+      {DEFAULT_CHOICES.map((key) => {
         const checked = selected.includes(key);
         return (
-          <label key={key}>
+          <label key={key} className="column-checkbox">
             <input
               type="checkbox"
               checked={checked}
@@ -34,10 +32,10 @@ export function ColumnsModal({ selected, onChange }: Props) {
                 );
               }}
             />
-            {key}
+            {key.replace(/_/g, ' ')}
           </label>
         );
       })}
-    </div>
+    </>
   );
-}
+};

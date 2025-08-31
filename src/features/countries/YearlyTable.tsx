@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import type { ColumnKey, OwidYearRow } from '../../types/owid';
 
 type Props = {
@@ -6,21 +5,18 @@ type Props = {
   selectedColumns: ColumnKey[];
 };
 
-export const YearlyTable = memo(function YearlyTable({
-  data,
-  selectedColumns,
-}: Props) {
+export const YearlyTable = ({ data, selectedColumns }: Props) => {
   const columns: ColumnKey[] = [
     'year',
     ...selectedColumns.filter((c) => c !== 'year'),
   ];
 
   return (
-    <table>
+    <table className="yearly-table">
       <thead>
         <tr>
           {columns.map((col) => (
-            <th key={col}>{col}</th>
+            <th key={col}>{col.replace(/_/g, ' ')}</th>
           ))}
         </tr>
       </thead>
@@ -29,11 +25,15 @@ export const YearlyTable = memo(function YearlyTable({
           <tr key={row.year}>
             {columns.map((col) => {
               const v = row[col as keyof OwidYearRow];
-              return <td key={col}>{v ?? 'N/A'}</td>;
+              return (
+                <td key={col}>
+                  {typeof v === 'number' ? v.toLocaleString() : (v ?? 'N/A')}
+                </td>
+              );
             })}
           </tr>
         ))}
       </tbody>
     </table>
   );
-});
+};

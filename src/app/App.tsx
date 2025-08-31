@@ -1,11 +1,13 @@
-// src/app/App.tsx
 import { Suspense } from 'react';
 import { CountriesPage } from '../features/countries/CountriesPage';
+import { CountriesListSkeleton } from '../features/countries/CountriesList.skeleton';
 
-export function App() {
+export const App = () => {
   return (
-    <Suspense fallback={<div>Загрузка данных CO2…</div>}>
-      <CountriesPage />
-    </Suspense>
+    <div>
+      <Suspense fallback={<CountriesListSkeleton count={6} />}>
+        <CountriesPage />
+      </Suspense>
+    </div>
   );
-}
+};

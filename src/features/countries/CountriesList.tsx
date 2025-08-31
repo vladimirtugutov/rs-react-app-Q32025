@@ -1,5 +1,4 @@
-import { memo } from 'react';
-import { CountryCard } from './CountryCard.js';
+import { CountryCard } from './CountryCard';
 import type { CountryListItem, ColumnKey, OwidRoot } from '../../types/owid';
 
 type Props = {
@@ -9,12 +8,12 @@ type Props = {
   root: OwidRoot;
 };
 
-export const CountriesList = memo(function CountriesList({
+export const CountriesList = ({
   countries,
   year,
   selectedColumns,
   root,
-}: Props) {
+}: Props) => {
   return (
     <div>
       {countries.map((c) => (
@@ -28,4 +27,4 @@ export const CountriesList = memo(function CountriesList({
       ))}
     </div>
   );
-});
+};

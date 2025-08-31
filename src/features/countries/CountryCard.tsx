@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react';
 import type { ColumnKey, CountryListItem, OwidCountry } from '../../types/owid';
 import { YearlyTable } from './YearlyTable';
 
@@ -9,27 +8,28 @@ type Props = {
   country: OwidCountry;
 };
 
-export const CountryCard = memo(function CountryCard({
+export const CountryCard = ({
   item,
   year,
   selectedColumns,
   country,
-}: Props) {
-  const rowForYear = useMemo(
-    () => country.data.find((r) => r.year === year),
-    [country.data, year]
-  );
+}: Props) => {
+  const rowForYear = country.data.find((r) => r.year === year);
 
   return (
-    <section>
+    <section className="country-card">
       <h3>
         {item.name} {item.isoCode ? `(${item.isoCode})` : ''}
       </h3>
-      <div>Население (последний год): {item.populationLatest ?? 'N/A'}</div>
+      <div className="population-info">
+        Population (latest year):{' '}
+        {item.populationLatest?.toLocaleString() ?? 'N/A'}
+      </div>
       <YearlyTable data={country.data} selectedColumns={selectedColumns} />
-      <div>
-        Текущее значение за {year}: {rowForYear?.population ?? 'N/A'}
+      <div className="population-info">
+        Current value for {year}:{' '}
+        {rowForYear?.population?.toLocaleString() ?? 'N/A'}
       </div>
     </section>
   );
-});
+};

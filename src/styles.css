@@ -1,78 +1,199 @@
-body {
-  background-color: #121212;
-  color: #ffffff;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-form {
-  width: 350px;
-  padding: 20px;
-  background-color: #1e1e1e;
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #212121;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.skeleton.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: sk-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes sk-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-label {
-  display: block;
-  margin: 10px 0 5px;
-  font-weight: bold;
+.sk-line {
+  height: 12px;
+}
+.sk-title {
+  height: 22px;
+}
+.sk-chip {
+  height: 28px;
+  width: 120px;
+  display: inline-block;
 }
 
-input,
-select,
-button {
-  width: 95%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  border: 1px solid #333;
-  background-color: #333;
-  color: white;
+.country-card {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.country-card:hover {
+  border-color: #444;
 }
 
-input::placeholder {
+.country-card h3 {
+  margin: 0 0 8px 0;
+  color: #f5f5f5;
+  font-size: 18px;
+}
+
+.country-card .population-info {
   color: #bbb;
+  margin-bottom: 16px;
+  font-size: 14px;
 }
 
-button {
-  background-color: #007bff;
-  border: none;
+.yearly-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background: #161616;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2e2e2e;
+}
+
+.yearly-table th {
+  background: #2a2a2a;
+  color: #f5f5f5;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #333;
+}
+
+.yearly-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #2e2e2e;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.yearly-table tr:hover {
+  background: #1f1f1f;
+}
+
+.yearly-table tr:last-child td {
+  border-bottom: none;
+}
+
+.app-header {
+  padding: 16px 20px;
+  background: #111;
+  border-bottom: 1px solid #333;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  flex: 1 1 280px;
+  min-width: 200px;
+  height: 40px;
+  background: #1b1b1b;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+.search-input:focus {
+  outline: none;
+  border-color: #64b5ff;
+  box-shadow: 0 0 0 2px rgba(100, 181, 255, 0.1);
+}
+
+.sort-select {
+  height: 40px;
+  background: #1b1b1b;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.year-selector {
+  height: 40px;
+  background: #1b1b1b;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.columns-modal {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.column-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ddd;
+  font-size: 14px;
   cursor: pointer;
+  user-select: none;
+}
+
+.column-checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.no-results {
+  text-align: center;
+  color: #999;
+  padding: 40px;
   font-size: 16px;
 }
 
-button:disabled {
-  background-color: #555;
-  cursor: not-allowed;
-}
-
-button:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.autocomplete-dropdown {
-  list-style: none;
-  background-color: #333;
-  padding: 5px;
-  border-radius: 5px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.autocomplete-dropdown li {
-  padding: 5px;
-  cursor: pointer;
-}
-
-.autocomplete-dropdown li:hover {
-  background-color: #555;
+.results-count {
+  margin-bottom: 20px;
+  color: #bbb;
+  font-size: 14px;
 }
