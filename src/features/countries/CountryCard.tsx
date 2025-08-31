@@ -25,7 +25,13 @@ export const CountryCard = ({
         Population (latest year):{' '}
         {item.populationLatest?.toLocaleString() ?? 'N/A'}
       </div>
-      <YearlyTable data={country.data} selectedColumns={selectedColumns} />
+
+      <YearlyTable
+        data={country.data}
+        selectedColumns={selectedColumns}
+        highlightYear={year}
+      />
+
       <div className="population-info">
         Current value for {year}:{' '}
         {rowForYear?.population?.toLocaleString() ?? 'N/A'}

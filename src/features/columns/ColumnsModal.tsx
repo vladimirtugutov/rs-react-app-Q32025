@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ColumnKey } from '../../types/owid';
 
 type Props = {
@@ -15,27 +16,36 @@ const DEFAULT_CHOICES: ColumnKey[] = [
 ];
 
 export const ColumnsModal = ({ selected, onChange }: Props) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
-      {DEFAULT_CHOICES.map((key) => {
-        const checked = selected.includes(key);
-        return (
-          <label key={key} className="column-checkbox">
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={() => {
-                onChange(
-                  checked
-                    ? selected.filter((k) => k !== key)
-                    : [...selected, key]
-                );
-              }}
-            />
-            {key.replace(/_/g, ' ')}
-          </label>
-        );
-      })}
+      <button onClick={() => setIsOpen(true)}>Select Columns</button>
+
+      {isOpen && (
+        <div className="modal-backdrop" onClick={() => setIsOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Select Columns to Display</h3>
+            {DEFAULT_CHOICES.map((key) => (
+              <label key={key} className="column-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(key)}
+                  onChange={() => {
+                    onChange(
+                      selected.includes(key)
+                        ? selected.filter((k) => k !== key)
+                        : [...selected, key]
+                    );
+                  }}
+                />
+                {key.replace(/_/g, ' ')}
+              </label>
+            ))}
+            <button onClick={() => setIsOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

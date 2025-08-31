@@ -3,6 +3,11 @@ import { owidResource } from '../../data/owidResource';
 import { CountriesList } from './CountriesList';
 import { ColumnsModal } from '../columns/ColumnsModal';
 import { YearSelector } from '../year/YearSelector';
+import {
+  COUNTRY_TO_REGION,
+  REGIONS,
+  type Region,
+} from '../../data/countryRegions';
 import type {
   OwidRoot,
   ColumnKey,
@@ -35,6 +40,7 @@ export const CountriesPage = () => {
   const [q, setQ] = useState<string>('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [regionFilter, setRegionFilter] = useState<Region>('All');
 
   const root: OwidRoot = useOwidRoot();
 
@@ -49,15 +55,22 @@ export const CountriesPage = () => {
     }
   );
 
-  let filtered = allCountries;
+  let processedCountries = allCountries;
+
   if (q.trim()) {
     const searchTerm = q.trim().toLowerCase();
-    filtered = allCountries.filter((c) =>
+    processedCountries = processedCountries.filter((c) =>
       c.name.toLowerCase().includes(searchTerm)
     );
   }
 
-  const sorted = [...filtered].sort((a, b) => {
+  if (regionFilter !== 'All') {
+    processedCountries = processedCountries.filter(
+      (c) => COUNTRY_TO_REGION[c.name] === regionFilter
+    );
+  }
+
+  const sorted = [...processedCountries].sort((a, b) => {
     if (sortKey === 'name') {
       const cmp = a.name.localeCompare(b.name, 'en');
       return sortOrder === 'asc' ? cmp : -cmp;
@@ -78,19 +91,33 @@ export const CountriesPage = () => {
     setSortKey(k);
     setSortOrder(o);
   };
+  const onRegionChange = (region: Region) => setRegionFilter(region);
 
   return (
     <div>
-      {/* Header controls */}
       <div className="app-header">
         <div className="header-controls">
           <YearSelector year={year} onChange={onYear} />
+
           <input
             className="search-input"
             value={q}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search country..."
           />
+
+          <select
+            className="sort-select"
+            value={regionFilter}
+            onChange={(e) => onRegionChange(e.target.value as Region)}
+          >
+            {REGIONS.map((region) => (
+              <option key={region} value={region}>
+                {region === 'All' ? 'All Regions' : region}
+              </option>
+            ))}
+          </select>
+
           <select
             className="sort-select"
             value={`${sortKey}:${sortOrder}`}
@@ -107,6 +134,7 @@ export const CountriesPage = () => {
             </option>
           </select>
         </div>
+
         <div className="columns-modal">
           <ColumnsModal selected={selectedCols} onChange={onCols} />
         </div>
@@ -117,11 +145,17 @@ export const CountriesPage = () => {
           <div className="no-results">
             {q.trim()
               ? `No results found for "${q.trim()}"`
-              : 'No data available to display'}
+              : regionFilter !== 'All'
+                ? `No countries found in ${regionFilter}`
+                : 'No data available to display'}
           </div>
         ) : (
           <>
-            <div className="results-count">Found {sorted.length} countries</div>
+            <div className="results-count">
+              Found {sorted.length} countries
+              {regionFilter !== 'All' && ` in ${regionFilter}`}
+              {q.trim() && ` matching "${q.trim()}"`}
+            </div>
             <CountriesList
               countries={sorted}
               year={year}
