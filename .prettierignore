@@ -1,0 +1,11 @@
+# Ignore coverage folder
+coverage/
+
+# Other common ignores
+dist/
+build/
+node_modules/
+
+# Lock files
+package-lock.json
+yarn.lock
