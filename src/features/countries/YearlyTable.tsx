@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import type { ColumnKey, OwidYearRow } from '../../types/owid';
 
 type Props = {
@@ -6,15 +7,15 @@ type Props = {
   highlightYear?: number;
 };
 
-export const YearlyTable = ({
+const YearlyTableComponent = ({
   data,
   selectedColumns,
   highlightYear,
 }: Props) => {
-  const columns: ColumnKey[] = [
-    'year',
-    ...selectedColumns.filter((c) => c !== 'year'),
-  ];
+  const columns: ColumnKey[] = useMemo(
+    () => ['year', ...selectedColumns.filter((c) => c !== 'year')],
+    [selectedColumns]
+  );
 
   return (
     <table className="yearly-table">
@@ -49,3 +50,5 @@ export const YearlyTable = ({
     </table>
   );
 };
+
+export const YearlyTable = memo(YearlyTableComponent);

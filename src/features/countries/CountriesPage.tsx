@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { owidResource } from '../../data/owidResource';
 import { CountriesList } from './CountriesList';
 import { ColumnsModal } from '../columns/ColumnsModal';
@@ -44,54 +44,65 @@ export const CountriesPage = () => {
 
   const root: OwidRoot = useOwidRoot();
 
-  const allCountries: CountryListItem[] = Object.entries(root).map(
-    ([key, val]) => {
-      const name = (val.country as string) ?? key;
-      const isoCode = (val.iso_code as string) || undefined;
-      const populationLatest = [...val.data]
-        .reverse()
-        .find((r) => r.population !== undefined)?.population;
-      return { key, name, isoCode, populationLatest };
-    }
+  const allCountries = useMemo(
+    (): CountryListItem[] =>
+      Object.entries(root).map(([key, val]) => {
+        const name = (val.country as string) ?? key;
+        const isoCode = (val.iso_code as string) || undefined;
+        const populationLatest = [...val.data]
+          .reverse()
+          .find((r) => r.population !== undefined)?.population;
+        return { key, name, isoCode, populationLatest };
+      }),
+    [root]
   );
 
-  let processedCountries = allCountries;
+  const filteredCountries = useMemo(() => {
+    let countries = allCountries;
 
-  if (q.trim()) {
-    const searchTerm = q.trim().toLowerCase();
-    processedCountries = processedCountries.filter((c) =>
-      c.name.toLowerCase().includes(searchTerm)
-    );
-  }
-
-  if (regionFilter !== 'All') {
-    processedCountries = processedCountries.filter(
-      (c) => COUNTRY_TO_REGION[c.name] === regionFilter
-    );
-  }
-
-  const sorted = [...processedCountries].sort((a, b) => {
-    if (sortKey === 'name') {
-      const cmp = a.name.localeCompare(b.name, 'en');
-      return sortOrder === 'asc' ? cmp : -cmp;
-    } else {
-      const pa =
-        populationByYear(root, a.key, year) ?? Number.NEGATIVE_INFINITY;
-      const pb =
-        populationByYear(root, b.key, year) ?? Number.NEGATIVE_INFINITY;
-      const cmp = pa - pb;
-      return sortOrder === 'asc' ? cmp : -cmp;
+    if (q.trim()) {
+      const searchTerm = q.trim().toLowerCase();
+      countries = countries.filter((c) =>
+        c.name.toLowerCase().includes(searchTerm)
+      );
     }
-  });
 
-  const onYear = (y: number) => setYear(y);
-  const onCols = (cols: ColumnKey[]) => setSelectedCols(cols);
-  const onSearch = (v: string) => setQ(v);
-  const onSort = (k: SortKey, o: SortOrder) => {
+    if (regionFilter !== 'All') {
+      countries = countries.filter(
+        (c) => COUNTRY_TO_REGION[c.name] === regionFilter
+      );
+    }
+
+    return countries;
+  }, [allCountries, q, regionFilter]);
+
+  const sortedCountries = useMemo(() => {
+    return [...filteredCountries].sort((a, b) => {
+      if (sortKey === 'name') {
+        const cmp = a.name.localeCompare(b.name, 'en');
+        return sortOrder === 'asc' ? cmp : -cmp;
+      } else {
+        const pa =
+          populationByYear(root, a.key, year) ?? Number.NEGATIVE_INFINITY;
+        const pb =
+          populationByYear(root, b.key, year) ?? Number.NEGATIVE_INFINITY;
+        const cmp = pa - pb;
+        return sortOrder === 'asc' ? cmp : -cmp;
+      }
+    });
+  }, [filteredCountries, sortKey, sortOrder, root, year]);
+
+  const onYear = useCallback((y: number) => setYear(y), []);
+  const onCols = useCallback((cols: ColumnKey[]) => setSelectedCols(cols), []);
+  const onSearch = useCallback((v: string) => setQ(v), []);
+  const onSort = useCallback((k: SortKey, o: SortOrder) => {
     setSortKey(k);
     setSortOrder(o);
-  };
-  const onRegionChange = (region: Region) => setRegionFilter(region);
+  }, []);
+  const onRegionChange = useCallback(
+    (region: Region) => setRegionFilter(region),
+    []
+  );
 
   return (
     <div>
@@ -141,7 +152,7 @@ export const CountriesPage = () => {
       </div>
 
       <div className="content">
-        {sorted.length === 0 ? (
+        {sortedCountries.length === 0 ? (
           <div className="no-results">
             {q.trim()
               ? `No results found for "${q.trim()}"`
@@ -152,12 +163,12 @@ export const CountriesPage = () => {
         ) : (
           <>
             <div className="results-count">
-              Found {sorted.length} countries
+              Found {sortedCountries.length} countries
               {regionFilter !== 'All' && ` in ${regionFilter}`}
               {q.trim() && ` matching "${q.trim()}"`}
             </div>
             <CountriesList
-              countries={sorted}
+              countries={sortedCountries}
               year={year}
               selectedColumns={selectedCols}
               root={root}

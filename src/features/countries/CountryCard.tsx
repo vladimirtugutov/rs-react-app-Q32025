@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import type { ColumnKey, CountryListItem, OwidCountry } from '../../types/owid';
 import { YearlyTable } from './YearlyTable';
 
@@ -8,13 +9,16 @@ type Props = {
   country: OwidCountry;
 };
 
-export const CountryCard = ({
+const CountryCardComponent = ({
   item,
   year,
   selectedColumns,
   country,
 }: Props) => {
-  const rowForYear = country.data.find((r) => r.year === year);
+  const rowForYear = useMemo(
+    () => country.data.find((r) => r.year === year),
+    [country.data, year]
+  );
 
   return (
     <section className="country-card">
@@ -39,3 +43,5 @@ export const CountryCard = ({
     </section>
   );
 };
+
+export const CountryCard = memo(CountryCardComponent);
