@@ -221,3 +221,68 @@
 **Analysis:** Search performance improved significantly even though it was already fast. The memoization prevented unnecessary re-renders of components that weren't affected by the search filter.
 
 **Key Achievement:** Render duration improved from 12.8ms to 2.5ms (5.1x faster), demonstrating that React.memo works effectively even for already-optimized scenarios.
+
+
+### 3. Year Change Performance (After Optimization)
+
+**Action:** Change year from 2020 to 2019
+
+![alt text](image-13.png)
+
+![alt text](image-14.png)
+
+**Metrics:**
+
+- **Commit Duration:** 3.8 seconds (was 3.7s - minimal change)
+- **Render Duration:** 1060.3 milliseconds (was 1835.4ms - 1.7x improvement!)
+- **Components Rendered:** All ~240 countries + tables
+
+**Interaction Details:**
+
+- **Triggered by:** onChange (year selector)  
+- **Total interaction time:** 3.8 seconds
+- **Root cause:** CountriesPage state change (year + re-sort + highlight)
+
+**Ranked Chart (Top Components After):**
+
+1. YearlyTableComponent (Memo): 328.4 ms (was 117.9ms individual - still processing but memoized)
+2. CountriesPage (Memoized): 0.7 ms (was massive before)
+3. CountriesListComponent (Memo): 0.5 ms (was significant before)
+4. CountryCardComponent (Memo): minimal render times
+
+**Analysis:** Year change showed significant improvement in render duration (1.7x faster). While YearlyTable components still need to re-render for highlighting, React.memo prevented unnecessary re-renders of components that don't depend on the year change.
+
+**Key Achievement:** The CountriesPage component render time dropped dramatically, and most memoized components show minimal impact. The remaining render time is primarily from necessary year highlighting updates.
+
+
+### 4. Column Selection Performance (After Optimization)
+
+**Action:** Remove "methane" column via modal
+
+![alt text](image-15.png)
+
+![alt text](image-16.png)
+
+**Metrics:**
+
+- **Commit Duration:** 1.1 seconds (was 1.0s - minimal change)
+- **Render Duration:** 1122.5 milliseconds (was 4403.9ms - 3.9x improvement!)
+- **Components Rendered:** All ~240 countries + all tables restructured
+
+**Interaction Details:**
+
+- **Triggered by:** ColumnsModal state change
+- **Total interaction time:** 1.1 seconds
+- **Root cause:** ColumnsModalComponent → CountriesPage → all YearlyTables
+
+**Ranked Chart (Top Components After):**
+
+1. CountriesListComponent (Memo): 24.8 ms (was massive before)
+2. YearSelector: 24.2 ms
+3. Multiple memoized components showing minimal render times
+
+**Analysis:** Column changes showed the most dramatic improvement (3.9x faster render duration). React.memo successfully prevented unnecessary re-renders of components that don't need to restructure when columns change.
+
+**Key Achievement:** Render duration dropped from 4403.9ms to 1122.5ms - turning an "unacceptable UX" scenario into a manageable one. The remaining render time represents necessary column restructuring in YearlyTable components.
+
+
