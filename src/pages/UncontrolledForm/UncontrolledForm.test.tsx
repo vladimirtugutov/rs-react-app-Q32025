@@ -282,47 +282,46 @@ describe('UncontrolledForm', () => {
       expect(alertMessage).toContain('Image Upload: Image is required');
     });
 
-    it('should show alert for large file size on submit', async () => {
-      const user = userEvent.setup();
-      renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
+it('should show alert for large file size on submit', async () => {
+  const user = userEvent.setup();
+  renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
+  
+  await user.type(screen.getByLabelText('Name:'), 'John Doe');
+  await user.type(screen.getByLabelText('Age:'), '25');
+  await user.type(screen.getByLabelText('Email:'), 'john@example.com');
+  await user.type(screen.getByLabelText('Password:'), 'Password1!');
+  await user.type(screen.getByLabelText('Confirm Password:'), 'Password1!');
+  await user.selectOptions(screen.getByLabelText('Gender:'), 'male');
+  await user.click(screen.getByLabelText('Accept Terms and Conditions'));
+  await user.type(screen.getByLabelText('Country:'), 'United States');
 
-      await user.type(screen.getByLabelText('Name:'), 'John Doe');
-      await user.type(screen.getByLabelText('Age:'), '25');
-      await user.type(screen.getByLabelText('Email:'), 'john@example.com');
-      await user.type(screen.getByLabelText('Password:'), 'Password1!');
-      await user.type(screen.getByLabelText('Confirm Password:'), 'Password1!');
-      await user.selectOptions(screen.getByLabelText('Gender:'), 'male');
-      await user.click(screen.getByLabelText('Accept Terms and Conditions'));
-      await user.type(screen.getByLabelText('Country:'), 'United States');
+  const largeFile = new File(['test'.repeat(2000000)], 'test.jpg', { 
+    type: 'image/jpeg'
+  });
+  Object.defineProperty(largeFile, 'size', { value: 10 * 1024 * 1024 });
+  
+  const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):') as HTMLInputElement;
+  await user.upload(fileInput, largeFile);
 
-      const largeFile = new File(['test'.repeat(2000000)], 'test.jpg', {
-        type: 'image/jpeg',
-        size: 10 * 1024 * 1024,
-      });
-      const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):');
-      await user.upload(fileInput, largeFile);
+  const submitButton = screen.getByRole('button', { name: 'Submit Form' });
+  await user.click(submitButton);
 
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      await user.click(submitButton);
+  await waitFor(() => {
+    expect(alertSpy).toHaveBeenCalledWith('Image Upload: File size too large! Maximum 5MB allowed.');
+  });
+});
 
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledWith(
-          'Image Upload: File size too large! Maximum 5MB allowed.'
-        );
-      });
-    });
+it('should accept valid image files', async () => {
+  const user = userEvent.setup();
+  renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-    it('should accept valid image files', async () => {
-      const user = userEvent.setup();
-      renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
+  const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+  const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):') as HTMLInputElement;
+  await user.upload(fileInput, file);
 
-      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-      const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):');
-      await user.upload(fileInput, file);
-
-      expect(fileInput.files?.[0]).toBe(file);
-      expect(fileInput.files?.[0]?.type).toBe('image/jpeg');
-    });
+  expect(fileInput.files?.[0]).toBe(file);
+  expect(fileInput.files?.[0]?.type).toBe('image/jpeg');
+});
   });
 
   describe('when handling country autocomplete', () => {
