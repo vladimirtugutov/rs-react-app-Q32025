@@ -190,3 +190,34 @@
 **Key Achievement:** React DevTools now shows "(Memo)" components, confirming memoization is working effectively.
 
 **Flame Graph:** Attached screenshot
+
+
+### 2. Search Performance (After Optimization)
+
+**Action:** Search for "United"
+
+![alt text](image-11.png)
+
+![alt text](image-12.png)
+
+**Metrics:**
+
+- **Commit Duration:** 1.3 seconds (was 1.6s - 19% improvement)  
+- **Render Duration:** 2.5 milliseconds (was 12.8ms - 5.1x improvement!)
+- **Components Rendered:** 3 countries found
+
+**Interaction Details:**
+
+- **Triggered by:** onChange (search input)
+- **Total interaction time:** 1.3 seconds
+- **Root cause:** CountriesPage state change
+
+**Ranked Chart (Top Components After):**
+
+1. YearSelector: 1 ms
+2. CountriesPage (Memoized): 0.7 ms  
+3. CountriesList (Memoized): minimal time
+
+**Analysis:** Search performance improved significantly even though it was already fast. The memoization prevented unnecessary re-renders of components that weren't affected by the search filter.
+
+**Key Achievement:** Render duration improved from 12.8ms to 2.5ms (5.1x faster), demonstrating that React.memo works effectively even for already-optimized scenarios.
