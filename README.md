@@ -11,7 +11,7 @@
 
 ### Test Scenarios
 
-#### 1. Sorting Performance
+### 1. Sorting Performance
 **Action:** Change sorting from "Name A-Z" to "Population descending"
 
 ![alt text](image.png)
@@ -38,7 +38,7 @@
 
 **Analysis:** Every sort change triggers re-render of all country cards and data tables. YearlyTable components are the main performance bottleneck.
 
-#### 2. Search Performance  
+### 2. Search Performance  
 **Action:** Search for "United"
 
 ![alt text](image-3.png)
@@ -67,12 +67,39 @@
 **Key Finding:** Performance directly correlates with the number of YearlyTable instances rendered.
 
 
-#### 3. Year Change Performance
+### 3. Year Change Performance
+
 **Action:** Change year from 2020 to 2019
-- **Commit Duration:** X.X ms
-- **Components Rendered:** X components
-- **Slowest Component:** ComponentName (X.X ms)
-- **Screenshot:** [Flame Graph]
+
+![alt text](image-5.png)
+![alt text](image-6.png)
+
+**Metrics:**
+- **Commit Duration:** 3.7s
+- **Render Duration:** 1835.4ms
+- **Components Rendered:** All ~240 countries + tables
+
+**Interaction Details:**
+- **Triggered by:** onChange (year selector)
+- **Total interaction time:** 3.7s
+- **Root cause:** CountriesPage state change (year + re-sort + highlight)
+
+**Ranked Chart (Top 5 slowest):**
+1. YearlyTable: 117.9ms (single table instance!)
+2. YearlyTable: 88.1ms
+3. YearlyTable: 77.8ms
+4. YearlyTable: 34.3ms
+5. YearlyTable: [multiple instances]
+
+**Flame Graph:** [Screenshots attached]
+
+**Analysis:** Year change is the slowest operation because:
+1. All countries remain rendered (no filtering)
+2. Every YearlyTable re-renders for year highlighting
+3. Population-based sorting recalculates for new year
+4. Highlight animation adds additional overhead
+
+**Critical Finding:** Individual YearlyTable components take 80-120ms each to render. With 240+ countries, this creates massive performance bottleneck.
 
 #### 4. Column Selection Performance
 **Action:** Remove "methane" column
