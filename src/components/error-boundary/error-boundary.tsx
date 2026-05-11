@@ -1,46 +1,39 @@
 import React, { ReactNode, ErrorInfo } from 'react';
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   errorMessage: string;
 }
 
-class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
-  state: ErrorBoundaryState = {
+export class ErrorBoundary extends React.Component<Props, State> {
+  state: State = {
     errorMessage: '',
   };
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): State {
     return { errorMessage: error.toString() };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    this.logErrorToServices(error.toString(), info.componentStack);
+    console.log(error.toString(), info.componentStack);
   }
 
-  logErrorToServices = console.log;
-
   refreshPage = () => {
-    history.go(0);
+    window.location.reload();
   };
 
   render() {
     if (this.state.errorMessage) {
       return (
-        <>
+        <React.Fragment>
           <p className="error-message">{this.state.errorMessage}</p>
           <button onClick={this.refreshPage}>Refresh Page</button>
-        </>
+        </React.Fragment>
       );
     }
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

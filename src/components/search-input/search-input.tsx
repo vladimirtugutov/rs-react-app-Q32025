@@ -1,7 +1,7 @@
 import React from 'react';
-import SearchContext from './SearchContext';
+import SearchContext from '../../SearchContext';
 
-class SearchInput extends React.Component {
+export class SearchInput extends React.Component {
   render() {
     return (
       <SearchContext.Consumer>
@@ -16,5 +16,3 @@ class SearchInput extends React.Component {
     );
   }
 }
-
-export default SearchInput;

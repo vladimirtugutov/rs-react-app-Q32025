@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import TopControls from '../TopControls';
+import TopControls from '../components/top-controls/top-controls';
 import SearchContext from '../SearchContext';
 
 describe('TopControls', () => {

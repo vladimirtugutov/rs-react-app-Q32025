@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface SearchContextType {
-  searchValue: string;
-  setSearchValue: (value: string) => void;
-  handleSearchButtonClick: () => void;
-}
+import { SearchContextType } from './types';
 
 const defaultValues: SearchContextType = {
   searchValue: '',

@@ -1,11 +1,7 @@
 import React from 'react';
-import SearchContext from './SearchContext';
+import SearchContext from '../../SearchContext';
 
-type SearchButtonProps = {
-  onClick?: () => void;
-};
-
-class SearchButton extends React.Component<SearchButtonProps> {
+export class SearchButton extends React.Component {
   render() {
     return (
       <SearchContext.Consumer>
@@ -18,5 +14,3 @@ class SearchButton extends React.Component<SearchButtonProps> {
     );
   }
 }
-
-export default SearchButton;

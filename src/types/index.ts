@@ -17,3 +17,9 @@ export type FlavorTextEntry = {
 export type SpeciesData = {
   flavor_text_entries: FlavorTextEntry[];
 };
+
+export interface SearchContextType {
+  searchValue: string;
+  setSearchValue: (value: string) => void;
+  handleSearchButtonClick: VoidFunction;
+}
