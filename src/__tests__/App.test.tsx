@@ -81,4 +81,41 @@ describe('App Component', () => {
       screen.getByText(/Error: Simulated error by Error Button click/i)
     ).toBeInTheDocument();
   });
+
+  const LOCAL_STORAGE_KEY = 'prevSearchValue';
+
+  it('saves search term to localStorage when search is performed', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ results: [] }),
+    });
+
+    render(<App />);
+
+    const input = screen.getByRole('textbox');
+    const button = screen.getByRole('button', { name: /search button/i });
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'pikachu');
+    await userEvent.click(button);
+
+    expect(localStorage.getItem(LOCAL_STORAGE_KEY)).toBe('pikachu');
+  });
+
+  it('loads search term from localStorage on mount', async () => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, 'bulbasaur');
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ results: [] }),
+    });
+
+    render(<App />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    await waitFor(() => {
+      expect(input.value).toBe('bulbasaur');
+    });
+  });
 });
