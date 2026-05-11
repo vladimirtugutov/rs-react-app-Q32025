@@ -10,6 +10,7 @@ import './App.css';
 type AppState = {
   results: Pokemon[];
   searchValue: string;
+  lastExecutedSearch: string;
   loading: boolean;
   error: string | null;
   hasSimulatedError: boolean;
@@ -21,6 +22,7 @@ export class App extends React.Component<Record<string, never>, AppState> {
   state: AppState = {
     results: [],
     searchValue: localStorage.getItem(LOCAL_STORAGE_KEYS.PREV_SEARCH) || '',
+    lastExecutedSearch: '',
     loading: false,
     error: null,
     hasSimulatedError: false,
@@ -28,39 +30,65 @@ export class App extends React.Component<Record<string, never>, AppState> {
 
   async componentDidMount(): Promise<void> {
     this._isMounted = true;
-    const prevSearchValue =
+    const savedSearch =
       localStorage.getItem(LOCAL_STORAGE_KEYS.PREV_SEARCH) ?? '';
-    this.setState({ searchValue: prevSearchValue });
-    await this.getResults(prevSearchValue);
+    this.setState({ searchValue: savedSearch });
+    await this.getResults(savedSearch, true);
   }
 
   componentWillUnmount() {
     this._isMounted = false;
   }
 
-  getResults = async (searchTerm = ''): Promise<void> => {
+  getResults = async (
+    searchTerm = '',
+    isInitialLoad = false
+  ): Promise<void> => {
     if (!this._isMounted) return;
-    this.setState({ loading: true });
+
+    const trimmedSearch = searchTerm.trim();
+
+    if (
+      !isInitialLoad &&
+      trimmedSearch.toLowerCase() ===
+        this.state.lastExecutedSearch.toLowerCase()
+    ) {
+      return;
+    }
+
+    this.setState({
+      loading: true,
+      error: null,
+      lastExecutedSearch: trimmedSearch,
+    });
 
     try {
-      const trimmedSearch = searchTerm.trim().toLowerCase();
-      const url = trimmedSearch
-        ? `${API_BASE_URL}/${trimmedSearch}`
+      const searchPath = trimmedSearch.toLowerCase();
+      const url = searchPath
+        ? `${API_BASE_URL}/${searchPath}`
         : `${API_BASE_URL}?limit=10`;
 
       const res = await fetch(url);
 
       if (!res.ok) {
-        throw new Error(`API Error: ${res.status}`);
+        if (res.status === 404)
+          throw new Error('Pokemon not found. Please try another name.');
+        if (res.status >= 500)
+          throw new Error(
+            'Server is currently unavailable. Please try again later.'
+          );
+        throw new Error('Something went wrong. Please check your connection.');
       }
 
       const data = await res.json();
       let results: Pokemon[];
 
-      if (trimmedSearch) {
-        const speciesRes = await fetch(`${API_SPECIES_URL}/${trimmedSearch}`);
-        const speciesData: SpeciesData = await speciesRes.json();
+      if (searchPath) {
+        const speciesRes = await fetch(`${API_SPECIES_URL}/${searchPath}`);
+        if (!speciesRes.ok)
+          throw new Error('Failed to load additional pokemon details.');
 
+        const speciesData: SpeciesData = await speciesRes.json();
         const description =
           speciesData.flavor_text_entries
             .find((entry) => entry.language.name === 'en')
@@ -70,38 +98,37 @@ export class App extends React.Component<Record<string, never>, AppState> {
       } else {
         results = await Promise.all(
           data.results.map(async (item: { name: string; url: string }) => {
-            const pokemonRes = await fetch(item.url);
-            const pokemon = await pokemonRes.json();
-
-            const speciesRes = await fetch(`${API_SPECIES_URL}/${item.name}`);
-            const speciesData: SpeciesData = await speciesRes.json();
-
-            const description =
-              speciesData.flavor_text_entries
-                .find((entry) => entry.language.name === 'en')
+            const pRes = await fetch(item.url);
+            const pokemon = await pRes.json();
+            const sRes = await fetch(`${API_SPECIES_URL}/${item.name}`);
+            const sData: SpeciesData = await sRes.json();
+            const desc =
+              sData.flavor_text_entries
+                .find((e) => e.language.name === 'en')
                 ?.flavor_text.replace(/\f/g, ' ') ?? '';
-
-            return { ...pokemon, description };
+            return { ...pokemon, description: desc };
           })
         );
       }
 
       if (this._isMounted) {
-        this.setState({ results, loading: false, error: null });
+        this.setState({ results, loading: false });
       }
     } catch (error) {
       if (this._isMounted) {
-        this.setState({ error: (error as Error).message, loading: false });
+        this.setState({
+          error: (error as Error).message,
+          loading: false,
+          results: [],
+        });
       }
     }
   };
 
   handleSearchButtonClick = async () => {
-    localStorage.setItem(
-      LOCAL_STORAGE_KEYS.PREV_SEARCH,
-      this.state.searchValue
-    );
-    await this.getResults(this.state.searchValue);
+    const trimmed = this.state.searchValue.trim();
+    localStorage.setItem(LOCAL_STORAGE_KEYS.PREV_SEARCH, trimmed);
+    await this.getResults(trimmed);
   };
 
   setSearchValue = (newValue: string) => {
@@ -130,7 +157,7 @@ export class App extends React.Component<Record<string, never>, AppState> {
         </SearchContext.Provider>
 
         <div className="results-wrapper">
-          {this.state.loading && !this.state.error ? (
+          {this.state.loading ? (
             <Spinner />
           ) : (
             <Results results={this.state.results} error={this.state.error} />
