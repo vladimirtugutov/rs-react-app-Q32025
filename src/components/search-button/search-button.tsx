@@ -1,5 +1,5 @@
 import React from 'react';
-import SearchContext from '../../SearchContext';
+import { SearchContext } from '../../SearchContext';
 
 export class SearchButton extends React.Component {
   render() {

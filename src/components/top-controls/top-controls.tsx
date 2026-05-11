@@ -2,7 +2,7 @@ import React from 'react';
 import { SearchInput } from '../search-input/search-input';
 import { SearchButton } from '../search-button/search-button';
 
-class TopControls extends React.Component<Record<string, never>> {
+export class TopControls extends React.Component {
   render() {
     return (
       <div className="top-controls">
@@ -12,5 +12,3 @@ class TopControls extends React.Component<Record<string, never>> {
     );
   }
 }
-
-export default TopControls;

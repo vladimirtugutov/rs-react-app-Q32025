@@ -7,6 +7,5 @@ const defaultValues: SearchContextType = {
   handleSearchButtonClick: () => {},
 };
 
-const SearchContext = React.createContext<SearchContextType>(defaultValues);
-
-export default SearchContext;
+export const SearchContext =
+  React.createContext<SearchContextType>(defaultValues);

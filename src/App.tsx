@@ -1,8 +1,8 @@
 import React from 'react';
-import TopControls from './components/top-controls/top-controls';
+import { TopControls } from './components/top-controls/top-controls';
 import { Results } from './components/results/results';
-import Spinner from './components/spinner/spinner';
-import SearchContext from './SearchContext';
+import { Spinner } from './components/spinner/spinner';
+import { SearchContext } from './SearchContext';
 import { Pokemon, SpeciesData } from './types';
 import { API_BASE_URL, API_SPECIES_URL, LOCAL_STORAGE_KEYS } from './constants';
 import './App.css';

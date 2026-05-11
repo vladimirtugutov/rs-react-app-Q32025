@@ -1,7 +1,7 @@
 import React from 'react';
-import './Spinner.css';
+import './spinner.css';
 
-class Spinner extends React.Component<Record<string, never>> {
+export class Spinner extends React.Component {
   render() {
     return (
       <div className="spinner-container" role="status" aria-busy="true">
@@ -10,5 +10,3 @@ class Spinner extends React.Component<Record<string, never>> {
     );
   }
 }
-
-export default Spinner;

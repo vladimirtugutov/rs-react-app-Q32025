@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchButton from '../SearchButton';
-import SearchContext from '../SearchContext';
+import { vi } from 'vitest';
+import { SearchButton } from './search-button';
+import { SearchContext } from '../../SearchContext';
 
 describe('SearchButton', () => {
-  it('renders a button with label', () => {
+  it('should render a button with correct text', () => {
     render(
       <SearchContext.Provider
         value={{
@@ -12,17 +13,16 @@ describe('SearchButton', () => {
           handleSearchButtonClick: vi.fn(),
         }}
       >
-        <SearchButton onClick={() => {}} />
+        <SearchButton />
       </SearchContext.Provider>
     );
-    const button = screen.getByRole('button');
-    expect(button).toBeInTheDocument();
-    expect(button).toHaveTextContent(/search button/i);
+    expect(
+      screen.getByRole('button', { name: /search button/i })
+    ).toBeInTheDocument();
   });
 
-  it('calls handleSearchButtonClick from context when clicked', () => {
+  it('should call handleSearchButtonClick from context when clicked', () => {
     const handleClick = vi.fn();
-
     render(
       <SearchContext.Provider
         value={{
@@ -31,12 +31,10 @@ describe('SearchButton', () => {
           handleSearchButtonClick: handleClick,
         }}
       >
-        <SearchButton onClick={() => {}} />
+        <SearchButton />
       </SearchContext.Provider>
     );
-
-    const button = screen.getByRole('button');
-    fireEvent.click(button);
+    fireEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalled();
   });
 });

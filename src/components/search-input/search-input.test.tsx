@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchInput from '../SearchInput';
-import SearchContext from '../SearchContext';
+import { vi } from 'vitest';
+import { SearchInput } from './search-input';
+import { SearchContext } from '../../SearchContext';
 
 describe('SearchInput component', () => {
-  it('renders input with default value from context', () => {
+  it('should render input with value from context', () => {
     render(
       <SearchContext.Provider
         value={{
@@ -15,15 +16,12 @@ describe('SearchInput component', () => {
         <SearchInput />
       </SearchContext.Provider>
     );
-
     const input = screen.getByRole('textbox') as HTMLInputElement;
-    expect(input).toBeInTheDocument();
     expect(input.value).toBe('pikachu');
   });
 
-  it('calls setSearchValue on input change', () => {
+  it('should call setSearchValue on input change', () => {
     const setSearchValueMock = vi.fn();
-
     render(
       <SearchContext.Provider
         value={{
@@ -35,10 +33,9 @@ describe('SearchInput component', () => {
         <SearchInput />
       </SearchContext.Provider>
     );
-
-    const input = screen.getByRole('textbox');
-    fireEvent.change(input, { target: { value: 'bulbasaur' } });
-
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'bulbasaur' },
+    });
     expect(setSearchValueMock).toHaveBeenCalledWith('bulbasaur');
   });
 });
