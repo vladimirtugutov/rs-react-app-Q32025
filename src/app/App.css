@@ -86,14 +86,6 @@
   flex-grow: 1;
 }
 
-.error-button-container {
-  margin-top: auto;
-  padding: 10px 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
 .no-results {
   text-align: center;
   font-style: italic;
