@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { AppRoutes } from '../constants/routes';
 import { About } from '../about/About';
 import { NotFound } from '../not-found/NotFound';
@@ -10,6 +11,10 @@ export type RouteConfig = {
 };
 
 export const routes: RouteConfig[] = [
+  {
+    path: '/',
+    element: <Navigate to="/1" replace />,
+  },
   {
     path: AppRoutes.ABOUT,
     element: <About />,
