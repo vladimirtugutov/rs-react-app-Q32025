@@ -52,27 +52,40 @@ export const SearchProvider = ({
       setError(null);
 
       try {
-        searchTerm = searchTerm.trim();
+        const trimmedSearchTerm = searchTerm.trim();
         const offset = (pageNum - 1) * API_CONFIG.ITEMS_PER_PAGE;
+        let url = '';
 
-        const url = searchTerm
-          ? `${API_CONFIG.BASE_URL}?title=${encodeURIComponent(
-              searchTerm
-            )}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`
-          : `${API_CONFIG.BASE_URL}?q=*&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
+        if (trimmedSearchTerm === '') {
+          const fallbackTerm = 'books';
+          url = `${API_CONFIG.BASE_URL}?q=${encodeURIComponent(fallbackTerm)}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
+        } else {
+          url = `${API_CONFIG.BASE_URL}?title=${encodeURIComponent(trimmedSearchTerm)}&limit=${API_CONFIG.ITEMS_PER_PAGE}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
+        }
 
         const res = await fetch(url);
         await new Promise((r) => setTimeout(r, API_CONFIG.REQUEST_DELAY));
 
         if (!res.ok) {
-          throw new Error(`API Error: ${res.status}`);
+          let errorMessage = `API Error: ${res.status}`;
+
+          try {
+            const errorJson = await res.json();
+            if (errorJson?.detail?.[0]?.msg) {
+              errorMessage += ` (Unprocessable Content) - ${errorJson.detail[0].msg}`;
+            }
+          } catch (parsingError) {
+            console.debug('Failed to parse error response JSON:', parsingError);
+          }
+
+          throw new Error(errorMessage);
         }
 
         const data: OpenLibraryResponse = await res.json();
 
         const mappedResults: Book[] = data.docs.map(
           (book: OpenLibraryBook) => ({
-            title: book.title || 'Название не указано',
+            title: book.title || 'Title not specified',
             author_name: book.author_name || [],
             first_publish_year: book.first_publish_year,
             cover_i: book.cover_i,
@@ -96,16 +109,19 @@ export const SearchProvider = ({
     [generateDescription]
   );
   useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEYS.PREV_SEARCH_VALUE,
+      savedSearchTerm.trim()
+    );
     getResults(savedSearchTerm, currentPage);
   }, [getResults, currentPage, savedSearchTerm]);
 
   const handleSearchButtonClick = useCallback(async () => {
-    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, searchValue);
-    setSavedSearchTerm(searchValue);
+    const trimmed = searchValue.trim();
+    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, trimmed);
+    setSavedSearchTerm(trimmed);
     navigate('/1');
-
-    await getResults(searchValue, 1);
-  }, [searchValue, getResults, navigate]);
+  }, [searchValue, navigate]);
 
   const setSearchValue = useCallback((newValue: string) => {
     setSearchValueState(newValue);

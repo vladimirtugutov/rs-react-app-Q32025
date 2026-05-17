@@ -25,7 +25,7 @@ export const Results = ({ results, error }: ResultsProps) => {
   }
 
   if (!results || results.length === 0) {
-    return <div className="no-results">Нет результатов.</div>;
+    return <div className="no-results">No results</div>;
   }
 
   return (
