@@ -4,13 +4,52 @@ import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import ErrorBoundary from '../error-boundary/ErrorBoundary';
 
-const mockFetch = vi.fn();
-globalThis.fetch = mockFetch as typeof fetch;
+class MockRequest {
+  public url: string;
+  public method: string;
+  public headers: Headers;
+  public credentials?: RequestCredentials;
+  public signal?: AbortSignal;
+
+  constructor(input: string | URL | Request, init?: RequestInit) {
+    this.url = typeof input === 'string' ? input : input.toString();
+    this.method = init?.method ?? 'GET';
+    this.headers =
+      init?.headers instanceof Headers
+        ? init.headers
+        : new Headers(init?.headers);
+    this.credentials = init?.credentials;
+    this.signal = init?.signal ?? undefined;
+  }
+}
+
+class MockResponse {
+  public status: number;
+  public ok: boolean;
+  public headers: Headers;
+  private _body: unknown;
+
+  constructor(body?: unknown, init?: ResponseInit) {
+    this._body = body;
+    this.status = init?.status || 200;
+    this.ok = this.status >= 200 && this.status < 300;
+    this.headers =
+      init?.headers instanceof Headers
+        ? init.headers
+        : new Headers(init?.headers);
+  }
+
+  public async json(): Promise<unknown> {
+    return typeof this._body === 'string' ? JSON.parse(this._body) : this._body;
+  }
+}
+
+const mockFetch = vi.fn<typeof fetch>();
 
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: vi.fn<(key: string) => string | null>(),
+  setItem: vi.fn<(key: string, value: string) => void>(),
+  clear: vi.fn<() => void>(),
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
@@ -52,6 +91,12 @@ describe('App', () => {
     vi.clearAllMocks();
     localStorageMock.clear();
     localStorageMock.getItem.mockReturnValue('');
+
+    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal('Request', MockRequest);
+    vi.stubGlobal('Response', MockResponse);
+    vi.stubGlobal('AbortSignal', window.AbortSignal);
+
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -59,13 +104,13 @@ describe('App', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('should render without crashing and fetch initial data', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(mockOpenLibraryResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -78,12 +123,13 @@ describe('App', () => {
   });
 
   it('should render spinner during loading', async () => {
-    mockFetch.mockImplementation(async () => {
+    mockFetch.mockImplementationOnce(async () => {
       await new Promise((r) => setTimeout(r, 100));
-      return {
-        ok: true,
-        json: async () => ({ docs: [], numFound: 0, start: 0 }),
-      };
+      return new MockResponse({
+        docs: [],
+        numFound: 0,
+        start: 0,
+      }) as unknown as Response;
     });
 
     renderWithRouter(<App />);
@@ -94,11 +140,9 @@ describe('App', () => {
   });
 
   it('should handle API error gracefully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse({}, { status: 500 }) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -117,10 +161,13 @@ describe('App', () => {
   });
 
   it('should render main navigation routes', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse({
+        docs: [],
+        numFound: 0,
+        start: 0,
+      }) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -131,10 +178,9 @@ describe('App', () => {
     const savedSearchValue = 'saved search';
     localStorageMock.getItem.mockReturnValue(savedSearchValue);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(mockOpenLibraryResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -144,10 +190,9 @@ describe('App', () => {
   });
 
   it('should handle search functionality', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(mockOpenLibraryResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -164,10 +209,9 @@ describe('App', () => {
       numFound: 100,
     };
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => largeResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(largeResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -186,10 +230,9 @@ describe('App', () => {
       start: 0,
     };
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => smallResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(smallResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -202,21 +245,23 @@ describe('App', () => {
   });
 
   it('should display no results message when API returns empty results', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse({
+        docs: [],
+        numFound: 0,
+        start: 0,
+      }) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
-    expect(await screen.findByText(/нет результатов/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no results/i)).toBeInTheDocument();
   });
 
   it('should generate correct book descriptions', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockOpenLibraryResponse,
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse(mockOpenLibraryResponse) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
@@ -240,10 +285,13 @@ describe('App', () => {
   });
 
   it('should maintain app container structure', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ docs: [], numFound: 0, start: 0 }),
-    });
+    mockFetch.mockResolvedValueOnce(
+      new MockResponse({
+        docs: [],
+        numFound: 0,
+        start: 0,
+      }) as unknown as Response
+    );
 
     renderWithRouter(<App />);
 
