@@ -30,20 +30,31 @@ export const SelectedItemsFlyout: React.FC = () => {
       'Preview Link',
     ];
 
+    const cleanField = (field: string | number | undefined | null): string => {
+      if (field === undefined || field === null) return '""';
+
+      const cleanText = String(field)
+        .replace(/[\n\r]+/g, ' ')
+        .replace(/"/g, '""');
+
+      return `"${cleanText}"`;
+    };
+
     const csvRows = [
       headers.join(','),
       ...items.map((item) =>
         [
-          `"${(item.title || '').replace(/"/g, '""')}"`,
-          `"${(item.authors?.join('; ') || '').replace(/"/g, '""')}"`,
-          `"${(item.description || '').replace(/"/g, '""')}"`,
-          `"${item.publishedDate || ''}"`,
-          `"${item.pageCount || ''}"`,
-          `"${(item.categories?.join('; ') || '').replace(/"/g, '""')}"`,
-          `"${item.previewLink || ''}"`,
+          cleanField(item.title),
+          cleanField(item.authors?.join('; ')),
+          cleanField(item.description),
+          cleanField(item.publishedDate),
+          cleanField(item.pageCount),
+          cleanField(item.categories?.join('; ')),
+          cleanField(item.previewLink),
         ].join(',')
       ),
     ];
+
     return csvRows.join('\n');
   };
 
