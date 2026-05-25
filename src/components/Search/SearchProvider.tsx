@@ -43,7 +43,7 @@ export const SearchProvider = ({
 
     return parts.join(' • ');
   }, []);
-  
+
   const getResults = useCallback(
     async (searchTerm = '', pageNum = 1): Promise<void> => {
       setIsLoading(true);

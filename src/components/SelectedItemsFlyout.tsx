@@ -1,5 +1,4 @@
 import React from 'react';
-import { saveAs } from 'file-saver';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import {
   selectSelectedItems,
@@ -18,17 +17,6 @@ export const SelectedItemsFlyout: React.FC = () => {
 
   const handleUnselectAll = () => {
     dispatch(clearAllItems());
-  };
-
-  const handleDownload = () => {
-    try {
-      const csvContent = generateCSV(selectedItems);
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-      saveAs(blob, `${selectedCount}_items.csv`);
-    } catch (error) {
-      console.error('Error downloading CSV:', error);
-    }
   };
 
   const generateCSV = (items: typeof selectedItems) => {
@@ -57,6 +45,28 @@ export const SelectedItemsFlyout: React.FC = () => {
       ),
     ];
     return csvRows.join('\n');
+  };
+
+  const handleDownload = () => {
+    try {
+      const csvContent = generateCSV(selectedItems);
+      const blob = new Blob(['\uFEFF' + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${selectedCount}_items.csv`);
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      /* Download failed silently to keep the browser console clean per requirements */
+    }
   };
 
   return (
