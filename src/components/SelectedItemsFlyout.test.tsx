@@ -7,30 +7,18 @@ import { SelectedItemsFlyout } from './SelectedItemsFlyout';
 import selectedItemsReducer, { toggleItem } from '../store/selectedItemsSlice';
 import { SelectedItem } from '../types/selectedItems';
 
-const mockSaveAs = vi.hoisted(() => vi.fn());
+let createdObjectUrls: string[] = [];
+let clickedLinks: HTMLAnchorElement[] = [];
+let generatedBlobs: Blob[] = [];
 
-vi.mock('file-saver', () => ({
-  saveAs: mockSaveAs,
-}));
-
-class MockBlob {
-  content: string;
-  type: string;
-
-  constructor(content: string[], options: { type?: string } = {}) {
-    this.content = content.join('');
-    this.type = options.type || '';
-  }
-
-  text() {
-    return Promise.resolve(this.content);
-  }
-}
-
-Object.defineProperty(globalThis, 'Blob', {
-  value: MockBlob,
-  configurable: true,
-});
+const readBlobAsText = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+};
 
 const createTestStore = (initialItems: SelectedItem[] = []) => {
   const store = configureStore({
@@ -89,12 +77,30 @@ const mockSelectedItems: SelectedItem[] = [
 
 describe('SelectedItemsFlyout', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    createdObjectUrls = [];
+    clickedLinks = [];
+    generatedBlobs = [];
+
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn((blob: Blob) => {
+        const url = `blob:mock-url-${Math.random()}`;
+        createdObjectUrls.push(url);
+        generatedBlobs.push(blob);
+        return url;
+      }),
+      revokeObjectURL: vi.fn(() => {}),
+    });
+
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      clickedLinks.push(this);
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('Visibility', () => {
@@ -110,7 +116,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -125,7 +131,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -136,7 +142,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '2 items selected';
         })
       ).toBeInTheDocument();
@@ -147,7 +153,7 @@ describe('SelectedItemsFlyout', () => {
       renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '3 items selected';
         })
       ).toBeInTheDocument();
@@ -181,65 +187,51 @@ describe('SelectedItemsFlyout', () => {
   });
 
   describe('Download functionality', () => {
-    it('should call saveAs when download button is clicked', () => {
+    it('should invoke native download APIs when download button is clicked', () => {
       const store = createTestStore([mockSelectedItems[0]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      expect(mockSaveAs).toHaveBeenCalledWith(
-        expect.any(MockBlob),
-        '1_items.csv'
-      );
+      expect(URL.createObjectURL).toHaveBeenCalled();
+      expect(clickedLinks).toHaveLength(1);
+      expect(clickedLinks[0].getAttribute('download')).toBe('1_items.csv');
     });
 
     it('should generate correct filename for multiple items', () => {
       const store = createTestStore(mockSelectedItems);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      expect(mockSaveAs).toHaveBeenCalledWith(
-        expect.any(MockBlob),
-        '3_items.csv'
-      );
+      expect(clickedLinks).toHaveLength(1);
+      expect(clickedLinks[0].getAttribute('download')).toBe('3_items.csv');
     });
 
     it('should create blob with correct content type', () => {
       const store = createTestStore([mockSelectedItems[0]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-
-      expect(blob).toBeInstanceOf(MockBlob);
-      expect(blob.type).toBe('text/csv;charset=utf-8;');
+      expect(generatedBlobs).toHaveLength(1);
+      expect(generatedBlobs[0]).toBeInstanceOf(Blob);
+      expect(generatedBlobs[0].type).toBe('text/csv;charset=utf-8;');
     });
   });
 
   describe('CSV generation', () => {
     it('should generate correct CSV headers', async () => {
       const store = createTestStore([mockSelectedItems[0]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-      const csvContent = await blob.text();
-
+      const csvContent = await readBlobAsText(generatedBlobs[0]);
       const expectedHeaders =
         'Title,Authors,Description,Published Date,Page Count,Categories,Preview Link';
       expect(csvContent).toContain(expectedHeaders);
@@ -247,16 +239,12 @@ describe('SelectedItemsFlyout', () => {
 
     it('should generate correct CSV content for single item', async () => {
       const store = createTestStore([mockSelectedItems[0]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-      const csvContent = await blob.text();
+      const csvContent = await readBlobAsText(generatedBlobs[0]);
 
       expect(csvContent).toContain('"Test Book 1"');
       expect(csvContent).toContain('"Author 1; Author 2"');
@@ -269,16 +257,12 @@ describe('SelectedItemsFlyout', () => {
 
     it('should properly escape quotes in CSV content', async () => {
       const store = createTestStore([mockSelectedItems[2]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-      const csvContent = await blob.text();
+      const csvContent = await readBlobAsText(generatedBlobs[0]);
 
       expect(csvContent).toContain('""quotes""');
       expect(csvContent).toContain('"Author ""Quoted"""');
@@ -291,16 +275,12 @@ describe('SelectedItemsFlyout', () => {
       };
 
       const store = createTestStore([itemWithEmptyFields]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-      const csvContent = await blob.text();
+      const csvContent = await readBlobAsText(generatedBlobs[0]);
 
       expect(csvContent).toContain('"Empty Book"');
       expect(csvContent).toContain('""');
@@ -308,18 +288,14 @@ describe('SelectedItemsFlyout', () => {
 
     it('should generate correct CSV for multiple items', async () => {
       const store = createTestStore(mockSelectedItems.slice(0, 2));
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
       fireEvent.click(downloadButton);
 
-      const mockCalls = mockSaveAs.mock.calls;
-      const firstCall = mockCalls[0];
-      const blob = firstCall[0] as MockBlob;
-      const csvContent = await blob.text();
+      const csvContent = await readBlobAsText(generatedBlobs[0]);
+      const lines = csvContent.replace(/^\uFEFF/, '').split('\n');
 
-      const lines = csvContent.split('\n');
       expect(lines).toHaveLength(3);
       expect(lines[0]).toContain('Title,Authors');
       expect(lines[1]).toContain('Test Book 1');
@@ -328,25 +304,17 @@ describe('SelectedItemsFlyout', () => {
   });
 
   describe('Error handling', () => {
-    it('should handle download errors gracefully', () => {
-      mockSaveAs.mockImplementation(() => {
-        throw new Error('Save failed');
+    it('should handle download errors gracefully and fail silently to keep console clean', () => {
+      vi.spyOn(URL, 'createObjectURL').mockImplementationOnce(() => {
+        throw new Error('Native API Error');
       });
 
-      const consoleSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
       const store = createTestStore([mockSelectedItems[0]]);
-
       renderWithStore(store);
 
       const downloadButton = screen.getByText('Download');
-      fireEvent.click(downloadButton);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Error downloading CSV:',
-        expect.any(Error)
-      );
+      expect(() => fireEvent.click(downloadButton)).not.toThrow();
     });
   });
 
@@ -356,7 +324,7 @@ describe('SelectedItemsFlyout', () => {
       const { rerender } = renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -371,7 +339,7 @@ describe('SelectedItemsFlyout', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText((_content, element) => {
+          screen.getByText((_, element) => {
             return element?.textContent === '2 items selected';
           })
         ).toBeInTheDocument();
@@ -383,7 +351,7 @@ describe('SelectedItemsFlyout', () => {
       const { rerender } = renderWithStore(store);
 
       expect(
-        screen.getByText((_content, element) => {
+        screen.getByText((_, element) => {
           return element?.textContent === '1 item selected';
         })
       ).toBeInTheDocument();
@@ -398,7 +366,7 @@ describe('SelectedItemsFlyout', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText((_content, element) => {
+          screen.queryByText((_, element) => {
             return element?.textContent === '1 item selected';
           })
         ).not.toBeInTheDocument();
@@ -426,7 +394,7 @@ describe('SelectedItemsFlyout', () => {
 
       expect(
         screen
-          .getByText((_content, element) => {
+          .getByText((_, element) => {
             return element?.textContent === '1 item selected';
           })
           .closest('.selected-items-flyout')
