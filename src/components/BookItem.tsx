@@ -32,8 +32,7 @@ export const BookItem = ({
     navigate(`/${page}/${bookId}`);
   };
 
-  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.stopPropagation();
+  const handleCheckboxChange = () => {
     if (!book.key) return;
 
     const selectedItem = {
@@ -51,12 +50,22 @@ export const BookItem = ({
     dispatch(toggleItem(selectedItem));
   };
 
+  const handleCheckboxContainerClick = (
+    event: React.MouseEvent<HTMLLabelElement>
+  ) => {
+    event.stopPropagation();
+  };
+
   return (
     <div
       className={`result-card ${isDetailSelected ? 'selected' : ''} ${isSelected ? 'checked' : ''}`}
       onClick={handleBookClick}
     >
-      <label className="book-checkbox-container" htmlFor={`book-${book.key}`}>
+      <label
+        className="book-checkbox-container"
+        htmlFor={`book-${book.key}`}
+        onClick={handleCheckboxContainerClick}
+      >
         <input
           id={`book-${book.key}`}
           type="checkbox"
