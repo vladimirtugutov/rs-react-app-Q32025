@@ -1,15 +1,9 @@
+import React from 'react';
 import { useTheme } from '../../hooks/useTheme';
 import './ThemeSelector.css';
 
-type Theme = 'light' | 'dark';
-
-export const ThemeSelector = () => {
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-  };
+export const ThemeSelector: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="theme-selector" data-testid="theme-selector">

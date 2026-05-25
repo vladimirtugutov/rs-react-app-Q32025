@@ -7,19 +7,28 @@ import { BookDetails } from '../pages/book-details/BookDetails';
 
 export const router = createBrowserRouter([
   {
-    path: AppRoutes.ABOUT,
-    element: <About />,
-  },
-  {
-    path: '/:page?',
+    path: '/',
     element: <ValidatedMainLayout />,
     children: [
-      { index: true, element: null },
-      { path: ':detailsId', element: <BookDetails /> },
+      {
+        path: ':page?',
+        children: [
+          { index: true, element: null },
+          { path: ':detailsId', element: <BookDetails /> },
+        ],
+      },
+      {
+        path: AppRoutes.ABOUT,
+        element: <About />,
+      },
+      {
+        path: AppRoutes.NOT_FOUND,
+        element: <NotFound />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
     ],
-  },
-  {
-    path: AppRoutes.NOT_FOUND,
-    element: <NotFound />,
   },
 ]);
