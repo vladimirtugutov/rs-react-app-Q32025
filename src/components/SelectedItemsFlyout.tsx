@@ -64,8 +64,8 @@ export const SelectedItemsFlyout: React.FC = () => {
 
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch {
-      /* Download failed silently to keep the browser console clean per requirements */
+    } catch (error) {
+      void error;
     }
   };
 
