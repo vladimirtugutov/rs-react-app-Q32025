@@ -10,14 +10,6 @@ vi.mock('../hooks/useBooks', () => ({
   useBooks: vi.fn(),
 }));
 
-vi.mock('../hooks/useCacheInvalidation', () => ({
-  useCacheInvalidation: vi.fn(() => ({
-    refreshBooks: vi.fn(),
-    refreshBookDetails: vi.fn(),
-    refreshAll: vi.fn(),
-  })),
-}));
-
 const createTestStore = () => {
   return configureStore({
     reducer: {
@@ -41,20 +33,7 @@ describe('App - RTK Query Caching Behavior', () => {
 
   it('should use cached data when available', async () => {
     const { useBooks } = await import('../hooks/useBooks');
-    const { useCacheInvalidation } = await import(
-      '../hooks/useCacheInvalidation'
-    );
-
     const mockRefetch = vi.fn();
-    const mockRefreshBooks = vi.fn();
-    const mockRefreshBookDetails = vi.fn();
-    const mockRefreshAll = vi.fn();
-
-    vi.mocked(useCacheInvalidation).mockReturnValue({
-      refreshBooks: mockRefreshBooks,
-      refreshBookDetails: mockRefreshBookDetails,
-      refreshAll: mockRefreshAll,
-    });
 
     vi.mocked(useBooks).mockReturnValue({
       books: [
@@ -85,20 +64,7 @@ describe('App - RTK Query Caching Behavior', () => {
 
   it('should invalidate cache on manual refresh', async () => {
     const { useBooks } = await import('../hooks/useBooks');
-    const { useCacheInvalidation } = await import(
-      '../hooks/useCacheInvalidation'
-    );
-
     const mockRefetch = vi.fn();
-    const mockRefreshBooks = vi.fn();
-    const mockRefreshBookDetails = vi.fn();
-    const mockRefreshAll = vi.fn();
-
-    vi.mocked(useCacheInvalidation).mockReturnValue({
-      refreshBooks: mockRefreshBooks,
-      refreshBookDetails: mockRefreshBookDetails,
-      refreshAll: mockRefreshAll,
-    });
 
     vi.mocked(useBooks).mockReturnValue({
       books: [],
@@ -113,8 +79,6 @@ describe('App - RTK Query Caching Behavior', () => {
       renderWithProviders(<App />);
     });
 
-    expect(mockRefreshBooks).toBeDefined();
-    expect(mockRefreshBookDetails).toBeDefined();
-    expect(mockRefreshAll).toBeDefined();
+    expect(mockRefetch).toBeDefined();
   });
 });

@@ -9,7 +9,7 @@ export const getBooksQueryUrl = (
   if (searchTerm.trim()) {
     return `?title=${encodeURIComponent(searchTerm.trim())}&limit=${itemsPerPage}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
   }
-  return `?q=*&limit=${itemsPerPage}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
+  return `?q=books&limit=${itemsPerPage}&offset=${offset}&fields=key,title,author_name,cover_i,first_publish_year,publisher,subject&sort=rating`;
 };
 
 export const generateDescription = (book: OpenLibraryBook): string => {
