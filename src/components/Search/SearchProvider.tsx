@@ -128,7 +128,9 @@ export const SearchProvider = ({
     navigate(newUrl);
   };
 
-  const totalPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
+  const MAX_SAFE_PAGES = 1000; 
+  const calculatedPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
+  const totalPages = Math.min(calculatedPages, MAX_SAFE_PAGES);
 
   return (
     <SearchContext.Provider
