@@ -1,6 +1,5 @@
 import { BookMainInfoProps } from '../types/components';
 import { InfoSection } from './InfoSection';
-import { isArrayWithItems } from '../utils/isArrayWithItems';
 
 const MAX_SUBJECTS_DISPLAY = 8;
 const MAX_PUBLISHERS_DISPLAY = 8;
@@ -21,7 +20,7 @@ export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
     <div className="book-main-info">
       <h3>{book.title}</h3>
 
-      {isArrayWithItems<string>(book.author_name) && (
+      {book.author_name?.length > 0 && (
         <InfoSection title="Authors:">
           {book.author_name.join(', ')}
         </InfoSection>
@@ -33,7 +32,7 @@ export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
         </InfoSection>
       )}
 
-      {isArrayWithItems<string>(book.publisher) && (
+      {book.publisher?.length > 0 && (
         <InfoSection title="Publishers:">
           {book.publisher.slice(0, MAX_PUBLISHERS_DISPLAY).join(', ')}
         </InfoSection>
@@ -45,7 +44,7 @@ export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
         </InfoSection>
       )}
 
-      {isArrayWithItems<string>(book.subject) && (
+      {book.subject?.length > 0 && (
         <InfoSection title="Subjects:">
           {book.subject.slice(0, MAX_SUBJECTS_DISPLAY).join(', ')}
         </InfoSection>

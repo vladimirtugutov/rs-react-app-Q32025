@@ -73,19 +73,27 @@ export const useBookSearch = ({ currentPage }: UseBookSearchProps) => {
 
         const data: OpenLibraryResponse = await res.json();
 
-        const mappedResults: Book[] = data.docs.map(
-          (book: OpenLibraryBook) => ({
+        const mappedResults: Book[] = data.docs.map((book: OpenLibraryBook) => {
+          const authors = Array.isArray(book.author_name)
+            ? book.author_name
+            : [];
+          const publishers = Array.isArray(book.publisher)
+            ? book.publisher
+            : [];
+          const subjects = Array.isArray(book.subject) ? book.subject : [];
+
+          return {
             title: book.title || 'Title not specified',
-            author_name: book.author_name || [],
+            author_name: authors,
             first_publish_year: book.first_publish_year,
             cover_i: book.cover_i,
             isbn: book.isbn,
-            subject: book.subject,
-            publisher: book.publisher,
+            publisher: publishers,
+            subject: subjects,
             key: book.key,
             description: generateDescription(book),
-          })
-        );
+          };
+        });
 
         setResults(mappedResults);
         setTotalResults(data.numFound);
