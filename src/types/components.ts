@@ -15,7 +15,7 @@ export type ResultsProps = {
 };
 
 export type BookDetailsProps = {
-  results: Book[];
+  results?: Book[];
 };
 
 export type PaginationProps = {
