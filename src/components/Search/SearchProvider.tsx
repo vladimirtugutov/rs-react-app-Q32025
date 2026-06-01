@@ -37,7 +37,6 @@ export const SearchProvider = ({
   const {
     books: results,
     totalResults,
-    totalPages: calculatedTotalPages,
     isLoading,
     error,
     refetch,
@@ -65,8 +64,9 @@ export const SearchProvider = ({
     [navigate]
   );
 
-  const totalPages =
-    calculatedTotalPages || Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
+  const MAX_SAFE_PAGES = 1000;
+  const calculatedPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
+  const totalPages = Math.min(calculatedPages, MAX_SAFE_PAGES);
 
   const contextValue = useMemo(
     () => ({

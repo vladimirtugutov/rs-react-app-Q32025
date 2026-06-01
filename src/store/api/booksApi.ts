@@ -50,7 +50,7 @@ export const booksApi = createApi({
         { type: BooksApiTags.Books, id: 'LIST' },
       ],
 
-      keepUnusedDataFor: 300,
+      keepUnusedDataFor: Number(import.meta.env.VITE_CACHE_TTL) || 300,
     }),
 
     getBookDetails: builder.query<BookDetailsAPI, string>({
