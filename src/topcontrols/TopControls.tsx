@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import SearchInput from '../search/SearchInput';
 import SearchButton from '../search/SearchButton';
+import { AppRoutes } from '../constants/routes';
 
 function TopControls() {
   return (
@@ -10,7 +11,7 @@ function TopControls() {
         <SearchButton />
       </div>
       <nav className="navigation">
-        <Link to="/about">About</Link>
+        <Link to={AppRoutes.ABOUT}>About</Link>
       </nav>
     </div>
   );

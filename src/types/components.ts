@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, PropsWithChildren } from 'react';
 import { Book, BookDetailsAPI } from './book';
 
 export type ErrorBoundaryProps = {
@@ -39,10 +39,9 @@ export type SearchContextType = {
   handleSearchButtonClick: () => void;
 };
 
-export type InfoSectionProps = {
+export type InfoSectionProps = PropsWithChildren<{
   title: string;
-  children: React.ReactNode;
-};
+}>;
 
 export type BookMainInfoProps = {
   book: Book;
@@ -65,9 +64,9 @@ type SearchProviderChildrenProps = {
   onPageChange: (page: number) => void;
 };
 
-export type SearchProviderProps = {
+export type SearchProviderProps = PropsWithChildren<{
   currentPage: number;
   detailsId?: string;
   navigate: (url: string) => void;
-  children: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
-};
+  children?: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
+}>;

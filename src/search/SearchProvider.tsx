@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import SearchContext from './SearchContext';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 import { API_CONFIG } from '../constants/api';
@@ -24,30 +24,32 @@ export const SearchProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [totalResults, setTotalResults] = useState(0);
 
-  const generateDescription = useCallback((book: OpenLibraryBook): string => {
+  const generateDescription = (book: OpenLibraryBook): string => {
     const parts: string[] = [];
-
     if (book.author_name && book.author_name.length > 0) {
       parts.push(`Author: ${book.author_name.slice(0, 2).join(', ')}`);
     }
-
     if (book.first_publish_year) {
       parts.push(`First publish year: ${book.first_publish_year}`);
     }
-
     if (book.publisher && book.publisher.length > 0) {
       parts.push(`Publisher: ${book.publisher[0]}`);
     }
-
     if (book.subject && book.subject.length > 0) {
       parts.push(`Subject: ${book.subject.slice(0, 3).join(', ')}`);
     }
-
     return parts.join(' • ');
-  }, []);
+  };
 
-  const getResults = useCallback(
-    async (searchTerm = '', pageNum = 1): Promise<void> => {
+  const handleSearchButtonClick = async () => {
+    const trimmed = searchValue.trim();
+    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, trimmed);
+    setSavedSearchTerm(trimmed);
+    navigate('/1');
+  };
+
+  useEffect(() => {
+    const getResults = async (searchTerm = '', pageNum = 1): Promise<void> => {
       setIsLoading(true);
       setError(null);
 
@@ -68,16 +70,13 @@ export const SearchProvider = ({
 
         if (!res.ok) {
           let errorMessage = `API Error: ${res.status}`;
-
           try {
             const errorJson = await res.json();
             if (errorJson?.detail?.[0]?.msg) {
               errorMessage += ` (Unprocessable Content) - ${errorJson.detail[0].msg}`;
             }
-          } catch (parsingError) {
-            console.debug('Failed to parse error response JSON:', parsingError);
+          } catch(_e){
           }
-
           throw new Error(errorMessage);
         }
 
@@ -99,40 +98,29 @@ export const SearchProvider = ({
 
         setResults(mappedResults);
         setTotalResults(data.numFound);
-      } catch (error) {
-        console.error('Error fetching results:', error);
-        setError((error as Error).message);
+      } catch (err) {
+        console.error('Error fetching results:', err);
+        setError((err as Error).message);
       } finally {
         setIsLoading(false);
       }
-    },
-    [generateDescription]
-  );
-  useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.PREV_SEARCH_VALUE,
-      savedSearchTerm.trim()
-    );
+    };
+
+    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, savedSearchTerm.trim());
     getResults(savedSearchTerm, currentPage);
-  }, [getResults, currentPage, savedSearchTerm]);
+    
+  }, [currentPage, savedSearchTerm]);
 
-  const handleSearchButtonClick = useCallback(async () => {
-    const trimmed = searchValue.trim();
-    localStorage.setItem(STORAGE_KEYS.PREV_SEARCH_VALUE, trimmed);
-    setSavedSearchTerm(trimmed);
-    navigate('/1');
-  }, [searchValue, navigate]);
-
-  const setSearchValue = useCallback((newValue: string) => {
+  const setSearchValue = (newValue: string) => {
     setSearchValueState(newValue);
-  }, []);
+  };
 
   const handlePageChange = (newPage: number) => {
     const newUrl = detailsId ? `/${newPage}/${detailsId}` : `/${newPage}`;
     navigate(newUrl);
   };
 
-  const MAX_SAFE_PAGES = 1000; 
+  const MAX_SAFE_PAGES = 1000;
   const calculatedPages = Math.ceil(totalResults / API_CONFIG.ITEMS_PER_PAGE);
   const totalPages = Math.min(calculatedPages, MAX_SAFE_PAGES);
 
