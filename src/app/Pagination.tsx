@@ -1,39 +1,12 @@
 import { PaginationProps } from '../types/components';
+import { getVisiblePages } from '../utils/getVisiblePages';
 
 export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
 }: PaginationProps) => {
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
-      i++
-    ) {
-      range.push(i);
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
+  const visiblePages = getVisiblePages(currentPage, totalPages);
 
   return (
     <div className="pagination">
@@ -44,7 +17,7 @@ export const Pagination = ({
         Previous
       </button>
 
-      {getVisiblePages().map((page, index) => (
+      {visiblePages.map((page, index) => (
         <button
           key={index}
           onClick={() =>
