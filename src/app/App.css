@@ -17,6 +17,12 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+.logo-react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+.logo-animated {
+  animation: logo-spin infinite 20s linear;
+}
 
 @keyframes logo-spin {
   from {
@@ -47,17 +53,37 @@
   align-items: center;
   gap: 20px;
   width: 100%;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+[data-theme='dark'] .app-container {
+  background-color: var(--color-background, #3f3b3b);
+  color: var(--text-color, --color-white);
 }
 
 .top-controls {
   width: 600px;
   padding: 10px;
-  border: 2px solid #ccc;
-  border-radius: 5px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   display: flex;
   gap: 10px;
   justify-content: center;
-  background-color: #f8f8f8;
+  background-color: var(--color-surface);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+[data-theme='dark'] .top-controls {
+  background-color: var(--color-background, #2d3748);
+  border-color: var(--border-color, #404040);
+  color: var(--text-color, --color-white);
 }
 
 .error-message {

@@ -1,17 +1,21 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
 import './index.css';
 import { App } from './app/App.tsx';
-import ErrorBoundary from './error-boundary/ErrorBoundary.js';
+import { store } from './store/index.ts';
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.tsx';
 
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
+      <Provider store={store}>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </Provider>
     </StrictMode>
   );
 } else {

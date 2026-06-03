@@ -1,9 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Spinner from '../spinner/Spinner';
-import { Results } from '../results/Results';
+import Spinner from '../components/Spinner/Spinner';
+import { Results } from '../components/Results/Results';
 import { Pagination } from './Pagination';
-import { BookDetails } from '../book-details/BookDetails';
 import { MainContentProps } from '../types/components';
 
 export const MainContent = ({
@@ -41,7 +40,6 @@ export const MainContent = ({
           </React.Fragment>
         )}
       </div>
-      {detailsId && <BookDetails results={results} />}
     </div>
   );
 };

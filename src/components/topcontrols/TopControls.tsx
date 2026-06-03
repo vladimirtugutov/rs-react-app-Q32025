@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import SearchInput from '../search/SearchInput';
-import SearchButton from '../search/SearchButton';
-import { AppRoutes } from '../constants/routes';
+import SearchInput from '../Search/SearchInput';
+import SearchButton from '../Search/SearchButton';
+import { AppRoutes } from '../../constants/routes';
 
 function TopControls() {
   return (

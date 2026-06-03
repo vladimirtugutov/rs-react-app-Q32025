@@ -2,26 +2,26 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { BookDetails } from './BookDetails';
-import { Book } from '../types/book';
+import { OpenLibraryBook } from '../../types/book';
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch as typeof fetch;
 
 const mockNavigate = vi.fn();
+const mockUseParams = vi.fn();
+const mockUseOutletContext = vi.fn();
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-    useParams: () => ({
-      detailsId: 'OL123456W',
-      page: '1',
-    }),
+    useParams: () => mockUseParams(),
+    useOutletContext: () => mockUseOutletContext(),
   };
 });
 
-const mockBookFromList: Book = {
+const mockBookFromList: OpenLibraryBook = {
   key: '/works/OL123456W',
   title: 'Test Book Title',
   author_name: ['Test Author', 'Second Author'],
@@ -29,8 +29,6 @@ const mockBookFromList: Book = {
   cover_i: 123456,
   publisher: ['Test Publisher', 'Another Publisher'],
   subject: ['Fiction', 'Adventure', 'Mystery'],
-  description:
-    'Author: Test Author • First publish year: 2020 • Publisher: Test Publisher',
 };
 
 const mockBookDetailsAPI = {
@@ -55,6 +53,15 @@ describe('BookDetails', () => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     mockNavigate.mockClear();
+
+    mockUseParams.mockReturnValue({
+      detailsId: 'OL123456W',
+      page: '1',
+    });
+
+    mockUseOutletContext.mockReturnValue({
+      results: [mockBookFromList],
+    });
   });
 
   afterEach(() => {
@@ -62,26 +69,34 @@ describe('BookDetails', () => {
   });
 
   it('should return null when detailsId is not provided', () => {
-    const { container } = renderWithRouter(<BookDetails results={[]} />);
-    expect(container.querySelector('.book-details-panel')).toBeInTheDocument();
+    mockUseParams.mockReturnValue({
+      page: '1',
+    });
+
+    const { container } = renderWithRouter(<BookDetails />);
+    expect(container.firstChild).toBeNull();
   });
 
   it('should display book not found message when book is not in results', () => {
-    renderWithRouter(<BookDetails results={[]} />);
+    mockUseOutletContext.mockReturnValue({
+      results: [],
+    });
 
-    expect(screen.getByText('Book Details')).toBeInTheDocument();
-    expect(
-      screen.getByText('Book not found in current search results')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Try searching for this book again')
-    ).toBeInTheDocument();
+    renderWithRouter(<BookDetails />);
+
+    expect(screen.getByTestId('book-details-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-title')).toBeInTheDocument();
+    expect(screen.getByTestId('book-not-found')).toBeInTheDocument();
   });
 
   it('should render close button with correct functionality', () => {
-    renderWithRouter(<BookDetails results={[]} />);
+    mockUseOutletContext.mockReturnValue({
+      results: [],
+    });
 
-    const closeButton = screen.getByText('×');
+    renderWithRouter(<BookDetails />);
+
+    const closeButton = screen.getByTestId('close-button');
     expect(closeButton).toBeInTheDocument();
     expect(closeButton).toHaveAttribute('title', 'Close details');
 
@@ -104,9 +119,9 @@ describe('BookDetails', () => {
         )
     );
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('loading-section')).toBeInTheDocument();
     expect(
       screen.getByText('Loading detailed information...')
     ).toBeInTheDocument();
@@ -120,11 +135,11 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -143,11 +158,11 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -166,11 +181,11 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -188,7 +203,7 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -217,7 +232,7 @@ describe('BookDetails', () => {
       status: 404,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     expect(
       await screen.findByText(
@@ -229,7 +244,7 @@ describe('BookDetails', () => {
   it('should handle network error gracefully', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     expect(
       await screen.findByText(/Error loading additional details: Network error/)
@@ -242,11 +257,11 @@ describe('BookDetails', () => {
       json: async () => ({}),
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -262,11 +277,11 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -283,11 +298,11 @@ describe('BookDetails', () => {
       }),
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -304,11 +319,11 @@ describe('BookDetails', () => {
       }),
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -322,11 +337,11 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
@@ -334,7 +349,6 @@ describe('BookDetails', () => {
     expect(screen.getByText('Authors:')).toBeInTheDocument();
     expect(screen.getByText('First Published:')).toBeInTheDocument();
     expect(screen.getByText('Publishers:')).toBeInTheDocument();
-    expect(screen.getByText('Generated Description:')).toBeInTheDocument();
     expect(screen.getByText('Subjects:')).toBeInTheDocument();
     expect(screen.getByText('Additional Information:')).toBeInTheDocument();
   });
@@ -345,21 +359,17 @@ describe('BookDetails', () => {
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[mockBookFromList]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );
 
-    expect(
-      screen.getByText('Book Details').closest('.book-details-panel')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Book Details').closest('.book-details-header')
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('book-details-header')).toBeInTheDocument();
     expect(
       screen.getByText('Test Book Title').closest('.book-main-info')
     ).toBeInTheDocument();
@@ -371,16 +381,20 @@ describe('BookDetails', () => {
       subject: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
     };
 
+    mockUseOutletContext.mockReturnValue({
+      results: [bookWithManySubjects],
+    });
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockBookDetailsAPI,
     });
 
-    renderWithRouter(<BookDetails results={[bookWithManySubjects]} />);
+    renderWithRouter(<BookDetails />);
 
     await waitFor(
       () => {
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('loading-section')).not.toBeInTheDocument();
       },
       { timeout: 5000 }
     );

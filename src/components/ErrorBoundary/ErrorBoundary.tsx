@@ -1,7 +1,7 @@
 import React, { ErrorInfo, Fragment } from 'react';
-import { ErrorBoundaryProps, ErrorBoundaryState } from '../types/components';
+import { ErrorBoundaryProps, ErrorBoundaryState } from '../../types/components';
 
-class ErrorBoundary extends React.Component<
+export class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
@@ -35,5 +35,3 @@ class ErrorBoundary extends React.Component<
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
