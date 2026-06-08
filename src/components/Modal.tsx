@@ -8,8 +8,9 @@ type ModalProps = {
   children: React.ReactNode;
 };
 
-export default function Modal({ isOpen, onClose, children }: ModalProps) {
+export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -20,9 +21,9 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
     };
 
     if (isOpen) {
+      triggerRef.current = document.activeElement;
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
-
       setTimeout(() => {
         modalRef.current?.focus();
       }, 0);
@@ -30,6 +31,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
       return () => {
         document.removeEventListener('keydown', handleEscape);
         document.body.style.overflow = 'unset';
+        (triggerRef.current as HTMLElement)?.focus();
       };
     }
   }, [isOpen, onClose]);
@@ -63,4 +65,4 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
     </div>,
     document.body
   );
-}
+};

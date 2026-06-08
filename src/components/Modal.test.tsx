@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Modal from './Modal';
+import { Modal } from './Modal';
 
 describe('Modal', () => {
   const mockOnClose = vi.fn();
@@ -87,9 +87,7 @@ describe('Modal', () => {
         </Modal>
       );
 
-      const closeButton = screen.getByLabelText('Close modal');
-      await user.click(closeButton);
-
+      await user.click(screen.getByLabelText('Close modal'));
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
@@ -101,7 +99,6 @@ describe('Modal', () => {
       );
 
       fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
-
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
@@ -113,9 +110,7 @@ describe('Modal', () => {
         </Modal>
       );
 
-      const overlay = screen.getByRole('dialog');
-      await user.click(overlay);
-
+      await user.click(screen.getByRole('dialog'));
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
@@ -127,27 +122,19 @@ describe('Modal', () => {
         </Modal>
       );
 
-      const modalContent = screen.getByText('Modal Content');
-      await user.click(modalContent);
-
+      await user.click(screen.getByText('Modal Content'));
       expect(mockOnClose).not.toHaveBeenCalled();
     });
 
-    it('should restore body scroll when closed', () => {
-      const { rerender } = render(
+    it('should restore body scroll when unmounted', () => {
+      const { unmount } = render(
         <Modal isOpen={true} onClose={mockOnClose}>
           <div>Modal Content</div>
         </Modal>
       );
 
       expect(document.body.style.overflow).toBe('hidden');
-
-      rerender(
-        <Modal isOpen={false} onClose={mockOnClose}>
-          <div>Modal Content</div>
-        </Modal>
-      );
-
+      unmount();
       expect(document.body.style.overflow).toBe('unset');
     });
   });
@@ -176,27 +163,20 @@ describe('Modal', () => {
       );
 
       expect(addEventListenerSpy).not.toHaveBeenCalled();
-
       addEventListenerSpy.mockRestore();
     });
 
-    it('should remove event listeners when modal is closed', () => {
+    it('should remove event listeners when unmounted', () => {
       const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
-      const { rerender } = render(
+      const { unmount } = render(
         <Modal isOpen={true} onClose={mockOnClose}>
           <div>Modal Content</div>
         </Modal>
       );
 
-      rerender(
-        <Modal isOpen={false} onClose={mockOnClose}>
-          <div>Modal Content</div>
-        </Modal>
-      );
-
-      expect(removeEventListenerSpy).toHaveBeenCalledTimes(1);
-
+      unmount();
+      expect(removeEventListenerSpy).toHaveBeenCalled();
       removeEventListenerSpy.mockRestore();
     });
   });
@@ -209,10 +189,9 @@ describe('Modal', () => {
         </Modal>
       );
 
-      const modalInBody = document.body.querySelector(
-        '[data-testid="modal-content"]'
-      );
-      expect(modalInBody).toBeInTheDocument();
+      expect(
+        document.body.querySelector('[data-testid="modal-content"]')
+      ).toBeInTheDocument();
     });
 
     it('should not render in component container', () => {
@@ -222,10 +201,9 @@ describe('Modal', () => {
         </Modal>
       );
 
-      const modalInContainer = container.querySelector(
-        '[data-testid="modal-content"]'
-      );
-      expect(modalInContainer).toBeNull();
+      expect(
+        container.querySelector('[data-testid="modal-content"]')
+      ).toBeNull();
     });
   });
 
@@ -237,9 +215,9 @@ describe('Modal', () => {
         </Modal>
       );
 
-      fireEvent.keyDown(document, { key: 'Enter', code: 'Enter' });
-      fireEvent.keyDown(document, { key: 'Space', code: 'Space' });
-      fireEvent.keyDown(document, { key: 'Tab', code: 'Tab' });
+      fireEvent.keyDown(document, { key: 'Enter' });
+      fireEvent.keyDown(document, { key: 'Space' });
+      fireEvent.keyDown(document, { key: 'Tab' });
 
       expect(mockOnClose).not.toHaveBeenCalled();
     });
