@@ -1,52 +1,25 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { addFormData } from '../../store/formSlice';
 import { RootState } from '../../store/store';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './ControlledForm.css';
-import { calculatePasswordStrength } from '../../utils/passwordUtils';
 import {
-  validateName,
-  validateEmail,
-  validateAge,
-} from '../../utils/validationUtils';
+  calculatePasswordStrength,
+  getPasswordStrengthClass,
+} from '../../utils/passwordUtils';
 import { filterCountries } from '../../utils/countryUtils';
-import { compressImage } from '../../utils/imageUtils';
+import { compressImage, validateImageFile } from '../../utils/imageUtils';
+import { formSchema, FormData } from '../../utils/formSchema';
+import { FormField } from '../../utils/formFields';
 
-type Props = {
+type ControlledFormProps = {
   onSuccess: () => void;
 };
 
-const schema = z
-  .object({
-    name: z
-      .string()
-      .refine(validateName, 'Must start with an uppercase letter'),
-    age: z.number().refine(validateAge, 'Must be a positive number'),
-    email: z.string().refine(validateEmail, 'Invalid email'),
-    password: z
-      .string()
-      .min(6, 'Password must be at least 6 characters')
-      .regex(/[A-Z]/, 'Must contain an uppercase letter')
-      .regex(/\d/, 'Must contain a number')
-      .regex(/\W/, 'Must contain a special character'),
-    confirmPassword: z.string(),
-    gender: z.enum(['male', 'female', 'other']),
-    termsAccepted: z.boolean().refine((val) => val === true, 'Must accept T&C'),
-    country: z.string().min(1, 'Country is required'),
-    imageBase64: z.string().min(1, 'Image is required'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords must match',
-    path: ['confirmPassword'],
-  });
-
-type FormData = z.infer<typeof schema>;
-
-export const ControlledForm = ({ onSuccess }: Props) => {
+export const ControlledForm = ({ onSuccess }: ControlledFormProps) => {
   const dispatch = useDispatch();
   const countries = useSelector((state: RootState) => state.countries || []);
 
@@ -58,27 +31,23 @@ export const ControlledForm = ({ onSuccess }: Props) => {
     trigger,
     formState: { errors, isValid },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    mode: 'onBlur',
-    reValidateMode: 'onBlur',
+    resolver: zodResolver(formSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
 
-  const password = watch('password', '');
-  const confirmPassword = watch('confirmPassword', '');
-
-  const getPasswordStrengthClass = (strength: string): string => {
-    return `strength-${strength.toLowerCase().replace(' ', '-')}`;
-  };
+  const password = watch(FormField.Password, '');
+  const confirmPassword = watch(FormField.ConfirmPassword, '');
 
   const handlePasswordBlur = async () => {
-    await trigger(['password', 'confirmPassword']);
+    await trigger([FormField.Password, FormField.ConfirmPassword]);
   };
 
   const onSubmit = (data: FormData) => {
-    const newEntry = { ...data, id: uuidv4() };
-    dispatch(addFormData(newEntry));
+    const { confirmPassword: _, ...rest } = data;
+    dispatch(addFormData({ ...rest, id: uuidv4() }));
     onSuccess();
   };
 
@@ -87,13 +56,9 @@ export const ControlledForm = ({ onSuccess }: Props) => {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!['image/png', 'image/jpeg'].includes(file.type)) {
-        alert('Image Upload: Invalid file type! Only PNG and JPEG allowed.');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image Upload: File size too large! Maximum 5MB allowed.');
+      const error = validateImageFile(file);
+      if (error) {
+        alert(`Image Upload: ${error}`);
         return;
       }
 
@@ -103,12 +68,12 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         try {
           const originalBase64 = reader.result as string;
           const compressedBase64 = await compressImage(originalBase64);
-          setValue('imageBase64', compressedBase64, {
+          setValue(FormField.ImageBase64, compressedBase64, {
             shouldValidate: true,
           });
         } catch (error) {
           console.error('Image compression failed:', error);
-          setValue('imageBase64', reader.result as string, {
+          setValue(FormField.ImageBase64, reader.result as string, {
             shouldValidate: true,
           });
         }
@@ -118,15 +83,14 @@ export const ControlledForm = ({ onSuccess }: Props) => {
 
   const handleCountryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setValue('country', value, { shouldValidate: true });
-
+    setValue(FormField.Country, value, { shouldValidate: true });
     setFilteredCountries(
       value.length > 0 ? filterCountries(countries, value) : []
     );
   };
 
   const handleSelectCountry = (country: string) => {
-    setValue('country', country, { shouldValidate: true });
+    setValue(FormField.Country, country, { shouldValidate: true });
     setFilteredCountries([]);
   };
 
@@ -137,37 +101,45 @@ export const ControlledForm = ({ onSuccess }: Props) => {
       <h1>Controlled Form (React Hook Form)</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="form">
         <div className="form-field">
-          <label htmlFor="name">Name:</label>
-          <input id="name" type="text" {...register('name')} />
+          <label htmlFor={FormField.Name}>Name:</label>
+          <input
+            id={FormField.Name}
+            type="text"
+            {...register(FormField.Name)}
+          />
           {errors.name && (
             <p className="error-message">{errors.name.message}</p>
           )}
         </div>
 
         <div className="form-field">
-          <label htmlFor="age">Age:</label>
+          <label htmlFor={FormField.Age}>Age:</label>
           <input
-            id="age"
+            id={FormField.Age}
             type="number"
-            {...register('age', { valueAsNumber: true })}
+            {...register(FormField.Age, { valueAsNumber: true })}
           />
           {errors.age && <p className="error-message">{errors.age.message}</p>}
         </div>
 
         <div className="form-field">
-          <label htmlFor="email">Email:</label>
-          <input id="email" type="email" {...register('email')} />
+          <label htmlFor={FormField.Email}>Email:</label>
+          <input
+            id={FormField.Email}
+            type="email"
+            {...register(FormField.Email)}
+          />
           {errors.email && (
             <p className="error-message">{errors.email.message}</p>
           )}
         </div>
 
         <div className="form-field">
-          <label htmlFor="password">Password:</label>
+          <label htmlFor={FormField.Password}>Password:</label>
           <input
-            id="password"
+            id={FormField.Password}
             type="password"
-            {...register('password')}
+            {...register(FormField.Password)}
             onBlur={handlePasswordBlur}
           />
           {password && (
@@ -184,14 +156,13 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <label htmlFor={FormField.ConfirmPassword}>Confirm Password:</label>
           <input
-            id="confirmPassword"
+            id={FormField.ConfirmPassword}
             type="password"
-            {...register('confirmPassword')}
+            {...register(FormField.ConfirmPassword)}
             onBlur={handlePasswordBlur}
           />
-
           {password && confirmPassword && (
             <div
               className={`password-match ${password === confirmPassword ? 'match' : 'no-match'}`}
@@ -207,8 +178,8 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="gender">Gender:</label>
-          <select id="gender" {...register('gender')}>
+          <label htmlFor={FormField.Gender}>Gender:</label>
+          <select id={FormField.Gender} {...register(FormField.Gender)}>
             <option value="">Select...</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -220,11 +191,11 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="termsAccepted" className="checkbox-label">
+          <label htmlFor={FormField.TermsAccepted} className="checkbox-label">
             <input
-              id="termsAccepted"
+              id={FormField.TermsAccepted}
               type="checkbox"
-              {...register('termsAccepted')}
+              {...register(FormField.TermsAccepted)}
             />
             Accept Terms and Conditions
           </label>
@@ -234,21 +205,24 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="country">Country:</label>
+          <label htmlFor={FormField.Country}>Country:</label>
           <div className="autocomplete-container">
             <input
-              id="country"
+              id={FormField.Country}
               type="text"
-              {...register('country')}
+              {...register(FormField.Country)}
               onChange={handleCountryChange}
               placeholder="Start typing..."
               autoComplete="off"
             />
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
-                {filteredCountries.map((c) => (
-                  <li key={c} onClick={() => handleSelectCountry(c)}>
-                    {c}
+                {filteredCountries.map((country) => (
+                  <li
+                    key={country}
+                    onClick={() => handleSelectCountry(country)}
+                  >
+                    {country}
                   </li>
                 ))}
               </ul>
@@ -260,7 +234,7 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="imageFile">Upload Image (PNG/JPEG) *:</label>
+          <label htmlFor="imageFile">Upload Image (PNG/JPEG):</label>
           <input
             id="imageFile"
             type="file"
@@ -275,15 +249,6 @@ export const ControlledForm = ({ onSuccess }: Props) => {
         <button type="submit" disabled={!isValid} className="submit-button">
           Submit Form
         </button>
-
-        <div
-          className="debug-info"
-          style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}
-        >
-          Form valid: {isValid ? 'Yes' : 'No'} | Errors:{' '}
-          {Object.keys(errors).length} | Image loaded:{' '}
-          {watch('imageBase64') ? 'Yes' : 'No'}
-        </div>
       </form>
     </div>
   );

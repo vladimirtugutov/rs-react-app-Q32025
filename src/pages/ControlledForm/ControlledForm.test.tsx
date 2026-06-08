@@ -61,15 +61,16 @@ describe('ControlledForm', () => {
       ).toBeInTheDocument();
       expect(screen.getByLabelText('Country:')).toBeInTheDocument();
       expect(
-        screen.getByLabelText('Upload Image (PNG/JPEG) *:')
+        screen.getByLabelText('Upload Image (PNG/JPEG):')
       ).toBeInTheDocument();
     });
 
     it('should have disabled submit button initially', () => {
       renderWithProvider(<ControlledForm onSuccess={mockOnSuccess} />);
 
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      expect(submitButton).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Submit Form' })
+      ).toBeDisabled();
     });
 
     it('should display form title', () => {
@@ -86,8 +87,7 @@ describe('ControlledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<ControlledForm onSuccess={mockOnSuccess} />);
 
-      const nameInput = screen.getByLabelText('Name:');
-      await user.type(nameInput, 'john');
+      await user.type(screen.getByLabelText('Name:'), 'john');
       await user.tab();
 
       await waitFor(() => {
@@ -101,8 +101,7 @@ describe('ControlledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<ControlledForm onSuccess={mockOnSuccess} />);
 
-      const emailInput = screen.getByLabelText('Email:');
-      await user.type(emailInput, 'invalid-email');
+      await user.type(screen.getByLabelText('Email:'), 'invalid-email');
       await user.tab();
 
       await waitFor(() => {
@@ -116,8 +115,7 @@ describe('ControlledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<ControlledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, '123');
+      await user.type(screen.getByLabelText('Password:'), '123');
 
       expect(screen.getByText('Very Weak')).toBeInTheDocument();
     });
@@ -126,8 +124,7 @@ describe('ControlledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<ControlledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, 'Password1!');
+      await user.type(screen.getByLabelText('Password:'), 'Password1!');
 
       expect(screen.getByText('Very Strong')).toBeInTheDocument();
     });
