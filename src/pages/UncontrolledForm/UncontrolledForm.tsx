@@ -5,33 +5,32 @@ import { addFormData } from '../../store/formSlice';
 import { RootState } from '../../store/store';
 import { v4 as uuidv4 } from 'uuid';
 import './UncontrolledForm.css';
-import { calculatePasswordStrength } from '../../utils/passwordUtils';
 import {
-  validateName,
-  validateEmail,
-  validateAge,
-} from '../../utils/validationUtils';
+  calculatePasswordStrength,
+  getPasswordStrengthClass,
+} from '../../utils/passwordUtils';
 import { filterCountries } from '../../utils/countryUtils';
-import { compressImage } from '../../utils/imageUtils';
+import { compressImage, validateImageFile } from '../../utils/imageUtils';
+import { formSchema, FormData } from '../../utils/formSchema';
+import { FormField } from '../../utils/formFields';
 
-type Props = {
+type UncontrolledFormProps = {
   onSuccess: () => void;
 };
 
-type FormData = {
-  id: string;
-  name: string;
-  age: number;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  gender: string;
-  termsAccepted: boolean;
-  country: string;
-  imageBase64: string;
+const FIELD_DISPLAY_NAMES: Record<string, string> = {
+  [FormField.Name]: 'Name',
+  [FormField.Age]: 'Age',
+  [FormField.Email]: 'Email',
+  [FormField.Password]: 'Password',
+  [FormField.ConfirmPassword]: 'Confirm Password',
+  [FormField.Gender]: 'Gender',
+  [FormField.TermsAccepted]: 'Terms and Conditions',
+  [FormField.Country]: 'Country',
+  [FormField.ImageBase64]: 'Image Upload',
 };
 
-export const UncontrolledForm = ({ onSuccess }: Props) => {
+export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
   const dispatch = useDispatch();
   const countries = useSelector((state: RootState) => state.countries);
 
@@ -46,60 +45,32 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
   const imageRef = useRef<HTMLInputElement | null>(null);
 
   const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
-  const [passwordStrength, setPasswordStrength] = useState<string>('');
-
-  const schema = z
-    .object({
-      name: z
-        .string()
-        .refine(validateName, 'Must start with an uppercase letter'),
-      age: z.preprocess(
-        (val) => Number(val),
-        z.number().refine(validateAge, 'Must be a positive number')
-      ),
-      email: z.string().refine(validateEmail, 'Invalid email'),
-      password: z
-        .string()
-        .min(6, 'Password must be at least 6 characters')
-        .regex(/[A-Z]/, 'Must contain an uppercase letter')
-        .regex(/\d/, 'Must contain a number')
-        .regex(/\W/, 'Must contain a special character'),
-      confirmPassword: z.string(),
-      gender: z.string().min(1, 'Gender is required'),
-      termsAccepted: z.literal(true, {
-        errorMap: () => ({ message: 'Must accept Terms and Conditions' }),
-      }),
-      country: z.string().min(1, 'Country is required'),
-      imageBase64: z.string().min(1, 'Image is required'),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: 'Passwords must match',
-      path: ['confirmPassword'],
-    });
-
-  const getPasswordStrengthClass = (strength: string): string => {
-    return `strength-${strength.toLowerCase().replace(' ', '-')}`;
-  };
+  const [passwordStrength, setPasswordStrength] = useState('');
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const password = event.target.value;
-    setPasswordStrength(calculatePasswordStrength(password));
+    setPasswordStrength(calculatePasswordStrength(event.target.value));
   };
 
-  const getFieldDisplayName = (fieldPath: string): string => {
-    const fieldNames: Record<string, string> = {
-      name: 'Name',
-      age: 'Age',
-      email: 'Email',
-      password: 'Password',
-      confirmPassword: 'Confirm Password',
-      gender: 'Gender',
-      termsAccepted: 'Terms and Conditions',
-      country: 'Country',
-      imageBase64: 'Image Upload',
-    };
-
-    return fieldNames[fieldPath] || fieldPath;
+  const validateAndSubmit = (formData: FormData) => {
+    try {
+      formSchema.parse(formData);
+      const { confirmPassword: _, ...rest } = formData;
+      dispatch(addFormData({ ...rest, id: uuidv4() }));
+      onSuccess();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors
+          .map((err) => {
+            const fieldName =
+              FIELD_DISPLAY_NAMES[err.path[0] as string] ?? err.path[0];
+            return `• ${fieldName}: ${err.message}`;
+          })
+          .join('\n');
+        alert(
+          `Please fix the following validation errors:\n\n${errorMessages}`
+        );
+      }
+    }
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -108,26 +79,21 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
     const file = imageRef.current?.files?.[0];
 
     const formData: FormData = {
-      id: uuidv4(),
       name: nameRef.current?.value || '',
       age: Number(ageRef.current?.value) || 0,
       email: emailRef.current?.value || '',
       password: passwordRef.current?.value || '',
       confirmPassword: confirmPasswordRef.current?.value || '',
-      gender: genderRef.current?.value || '',
+      gender: genderRef.current?.value as 'male' | 'female' | 'other',
       termsAccepted: termsRef.current?.checked || false,
       country: countryRef.current?.value || '',
       imageBase64: '',
     };
 
     if (file) {
-      if (!['image/png', 'image/jpeg'].includes(file.type)) {
-        alert('Image Upload: Invalid file type! Only PNG and JPEG allowed.');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image Upload: File size too large! Maximum 5MB allowed.');
+      const error = validateImageFile(file);
+      if (error) {
+        alert(`Image Upload: ${error}`);
         return;
       }
 
@@ -135,39 +101,14 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
       reader.readAsDataURL(file);
       reader.onloadend = async () => {
         try {
-          const originalBase64 = reader.result as string;
-          const compressedBase64 = await compressImage(originalBase64);
-          formData.imageBase64 = compressedBase64;
-          validateAndSubmit(formData);
-        } catch (error) {
-          console.error('Image compression failed:', error);
+          formData.imageBase64 = await compressImage(reader.result as string);
+        } catch {
           formData.imageBase64 = reader.result as string;
-          validateAndSubmit(formData);
         }
+        validateAndSubmit(formData);
       };
     } else {
       validateAndSubmit(formData);
-    }
-  };
-
-  const validateAndSubmit = async (formData: FormData) => {
-    try {
-      schema.parse(formData);
-      dispatch(addFormData(formData));
-      onSuccess();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errorMessages = error.errors
-          .map((err) => {
-            const fieldName = getFieldDisplayName(err.path[0] as string);
-            return `• ${fieldName}: ${err.message}`;
-          })
-          .join('\n');
-
-        alert(
-          `Please fix the following validation errors:\n\n${errorMessages}`
-        );
-      }
     }
   };
 
@@ -190,24 +131,24 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
       <h1>Uncontrolled Form (DOM-managed)</h1>
       <form onSubmit={handleSubmit} className="form">
         <div className="form-field">
-          <label htmlFor="name">Name:</label>
-          <input id="name" type="text" ref={nameRef} />
+          <label htmlFor={FormField.Name}>Name:</label>
+          <input id={FormField.Name} type="text" ref={nameRef} />
         </div>
 
         <div className="form-field">
-          <label htmlFor="age">Age:</label>
-          <input id="age" type="number" ref={ageRef} />
+          <label htmlFor={FormField.Age}>Age:</label>
+          <input id={FormField.Age} type="number" ref={ageRef} />
         </div>
 
         <div className="form-field">
-          <label htmlFor="email">Email:</label>
-          <input id="email" type="email" ref={emailRef} />
+          <label htmlFor={FormField.Email}>Email:</label>
+          <input id={FormField.Email} type="email" ref={emailRef} />
         </div>
 
         <div className="form-field">
-          <label htmlFor="password">Password:</label>
+          <label htmlFor={FormField.Password}>Password:</label>
           <input
-            id="password"
+            id={FormField.Password}
             type="password"
             ref={passwordRef}
             onChange={handlePasswordChange}
@@ -223,17 +164,17 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <label htmlFor={FormField.ConfirmPassword}>Confirm Password:</label>
           <input
-            id="confirmPassword"
+            id={FormField.ConfirmPassword}
             type="password"
             ref={confirmPasswordRef}
           />
         </div>
 
         <div className="form-field">
-          <label htmlFor="gender">Gender:</label>
-          <select id="gender" ref={genderRef}>
+          <label htmlFor={FormField.Gender}>Gender:</label>
+          <select id={FormField.Gender} ref={genderRef}>
             <option value="">Select...</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -242,17 +183,21 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
         </div>
 
         <div className="form-field">
-          <label htmlFor="termsAccepted" className="checkbox-label">
-            <input id="termsAccepted" type="checkbox" ref={termsRef} />
+          <label htmlFor={FormField.TermsAccepted} className="checkbox-label">
+            <input
+              id={FormField.TermsAccepted}
+              type="checkbox"
+              ref={termsRef}
+            />
             Accept Terms and Conditions
           </label>
         </div>
 
         <div className="form-field">
-          <label htmlFor="country">Country:</label>
+          <label htmlFor={FormField.Country}>Country:</label>
           <div className="autocomplete-container">
             <input
-              id="country"
+              id={FormField.Country}
               type="text"
               ref={countryRef}
               onChange={handleCountryChange}
@@ -261,9 +206,12 @@ export const UncontrolledForm = ({ onSuccess }: Props) => {
             />
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
-                {filteredCountries.map((c) => (
-                  <li key={c} onClick={() => handleSelectCountry(c)}>
-                    {c}
+                {filteredCountries.map((country) => (
+                  <li
+                    key={country}
+                    onClick={() => handleSelectCountry(country)}
+                  >
+                    {country}
                   </li>
                 ))}
               </ul>

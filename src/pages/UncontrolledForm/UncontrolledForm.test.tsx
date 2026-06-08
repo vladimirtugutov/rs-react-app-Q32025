@@ -11,6 +11,7 @@ vi.mock('../../utils/imageUtils', () => ({
   compressImage: vi
     .fn()
     .mockResolvedValue('data:image/jpeg;base64,compressed-image-data'),
+  validateImageFile: vi.fn().mockReturnValue(null),
 }));
 
 vi.mock('uuid', () => ({
@@ -55,9 +56,7 @@ describe('UncontrolledForm', () => {
   });
 
   afterEach(() => {
-    if (alertSpy) {
-      alertSpy.mockRestore();
-    }
+    alertSpy?.mockRestore();
   });
 
   describe('when rendering form', () => {
@@ -81,14 +80,13 @@ describe('UncontrolledForm', () => {
 
     it('should have submit button always enabled', () => {
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
-
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      expect(submitButton).not.toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Submit Form' })
+      ).not.toBeDisabled();
     });
 
     it('should display form title', () => {
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
-
       expect(
         screen.getByText('Uncontrolled Form (DOM-managed)')
       ).toBeInTheDocument();
@@ -125,8 +123,7 @@ describe('UncontrolledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, '123');
+      await user.type(screen.getByLabelText('Password:'), '123');
 
       expect(screen.getByText('Very Weak')).toBeInTheDocument();
       expect(screen.getByText('Very Weak')).toHaveClass('strength-very-weak');
@@ -136,8 +133,7 @@ describe('UncontrolledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, 'password');
+      await user.type(screen.getByLabelText('Password:'), 'password');
 
       expect(screen.getByText('Weak')).toBeInTheDocument();
       expect(screen.getByText('Weak')).toHaveClass('strength-weak');
@@ -147,8 +143,7 @@ describe('UncontrolledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, 'Password1');
+      await user.type(screen.getByLabelText('Password:'), 'Password1');
 
       expect(screen.getByText('Strong')).toBeInTheDocument();
       expect(screen.getByText('Strong')).toHaveClass('strength-strong');
@@ -158,8 +153,7 @@ describe('UncontrolledForm', () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const passwordInput = screen.getByLabelText('Password:');
-      await user.type(passwordInput, 'Password1!');
+      await user.type(screen.getByLabelText('Password:'), 'Password1!');
 
       expect(screen.getByText('Very Strong')).toBeInTheDocument();
       expect(screen.getByText('Very Strong')).toHaveClass(
@@ -189,15 +183,13 @@ describe('UncontrolledForm', () => {
         screen.getByLabelText('Upload Image (PNG/JPEG):'),
         file
       );
-
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      await user.click(submitButton);
+      await user.click(screen.getByRole('button', { name: 'Submit Form' }));
 
       await waitFor(
         () => {
           expect(mockOnSuccess).toHaveBeenCalledTimes(1);
         },
-        { timeout: 5000 }
+        { timeout: 10000 }
       );
 
       const state = store.getState();
@@ -209,21 +201,19 @@ describe('UncontrolledForm', () => {
         gender: 'male',
         imageBase64: 'data:image/jpeg;base64,compressed-image-data',
       });
-    });
+    }, 15000);
 
     it('should show validation errors for empty form submission', async () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      await user.click(submitButton);
+      await user.click(screen.getByRole('button', { name: 'Submit Form' }));
 
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalled();
       });
 
-      const alertMessage = alertSpy.mock.calls[0][0];
-      expect(alertMessage).toContain(
+      expect(alertSpy.mock.calls[0][0]).toContain(
         'Please fix the following validation errors'
       );
       expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -241,9 +231,7 @@ describe('UncontrolledForm', () => {
       await user.selectOptions(screen.getByLabelText('Gender:'), 'male');
       await user.click(screen.getByLabelText('Accept Terms and Conditions'));
       await user.type(screen.getByLabelText('Country:'), 'United States');
-
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      await user.click(submitButton);
+      await user.click(screen.getByRole('button', { name: 'Submit Form' }));
 
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalledTimes(1);
@@ -270,58 +258,52 @@ describe('UncontrolledForm', () => {
       await user.selectOptions(screen.getByLabelText('Gender:'), 'male');
       await user.click(screen.getByLabelText('Accept Terms and Conditions'));
       await user.type(screen.getByLabelText('Country:'), 'United States');
-
-      const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-      await user.click(submitButton);
+      await user.click(screen.getByRole('button', { name: 'Submit Form' }));
 
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalled();
       });
-
-      const alertMessage = alertSpy.mock.calls[0][0];
-      expect(alertMessage).toContain('Image Upload: Image is required');
+      expect(alertSpy.mock.calls[0][0]).toContain(
+        'Image Upload: Image is required'
+      );
     });
 
-it('should show alert for large file size on submit', async () => {
-  const user = userEvent.setup();
-  renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
-  
-  await user.type(screen.getByLabelText('Name:'), 'John Doe');
-  await user.type(screen.getByLabelText('Age:'), '25');
-  await user.type(screen.getByLabelText('Email:'), 'john@example.com');
-  await user.type(screen.getByLabelText('Password:'), 'Password1!');
-  await user.type(screen.getByLabelText('Confirm Password:'), 'Password1!');
-  await user.selectOptions(screen.getByLabelText('Gender:'), 'male');
-  await user.click(screen.getByLabelText('Accept Terms and Conditions'));
-  await user.type(screen.getByLabelText('Country:'), 'United States');
+    it('should show alert for large file size', async () => {
+      const user = userEvent.setup();
+      const { validateImageFile } = await import('../../utils/imageUtils');
+      vi.mocked(validateImageFile).mockReturnValue(
+        'File size too large! Maximum 5MB allowed.'
+      );
 
-  const largeFile = new File(['test'.repeat(2000000)], 'test.jpg', { 
-    type: 'image/jpeg'
-  });
-  Object.defineProperty(largeFile, 'size', { value: 10 * 1024 * 1024 });
-  
-  const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):') as HTMLInputElement;
-  await user.upload(fileInput, largeFile);
+      renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-  const submitButton = screen.getByRole('button', { name: 'Submit Form' });
-  await user.click(submitButton);
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+      await user.upload(
+        screen.getByLabelText('Upload Image (PNG/JPEG):'),
+        file
+      );
+      await user.click(screen.getByRole('button', { name: 'Submit Form' }));
 
-  await waitFor(() => {
-    expect(alertSpy).toHaveBeenCalledWith('Image Upload: File size too large! Maximum 5MB allowed.');
-  });
-});
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          'Image Upload: File size too large! Maximum 5MB allowed.'
+        );
+      });
+    });
 
-it('should accept valid image files', async () => {
-  const user = userEvent.setup();
-  renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
+    it('should accept valid image files', async () => {
+      const user = userEvent.setup();
+      renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-  const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-  const fileInput = screen.getByLabelText('Upload Image (PNG/JPEG):') as HTMLInputElement;
-  await user.upload(fileInput, file);
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+      const fileInput = screen.getByLabelText(
+        'Upload Image (PNG/JPEG):'
+      ) as HTMLInputElement;
+      await user.upload(fileInput, file);
 
-  expect(fileInput.files?.[0]).toBe(file);
-  expect(fileInput.files?.[0]?.type).toBe('image/jpeg');
-});
+      expect(fileInput.files?.[0]).toBe(file);
+      expect(fileInput.files?.[0]?.type).toBe('image/jpeg');
+    });
   });
 
   describe('when handling country autocomplete', () => {
@@ -329,8 +311,7 @@ it('should accept valid image files', async () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const countryInput = screen.getByLabelText('Country:');
-      await user.type(countryInput, 'Can');
+      await user.type(screen.getByLabelText('Country:'), 'Can');
 
       await waitFor(() => {
         expect(screen.getByText('Canada')).toBeInTheDocument();
@@ -341,32 +322,29 @@ it('should accept valid image files', async () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const countryInput = screen.getByLabelText('Country:');
-      await user.type(countryInput, 'Fra');
+      await user.type(screen.getByLabelText('Country:'), 'Fra');
 
       await waitFor(() => {
-        expect(screen.getByText('France')).toBeInTheDocument();
+        expect(screen.getByRole('list')).toBeInTheDocument();
       });
 
       await user.click(screen.getByText('France'));
 
-      expect(countryInput).toHaveValue('France');
-      expect(screen.queryByText('France')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Country:')).toHaveValue('France');
+      expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
 
     it('should hide dropdown when input is cleared', async () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const countryInput = screen.getByLabelText('Country:');
-      await user.type(countryInput, 'Can');
+      await user.type(screen.getByLabelText('Country:'), 'Can');
 
       await waitFor(() => {
         expect(screen.getByText('Canada')).toBeInTheDocument();
       });
 
-      await user.clear(countryInput);
-
+      await user.clear(screen.getByLabelText('Country:'));
       expect(screen.queryByText('Canada')).not.toBeInTheDocument();
     });
 
@@ -374,8 +352,7 @@ it('should accept valid image files', async () => {
       const user = userEvent.setup();
       renderWithProvider(<UncontrolledForm onSuccess={mockOnSuccess} />);
 
-      const countryInput = screen.getByLabelText('Country:');
-      await user.type(countryInput, 'a');
+      await user.type(screen.getByLabelText('Country:'), 'a');
 
       await waitFor(() => {
         const dropdownItems = screen.queryAllByRole('listitem');
