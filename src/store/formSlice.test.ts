@@ -1,14 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import formReducer, {
   addFormData,
   clearHighlight,
   clearFormData,
-  FormData,
   FormState,
 } from './formSlice';
-
-let mockDateNow = 1000000;
-vi.spyOn(Date, 'now').mockImplementation(() => mockDateNow++);
+import type { FormSubmission } from '../utils/formSchema';
 
 describe('formSlice', () => {
   const initialState: FormState = {
@@ -16,7 +13,7 @@ describe('formSlice', () => {
     highlightedId: null,
   };
 
-  const mockFormData: FormData = {
+  const mockFormData: FormSubmission = {
     id: 'test-id',
     name: 'John Doe',
     age: 25,
@@ -28,30 +25,25 @@ describe('formSlice', () => {
     country: 'United States',
   };
 
-  beforeEach(() => {
-    mockDateNow = 1000000;
-  });
-
   describe('reducers', () => {
     it('should return the initial state', () => {
       expect(formReducer(undefined, { type: 'unknown' })).toEqual(initialState);
     });
 
     it('should handle addFormData', () => {
-      const action = addFormData(mockFormData);
-      const result = formReducer(initialState, action);
+      const result = formReducer(initialState, addFormData(mockFormData));
 
       expect(result.formData).toHaveLength(1);
       expect(result.formData[0].name).toBe('John Doe');
       expect(result.formData[0].age).toBe(25);
       expect(result.formData[0].email).toBe('john@example.com');
-      expect(result.highlightedId).toBeTruthy();
-      expect(result.formData[0].id).toBe('1000000');
+      expect(result.formData[0].id).toBe('test-id');
+      expect(result.highlightedId).toBe('test-id');
     });
 
     it('should add multiple form entries', () => {
-      const firstEntry = { ...mockFormData, name: 'John' };
-      const secondEntry = { ...mockFormData, name: 'Jane' };
+      const firstEntry = { ...mockFormData, id: 'id-1', name: 'John' };
+      const secondEntry = { ...mockFormData, id: 'id-2', name: 'Jane' };
 
       let state = formReducer(initialState, addFormData(firstEntry));
       state = formReducer(state, addFormData(secondEntry));
@@ -61,9 +53,19 @@ describe('formSlice', () => {
       expect(state.formData[1].name).toBe('Jane');
     });
 
+    it('should update highlightedId to last added entry', () => {
+      const firstEntry = { ...mockFormData, id: 'id-1' };
+      const secondEntry = { ...mockFormData, id: 'id-2' };
+
+      let state = formReducer(initialState, addFormData(firstEntry));
+      state = formReducer(state, addFormData(secondEntry));
+
+      expect(state.highlightedId).toBe('id-2');
+    });
+
     it('should handle clearHighlight', () => {
       const stateWithHighlight: FormState = {
-        formData: [{ ...mockFormData, id: '123' }],
+        formData: [mockFormData],
         highlightedId: 'test-id',
       };
 
@@ -83,23 +85,6 @@ describe('formSlice', () => {
 
       expect(result.formData).toEqual([]);
       expect(result.highlightedId).toBeNull();
-    });
-
-    it('should generate unique IDs for form entries', () => {
-      const firstResult = formReducer(initialState, addFormData(mockFormData));
-      const secondResult = formReducer(firstResult, addFormData(mockFormData));
-
-      expect(firstResult.formData[0].id).toBe('1000000');
-      expect(secondResult.formData[1].id).toBe('1000001');
-      expect(firstResult.formData[0].id).not.toBe(secondResult.formData[1].id);
-    });
-
-    it('should update highlightedId when adding new data', () => {
-      const result = formReducer(initialState, addFormData(mockFormData));
-      const newId = result.formData[0].id;
-
-      expect(result.highlightedId).toBe(newId);
-      expect(result.highlightedId).toBe('1000000');
     });
   });
 

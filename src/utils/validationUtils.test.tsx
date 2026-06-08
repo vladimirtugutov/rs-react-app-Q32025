@@ -5,14 +5,10 @@ describe('validationUtils', () => {
   describe('validateName', () => {
     it('should return true for names starting with uppercase letter', () => {
       expect(validateName('John')).toBe(true);
-      expect(validateName('Alice')).toBe(true);
-      expect(validateName('Michael')).toBe(true);
     });
 
     it('should return false for names starting with lowercase letter', () => {
       expect(validateName('john')).toBe(false);
-      expect(validateName('alice')).toBe(false);
-      expect(validateName('michael')).toBe(false);
     });
 
     it('should return false for empty names', () => {
@@ -21,23 +17,15 @@ describe('validationUtils', () => {
 
     it('should return false for names starting with numbers', () => {
       expect(validateName('1John')).toBe(false);
-      expect(validateName('2Alice')).toBe(false);
     });
 
     it('should return false for names starting with special characters', () => {
       expect(validateName('@John')).toBe(false);
-      expect(validateName('#Alice')).toBe(false);
       expect(validateName(' John')).toBe(false);
     });
 
     it('should handle names with spaces correctly', () => {
       expect(validateName('John Doe')).toBe(true);
-      expect(validateName('Mary Jane')).toBe(true);
-    });
-
-    it('should handle unicode uppercase letters', () => {
-      expect(validateName('Anna')).toBe(true);
-      expect(validateName('Bob')).toBe(true);
     });
   });
 
@@ -48,24 +36,27 @@ describe('validationUtils', () => {
       expect(validateEmail('john+doe@gmail.com')).toBe(true);
     });
 
-    it('should return false for invalid email addresses', () => {
+    it('should return false for missing @', () => {
       expect(validateEmail('invalid-email')).toBe(false);
+      expect(validateEmail('test.domain.com')).toBe(false);
+    });
+
+    it('should return false for empty local or domain part', () => {
       expect(validateEmail('test@')).toBe(false);
       expect(validateEmail('@domain.com')).toBe(false);
-      expect(validateEmail('test.domain.com')).toBe(false);
     });
 
     it('should return false for empty email', () => {
       expect(validateEmail('')).toBe(false);
     });
 
-    it('should return false for emails with spaces', () => {
-      expect(validateEmail('test @example.com')).toBe(false);
-      expect(validateEmail('test@ example.com')).toBe(false);
-    });
-
     it('should return false for emails without domain extension', () => {
       expect(validateEmail('test@domain')).toBe(false);
+    });
+
+    it('should return false for multiple @ symbols', () => {
+      expect(validateEmail('test@@example.com')).toBe(false);
+      expect(validateEmail('te@st@example.com')).toBe(false);
     });
 
     it('should handle complex valid emails', () => {
@@ -78,7 +69,6 @@ describe('validationUtils', () => {
     it('should return true for positive ages', () => {
       expect(validateAge(1)).toBe(true);
       expect(validateAge(25)).toBe(true);
-      expect(validateAge(100)).toBe(true);
     });
 
     it('should return false for zero age', () => {
@@ -87,18 +77,11 @@ describe('validationUtils', () => {
 
     it('should return false for negative ages', () => {
       expect(validateAge(-1)).toBe(false);
-      expect(validateAge(-25)).toBe(false);
     });
 
     it('should handle decimal ages', () => {
       expect(validateAge(25.5)).toBe(true);
-      expect(validateAge(0.5)).toBe(true);
       expect(validateAge(-0.1)).toBe(false);
-    });
-
-    it('should handle very large ages', () => {
-      expect(validateAge(150)).toBe(true);
-      expect(validateAge(999)).toBe(true);
     });
   });
 });

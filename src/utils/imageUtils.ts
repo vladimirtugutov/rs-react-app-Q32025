@@ -35,3 +35,16 @@ export const compressImage = (
     img.src = base64;
   });
 };
+
+export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg'];
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+export const validateImageFile = (file: File): string | null => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return 'Invalid file type! Only PNG and JPEG allowed.';
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    return 'File size too large! Maximum 5MB allowed.';
+  }
+  return null;
+};

@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import formReducer, { FormData } from '../../store/formSlice';
+import formReducer from '../../store/formSlice';
 import countriesReducer from '../../store/countriesSlice';
 import { MainRoute } from './MainRoute';
+import type { FormSubmission } from '../../utils/formSchema';
 
 vi.mock('../../utils/imageUtils', () => ({
   compressImage: vi.fn(),
@@ -16,8 +16,8 @@ const mockCompressImage = vi.mocked(
   await import('../../utils/imageUtils')
 ).compressImage;
 
-const createTestStore = (initialFormData: FormData[] = []) => {
-  return configureStore({
+const createTestStore = (initialFormData: FormSubmission[] = []) =>
+  configureStore({
     reducer: {
       form: formReducer,
       countries: countriesReducer,
@@ -31,9 +31,8 @@ const createTestStore = (initialFormData: FormData[] = []) => {
       countries: ['USA', 'UK'],
     },
   });
-};
 
-const mockFormData: FormData = {
+const mockFormData: FormSubmission = {
   id: 'test-id-1',
   name: 'John Doe',
   age: 25,
@@ -43,6 +42,16 @@ const mockFormData: FormData = {
   termsAccepted: true,
   imageBase64: 'data:image/jpeg;base64,testImageData',
   country: 'USA',
+};
+
+const renderWithStore = (formData: FormSubmission[] = []) => {
+  const store = createTestStore(formData);
+  const result = render(
+    <Provider store={store}>
+      <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
+    </Provider>
+  );
+  return { ...result, store };
 };
 
 describe('MainRoute', () => {
@@ -57,49 +66,19 @@ describe('MainRoute', () => {
 
   describe('basic rendering', () => {
     it('should render main page title', () => {
-      const store = createTestStore();
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore();
       expect(screen.getByText('Main Page')).toBeInTheDocument();
     });
 
     it('should render no forms message when no data', () => {
-      const store = createTestStore();
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore();
       expect(screen.getByText('No submitted forms yet.')).toBeInTheDocument();
     });
   });
 
   describe('with form data', () => {
     it('should render form data cards', () => {
-      const store = createTestStore([mockFormData]);
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore([mockFormData]);
 
       expect(screen.getByText('John Doe')).toBeInTheDocument();
       expect(screen.getByText('25')).toBeInTheDocument();
@@ -109,18 +88,7 @@ describe('MainRoute', () => {
     });
 
     it('should show clear button when form data exists', () => {
-      const store = createTestStore([mockFormData]);
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
-
+      renderWithStore([mockFormData]);
       expect(
         screen.getByRole('button', { name: 'Clear All Data' })
       ).toBeInTheDocument();
@@ -128,60 +96,30 @@ describe('MainRoute', () => {
 
     it('should dispatch clearFormData when clear button clicked', async () => {
       const user = userEvent.setup();
-      const store = createTestStore([mockFormData]);
+      const { store } = renderWithStore([mockFormData]);
       const dispatchSpy = vi.spyOn(store, 'dispatch');
 
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
-
-      const clearButton = screen.getByRole('button', {
-        name: 'Clear All Data',
-      });
-      await user.click(clearButton);
+      await user.click(screen.getByRole('button', { name: 'Clear All Data' }));
 
       expect(dispatchSpy).toHaveBeenCalledWith({ type: 'form/clearFormData' });
     });
 
     it('should show highlighted card when highlightedId matches', () => {
-      const store = createTestStore([mockFormData]);
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
-
+      renderWithStore([mockFormData]);
       const card = screen.getByText('John Doe').closest('.card');
       expect(card).toHaveClass('highlighted');
     });
   });
 
   describe('useEffect for clearHighlight', () => {
-    it('should clear highlight after 5 seconds', async () => {
+    it('should clear highlight after 5 seconds', () => {
       vi.useFakeTimers();
       const store = createTestStore([mockFormData]);
       const dispatchSpy = vi.spyOn(store, 'dispatch');
 
       render(
         <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
+          <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
         </Provider>
       );
 
@@ -197,17 +135,11 @@ describe('MainRoute', () => {
       vi.useFakeTimers();
       const store = createTestStore([{ ...mockFormData, id: 'different-id' }]);
       store.dispatch({ type: 'form/clearHighlight' });
-
       const dispatchSpy = vi.spyOn(store, 'dispatch');
 
       render(
         <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
+          <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
         </Provider>
       );
 
@@ -224,18 +156,7 @@ describe('MainRoute', () => {
 
   describe('image compression', () => {
     it('should compress images and show compressed version', async () => {
-      const store = createTestStore([mockFormData]);
-
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore([mockFormData]);
 
       await waitFor(() => {
         expect(mockCompressImage).toHaveBeenCalledWith(
@@ -246,25 +167,15 @@ describe('MainRoute', () => {
       });
 
       await waitFor(() => {
-        const img = screen.getByAltText('User upload');
-        expect(img).toHaveAttribute('src', 'data:image/jpeg;base64,compressed');
+        expect(screen.getByAltText('User upload')).toHaveAttribute(
+          'src',
+          'data:image/jpeg;base64,compressed'
+        );
       });
     });
 
     it('should show compression loading state', () => {
-      const store = createTestStore([mockFormData]);
-
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
-
+      renderWithStore([mockFormData]);
       expect(screen.getByText('Compressing...')).toBeInTheDocument();
     });
 
@@ -274,31 +185,17 @@ describe('MainRoute', () => {
         .mockImplementation(() => {});
       mockCompressImage.mockRejectedValue(new Error('Compression failed'));
 
-      const store = createTestStore([mockFormData]);
-
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore([mockFormData]);
 
       await waitFor(() => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to compress image:',
-          expect.objectContaining({
-            message: 'Compression failed',
-          })
+          expect.objectContaining({ message: 'Compression failed' })
         );
       });
 
       await waitFor(() => {
-        const img = screen.getByAltText('User upload');
-        expect(img).toHaveAttribute(
+        expect(screen.getByAltText('User upload')).toHaveAttribute(
           'src',
           'data:image/jpeg;base64,testImageData'
         );
@@ -308,36 +205,11 @@ describe('MainRoute', () => {
     });
 
     it('should skip compression for already compressed images', async () => {
-      const store = createTestStore([
-        mockFormData,
-        { ...mockFormData, id: 'test-id-2' },
-      ]);
-
-      const { rerender } = render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
+      renderWithStore([mockFormData, { ...mockFormData, id: 'test-id-2' }]);
 
       await waitFor(() => {
         expect(mockCompressImage).toHaveBeenCalledTimes(2);
       });
-
-      rerender(
-        <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
-        </Provider>
-      );
 
       expect(mockCompressImage).toHaveBeenCalledTimes(2);
     });
@@ -347,48 +219,40 @@ describe('MainRoute', () => {
     it('should call onOpenControlled when controlled form button clicked', async () => {
       const user = userEvent.setup();
       const mockOnOpenControlled = vi.fn();
-
       const store = createTestStore();
+
       render(
         <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={vi.fn()}
-              onOpenControlled={mockOnOpenControlled}
-            />
-          </MemoryRouter>
+          <MainRoute
+            onOpenUncontrolled={vi.fn()}
+            onOpenControlled={mockOnOpenControlled}
+          />
         </Provider>
       );
 
-      const controlledButton = screen.getByRole('button', {
-        name: 'Open Controlled Form',
-      });
-      await user.click(controlledButton);
-
+      await user.click(
+        screen.getByRole('button', { name: 'Open Controlled Form' })
+      );
       expect(mockOnOpenControlled).toHaveBeenCalledTimes(1);
     });
 
     it('should call onOpenUncontrolled when uncontrolled form button clicked', async () => {
       const user = userEvent.setup();
       const mockOnOpenUncontrolled = vi.fn();
-
       const store = createTestStore();
+
       render(
         <Provider store={store}>
-          <MemoryRouter>
-            <MainRoute
-              onOpenUncontrolled={mockOnOpenUncontrolled}
-              onOpenControlled={vi.fn()}
-            />
-          </MemoryRouter>
+          <MainRoute
+            onOpenUncontrolled={mockOnOpenUncontrolled}
+            onOpenControlled={vi.fn()}
+          />
         </Provider>
       );
 
-      const uncontrolledButton = screen.getByRole('button', {
-        name: 'Open Uncontrolled Form',
-      });
-      await user.click(uncontrolledButton);
-
+      await user.click(
+        screen.getByRole('button', { name: 'Open Uncontrolled Form' })
+      );
       expect(mockOnOpenUncontrolled).toHaveBeenCalledTimes(1);
     });
   });

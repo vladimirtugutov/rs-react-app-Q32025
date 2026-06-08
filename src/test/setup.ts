@@ -10,7 +10,7 @@ globalThis.FileReader = class {
   result: string | null = null;
   onload: (() => void) | null = null;
   onloadend: (() => void) | null = null;
-  
+
   readAsDataURL() {
     this.result = 'data:image/jpeg;base64,testbase64string';
     setTimeout(() => {

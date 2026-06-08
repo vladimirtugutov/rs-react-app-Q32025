@@ -33,7 +33,7 @@ describe('store configuration', () => {
       age: 25,
       email: 'john@test.com',
       password: 'pass',
-      gender: 'male',
+      gender: 'male' as const,
       termsAccepted: true,
       imageBase64: 'test',
       country: 'USA',

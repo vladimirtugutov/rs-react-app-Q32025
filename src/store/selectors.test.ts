@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { RootState } from './store';
-
-export const selectFormData = (state: RootState) => state.form.formData;
-export const selectHighlightedId = (state: RootState) =>
-  state.form.highlightedId;
-export const selectCountries = (state: RootState) => state.countries;
-export const selectFormDataById = (state: RootState, id: string) =>
-  state.form.formData.find((entry) => entry.id === id);
+import {
+  selectFormData,
+  selectHighlightedId,
+  selectCountries,
+  selectFormDataById,
+  selectFormDataCount,
+  selectHasHighlightedEntry,
+  selectCountryByIndex,
+} from './selectors';
+import type { RootState } from './store';
 
 describe('selectors', () => {
   const mockState: RootState = {
@@ -41,28 +43,44 @@ describe('selectors', () => {
   };
 
   it('should select form data', () => {
-    const result = selectFormData(mockState);
-    expect(result).toHaveLength(2);
-    expect(result[0].name).toBe('John');
+    expect(selectFormData(mockState)).toHaveLength(2);
+    expect(selectFormData(mockState)[0].name).toBe('John');
   });
 
   it('should select highlighted ID', () => {
-    const result = selectHighlightedId(mockState);
-    expect(result).toBe('1');
+    expect(selectHighlightedId(mockState)).toBe('1');
   });
 
   it('should select countries', () => {
-    const result = selectCountries(mockState);
-    expect(result).toEqual(['USA', 'UK', 'Germany']);
+    expect(selectCountries(mockState)).toEqual(['USA', 'UK', 'Germany']);
   });
 
   it('should select form data by ID', () => {
-    const result = selectFormDataById(mockState, '1');
-    expect(result?.name).toBe('John');
+    expect(selectFormDataById(mockState, '1')?.name).toBe('John');
   });
 
   it('should return undefined for non-existent ID', () => {
-    const result = selectFormDataById(mockState, '999');
-    expect(result).toBeUndefined();
+    expect(selectFormDataById(mockState, '999')).toBeUndefined();
+  });
+
+  it('should select form data count', () => {
+    expect(selectFormDataCount(mockState)).toBe(2);
+  });
+
+  it('should select has highlighted entry when highlightedId is set', () => {
+    expect(selectHasHighlightedEntry(mockState)).toBe(true);
+  });
+
+  it('should select has highlighted entry as false when null', () => {
+    const stateNoHighlight: RootState = {
+      ...mockState,
+      form: { ...mockState.form, highlightedId: null },
+    };
+    expect(selectHasHighlightedEntry(stateNoHighlight)).toBe(false);
+  });
+
+  it('should select country by index', () => {
+    expect(selectCountryByIndex(mockState, 0)).toBe('USA');
+    expect(selectCountryByIndex(mockState, 2)).toBe('Germany');
   });
 });

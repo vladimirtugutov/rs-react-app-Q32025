@@ -22,3 +22,6 @@ export const calculatePasswordStrength = (password: string): string => {
       return 'Very Weak';
   }
 };
+
+export const getPasswordStrengthClass = (strength: string) =>
+  `strength-${strength.toLowerCase().replace(' ', '-')}`;

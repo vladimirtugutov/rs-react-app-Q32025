@@ -1,7 +1,6 @@
-export const filterCountries = (
-  countries: string[],
-  query: string
-): string[] => {
+const MAX_FILTERED_COUNTRIES = 10;
+
+export const filterCountries = (countries: string[], query: string) => {
   if (!query.trim()) {
     return [];
   }
@@ -11,5 +10,5 @@ export const filterCountries = (
     country.toLowerCase().includes(lowerQuery)
   );
 
-  return filtered.slice(0, 10);
+  return filtered.slice(0, MAX_FILTERED_COUNTRIES);
 };
