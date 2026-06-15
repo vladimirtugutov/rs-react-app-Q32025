@@ -1,14 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_CONFIG, API_ENDPOINTS } from '../../constants/api';
-import {
-  Book,
-  BookDetailsAPI,
-  OpenLibraryBook,
-  OpenLibraryResponse,
-} from '../../types/book';
-import { getBooksQueryUrl, generateDescription } from './booksApiHelpers';
+import { BookDetailsAPI } from '../../types/book';
+import { getBooksQueryUrl } from './booksApiHelpers';
 import { BooksApiTags } from './booksApiTags';
 import { GetBooksParams, GetBooksResponse } from '../../types/bookApi';
+import { transformBooksResponse } from './transformers/booksTransformer';
 
 export const booksApi = createApi({
   reducerPath: 'booksApi',
@@ -23,27 +19,7 @@ export const booksApi = createApi({
       query: ({ searchTerm = '', page = 1 }) =>
         getBooksQueryUrl(searchTerm, page, API_CONFIG.ITEMS_PER_PAGE),
 
-      transformResponse: (response: OpenLibraryResponse): GetBooksResponse => {
-        const mappedResults: Book[] = response.docs.map(
-          (book: OpenLibraryBook) => ({
-            title: book.title || 'Название не указано',
-            author_name: book.author_name || [],
-            first_publish_year: book.first_publish_year,
-            cover_i: book.cover_i,
-            isbn: book.isbn,
-            subject: book.subject,
-            publisher: book.publisher,
-            key: book.key,
-            description: generateDescription(book),
-          })
-        );
-
-        return {
-          books: mappedResults,
-          totalResults: response.numFound,
-          totalPages: Math.ceil(response.numFound / API_CONFIG.ITEMS_PER_PAGE),
-        };
-      },
+      transformResponse: transformBooksResponse,
 
       providesTags: (_result, _error, { searchTerm, page }) => [
         { type: BooksApiTags.Books, id: `${searchTerm || 'all'}-${page}` },
