@@ -9,7 +9,7 @@ import { BookAdditionalInfo } from '../components/BookAdditionalInfo';
 import { getDescription } from '../utils/getDescription';
 import { formatLanguages } from '../utils/formatLanguages';
 
-export const BookDetails = ({ results }: BookDetailsProps) => {
+export const BookDetails = ({ results = [] }: BookDetailsProps) => {
   const { detailsId, page = '1' } = useParams();
   const navigate = useNavigate();
 
