@@ -10,7 +10,3 @@ export type GetBooksResponse = {
   totalResults: number;
   totalPages: number;
 };
-
-export type BooksApiState = {
-  booksApi: ReturnType<typeof import('../store/api/booksApi').booksApi.reducer>;
-};

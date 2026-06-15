@@ -80,3 +80,5 @@ export const {
 } = booksApi;
 
 export default booksApi;
+
+export type BooksApiState = ReturnType<typeof booksApi.reducer>;

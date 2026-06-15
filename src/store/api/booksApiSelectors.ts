@@ -1,3 +1,3 @@
-import { BooksApiState } from '../../types/bookApi';
+import { RootState } from '../index';
 
-export const selectBooksApiState = (state: BooksApiState) => state.booksApi;
+export const selectBooksApiState = (state: RootState) => state.booksApi;
