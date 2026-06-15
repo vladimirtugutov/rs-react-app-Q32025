@@ -4,8 +4,8 @@ export type Book = {
   first_publish_year?: number;
   cover_i?: number;
   isbn?: string[];
-  subject: string[];
-  publisher: string[];
+  subject?: string[];
+  publisher?: string[];
   description?: string;
   key?: string;
 };

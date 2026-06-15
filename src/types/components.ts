@@ -1,4 +1,4 @@
-import { ReactNode, PropsWithChildren } from 'react';
+import { ReactNode } from 'react';
 import { Book, BookDetailsAPI } from './book';
 
 export type ErrorBoundaryProps = {
@@ -15,7 +15,7 @@ export type ResultsProps = {
 };
 
 export type BookDetailsProps = {
-  results?: Book[];
+  results: Book[];
 };
 
 export type PaginationProps = {
@@ -33,15 +33,10 @@ export type MainContentProps = {
   onPageChange: (page: number) => void;
 };
 
-export type SearchContextType = {
-  searchValue: string;
-  setSearchValue: (value: string) => void;
-  handleSearchButtonClick: () => void;
-};
-
-export type InfoSectionProps = PropsWithChildren<{
+export type InfoSectionProps = {
   title: string;
-}>;
+  children: React.ReactNode;
+};
 
 export type BookMainInfoProps = {
   book: Book;
@@ -54,19 +49,3 @@ export type BookAdditionalInfoProps = {
   getDescription: (desc: string | { value: string } | undefined) => string;
   formatLanguages: (langs?: Array<{ key: string }>) => string;
 };
-
-type SearchProviderChildrenProps = {
-  isLoading: boolean;
-  error: string | null;
-  results: Book[];
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
-
-export type SearchProviderProps = PropsWithChildren<{
-  currentPage: number;
-  detailsId?: string;
-  navigate: (url: string) => void;
-  children?: ReactNode | ((props: SearchProviderChildrenProps) => ReactNode);
-}>;

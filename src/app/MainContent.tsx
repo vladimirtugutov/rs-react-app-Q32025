@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Spinner from '../spinner/Spinner';
 import { Results } from '../results/Results';
 import { Pagination } from './Pagination';
-import { BookDetails } from '../book-details/BookDetails';
 import { MainContentProps } from '../types/components';
 
 export const MainContent = ({
@@ -41,7 +40,6 @@ export const MainContent = ({
           </React.Fragment>
         )}
       </div>
-      {detailsId && <BookDetails results={results} />}
     </div>
   );
 };
