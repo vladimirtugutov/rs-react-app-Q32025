@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { App } from './App';
-import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
+import ErrorBoundary from '../error-boundary/ErrorBoundary';
 import selectedItemsReducer from '../store/selectedItemsSlice';
 import { booksApi } from '../store/api/booksApi';
 

@@ -4,9 +4,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { BookDetails } from './BookDetails';
-import { booksApi } from '../../store/api/booksApi';
+import { booksApi } from '../store/api/booksApi';
 
-vi.mock('../../hooks/useBookDetails', () => ({
+vi.mock('../hooks/useBookDetails', () => ({
   useBookDetails: vi.fn(),
 }));
 
@@ -68,7 +68,7 @@ describe('BookDetails - RTK Query Functionality', () => {
   });
 
   it('should show loading in BookDetails RTK Query', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: null,
@@ -85,7 +85,7 @@ describe('BookDetails - RTK Query Functionality', () => {
   });
 
   it('should handle RTK Query error in BookDetails', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: null,
@@ -103,7 +103,7 @@ describe('BookDetails - RTK Query Functionality', () => {
   });
 
   it('should handle cached book details data', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: {

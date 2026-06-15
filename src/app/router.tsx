@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { About } from '../about/About';
 import { NotFound } from '../not-found/NotFound';
 import { ValidatedMainLayout } from './ValidatedMainLayout';
+import { BookDetails } from '../book-details/BookDetails';
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -19,7 +20,7 @@ export const router = createBrowserRouter([
         path: ':page',
         children: [
           { index: true, element: null },
-          { path: ':detailsId', element: null },
+          { path: ':detailsId', element: <BookDetails /> },
         ],
       },
       {

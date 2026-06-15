@@ -4,10 +4,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { BookDetails } from './BookDetails';
-import { OpenLibraryBook } from '../../types/book';
-import { booksApi } from '../../store/api/booksApi';
+import { OpenLibraryBook } from '../types/book';
+import { booksApi } from '../store/api/booksApi';
 
-vi.mock('../../hooks/useBookDetails', () => ({
+vi.mock('../hooks/useBookDetails', () => ({
   useBookDetails: vi.fn(),
 }));
 
@@ -91,7 +91,7 @@ describe('BookDetails', () => {
   });
 
   it('should return null when detailsId is not provided', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     mockUseParams.mockReturnValue({
       page: '1',
@@ -108,7 +108,7 @@ describe('BookDetails', () => {
   });
 
   it('should display book not found message when book is not in results', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     mockUseOutletContext.mockReturnValue({
       results: [],
@@ -128,7 +128,7 @@ describe('BookDetails', () => {
   });
 
   it('should render close button with correct functionality', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     mockUseOutletContext.mockReturnValue({
       results: [],
@@ -151,7 +151,7 @@ describe('BookDetails', () => {
   });
 
   it('should display loading spinner during API fetch', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: null,
@@ -168,7 +168,7 @@ describe('BookDetails', () => {
   });
 
   it('should display book information from results list', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -187,7 +187,7 @@ describe('BookDetails', () => {
   });
 
   it('should display book cover with correct URL', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -206,7 +206,7 @@ describe('BookDetails', () => {
   });
 
   it('should handle image load error correctly', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -224,7 +224,7 @@ describe('BookDetails', () => {
   });
 
   it('should fetch and display additional book details from API', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -245,7 +245,7 @@ describe('BookDetails', () => {
   });
 
   it('should handle API fetch error gracefully', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: null,
@@ -263,7 +263,7 @@ describe('BookDetails', () => {
   });
 
   it('should handle network error gracefully', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: null,
@@ -281,7 +281,7 @@ describe('BookDetails', () => {
   });
 
   it('should display no additional info message when API returns empty data', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: {},
@@ -297,7 +297,7 @@ describe('BookDetails', () => {
   });
 
   it('should format languages correctly', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -311,7 +311,7 @@ describe('BookDetails', () => {
   });
 
   it('should handle empty languages array', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: {
@@ -328,7 +328,7 @@ describe('BookDetails', () => {
   });
 
   it('should handle string description format', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: {
@@ -345,7 +345,7 @@ describe('BookDetails', () => {
   });
 
   it('should display all info sections when book has complete data', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -363,7 +363,7 @@ describe('BookDetails', () => {
   });
 
   it('should have correct CSS classes applied', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     vi.mocked(useBookDetails).mockReturnValue({
       bookDetailsAPI: mockBookDetailsAPI,
@@ -381,7 +381,7 @@ describe('BookDetails', () => {
   });
 
   it('should limit displayed subjects to 8 items', async () => {
-    const { useBookDetails } = await import('../../hooks/useBookDetails');
+    const { useBookDetails } = await import('../hooks/useBookDetails');
 
     const bookWithManySubjects = {
       ...mockBookFromList,
