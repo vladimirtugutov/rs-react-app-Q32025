@@ -1,5 +1,5 @@
 type RefreshButtonProps = {
-  onRefresh: () => void;
+  onRefresh?: () => void;
   isLoading: boolean;
 };
 

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import SearchInput from '../Search/SearchInput';
 import SearchButton from '../Search/SearchButton';
 import { RefreshButton } from './RefreshButton';
+import { AppRoutes } from '../../constants/routes';
 import './TopControls.css';
 
 type TopControlsProps = {
@@ -18,13 +19,10 @@ export const TopControls = ({
       <div className="search-controls">
         <SearchInput />
         <SearchButton />
-        <RefreshButton
-          isLoading={isLoading}
-          onRefresh={onManualRefresh ?? (() => {})}
-        />
+        <RefreshButton isLoading={isLoading} onRefresh={onManualRefresh} />
       </div>
       <nav className="navigation">
-        <Link to="/about">About</Link>
+        <Link to={AppRoutes.ABOUT}>About</Link>
       </nav>
     </div>
   );
