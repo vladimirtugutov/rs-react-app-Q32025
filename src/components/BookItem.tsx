@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { API_CONFIG } from '../constants/api';
 import { Book } from '../types/book';
 import { useAppDispatch } from '../store/hooks';

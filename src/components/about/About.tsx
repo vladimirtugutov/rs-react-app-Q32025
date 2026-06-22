@@ -1,6 +1,6 @@
 import './About.css';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export const About = () => {
   const t = useTranslations('About');

@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { SearchProvider } from '@/components/Search/SearchProvider';
+import { useRouter } from '@/i18n/navigation';
 import { TopControls } from '@/components/Topcontrols/TopControls';
 import { Results } from '@/components/Results/Results';
 import { Pagination } from '@/components/Pagination/Pagination';
+import { API_CONFIG } from '@/constants/api';
 import { OpenLibraryResponse } from '@/types/book';
 
 type BooksListClientProps = {
@@ -25,61 +25,41 @@ export const BooksListClient = ({
 }: BooksListClientProps) => {
   const router = useRouter();
 
-  const navigate = useCallback(
-    (path: string) => {
-      router.push(path);
-    },
-    [router]
-  );
-
   const handlePageChange = useCallback(
     (newPage: number) => {
-      const currentUrl = new URLSearchParams(window.location.search);
-      const query = currentUrl.get('q') || '';
-
-      if (query) {
-        router.push(`/${locale}/${newPage}?q=${encodeURIComponent(query)}`);
-      } else {
-        router.push(`/${locale}/${newPage}`);
-      }
+      const qs = initialQuery ? `?q=${encodeURIComponent(initialQuery)}` : '';
+      router.push(`/${newPage}${qs}`);
     },
-    [router, locale]
+    [router, initialQuery]
+  );
+
+  const handleManualRefresh = useCallback(() => {
+    router.refresh();
+  }, [router]);
+
+  const totalPages = Math.ceil(
+    initialData.numFound / API_CONFIG.ITEMS_PER_PAGE
   );
 
   return (
-    <SearchProvider
-      currentPage={currentPage}
-      navigate={navigate}
-      initialData={initialData}
-      initialQuery={initialQuery}
-      initialError={error}
-    >
-      {({
-        isLoading,
-        error: providerError,
-        results,
-        currentPage: providerCurrentPage,
-        totalPages,
-        onManualRefresh,
-      }) => (
-        <>
-          <TopControls
-            onManualRefresh={onManualRefresh}
-            isLoading={isLoading}
-          />
+    <>
+      <TopControls
+        locale={locale}
+        initialQuery={initialQuery}
+        isLoading={false}
+        onManualRefresh={handleManualRefresh}
+      />
 
-          <Results results={results} error={providerError} />
+      <Results results={initialData.docs} error={error} />
 
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={providerCurrentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
-    </SearchProvider>
+    </>
   );
 };
 

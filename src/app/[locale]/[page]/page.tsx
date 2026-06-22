@@ -11,7 +11,7 @@ type Props = {
 
 export default async function BooksListPage({ params, searchParams }: Props) {
   const { locale, page } = await params;
-  const { q = '', filter } = await searchParams;
+  const { q = '' } = await searchParams;
 
   const currentPage = Number(page);
 

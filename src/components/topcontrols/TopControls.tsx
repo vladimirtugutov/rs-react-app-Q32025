@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import SearchInput from '../Search/SearchInput';
 import SearchButton from '../Search/SearchButton';
 import { RefreshButton } from './RefreshButton';

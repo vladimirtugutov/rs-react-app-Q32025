@@ -1,18 +1,20 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export const LanguageSwitcher = () => {
   const locale = useLocale();
-  const router = useRouter();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const switchLanguage = (newLocale: string) => {
-    const segments = pathname.split('/');
-    segments[1] = newLocale;
-    const newPath = segments.join('/');
-    router.push(newPath);
+    const query = searchParams.toString();
+    router.push(query ? `${pathname}?${query}` : pathname, {
+      locale: newLocale,
+    });
   };
 
   return (

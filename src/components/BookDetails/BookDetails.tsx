@@ -1,6 +1,6 @@
 'use client';
 import './BookDetails.css';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { API_CONFIG } from '../../constants/api';
 import Spinner from '../Spinner/Spinner';
 import { useBookDetails } from '../../hooks/useBookDetails';
@@ -11,13 +11,12 @@ import { formatLanguages } from '../../utils/formatLanguages';
 import { Book } from '../../types/book';
 
 export const BookDetails = () => {
-  const router = useRouter();
   const params = useParams() as { locale: string; page: string; id: string };
 
   const { bookDetailsAPI, isLoading, error } = useBookDetails(params.id);
 
   const handleClose = () => {
-    router.back();
+    window.history.back();
   };
 
   const getCoverUrl = (coverId: number) =>
