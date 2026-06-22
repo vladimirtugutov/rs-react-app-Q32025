@@ -22,7 +22,7 @@ const transformOpenLibraryBook = (doc: OpenLibraryBook): Book => ({
 });
 
 export default async function BooksListPage({ params, searchParams }: Props) {
-  const { locale, page } = await params;
+  const { page } = await params;
   const { q = '' } = await searchParams;
 
   const currentPage = Number(page);
@@ -61,8 +61,8 @@ export default async function BooksListPage({ params, searchParams }: Props) {
 
   return (
     <div className="books-page">
-      <TopControls locale={locale} initialQuery={q} />
-      <Results results={books} error={error} />
+      <TopControls initialQuery={q} />
+      <Results results={books} currentPage={currentPage} error={error} />
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
@@ -78,9 +78,7 @@ export async function generateStaticParams() {
   return [
     { locale: 'en', page: '1' },
     { locale: 'ru', page: '1' },
-    { locale: 'en', page: '2' },
-    { locale: 'ru', page: '2' },
   ];
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;

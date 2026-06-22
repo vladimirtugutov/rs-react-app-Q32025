@@ -6,9 +6,10 @@ import { BookCardControls } from './BookCardControls';
 
 type BookItemProps = {
   book: Book;
+  currentPage: number;
 };
 
-export const BookItem = ({ book }: BookItemProps) => {
+export const BookItem = ({ book, currentPage }: BookItemProps) => {
   if (!book.key) return null;
 
   const bookId = book.key.replace('/works/', '');
@@ -18,7 +19,7 @@ export const BookItem = ({ book }: BookItemProps) => {
 
   return (
     <BookCardControls book={book}>
-      <Link href={`/${bookId}`} className="result-card-link">
+      <Link href={`/${currentPage}/${bookId}`} className="result-card-link">
         {coverUrl && (
           <Image
             src={coverUrl}

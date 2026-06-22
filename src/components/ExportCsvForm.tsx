@@ -1,30 +1,26 @@
 'use client';
 
+import { useActionState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectSelectedItems } from '@/store/selectedItemsSlice';
-import { useState } from 'react';
+import { exportCsvAction, ExportCsvState } from '@/app/actions/exportCsv';
+
+const initialState: ExportCsvState = { csvContent: null, error: null };
 
 export const ExportCsvForm = () => {
   const selectedItems = useSelector(selectSelectedItems);
-  const [isExporting, setIsExporting] = useState(false);
+  const [state, formAction, isPending] = useActionState(
+    exportCsvAction,
+    initialState
+  );
+  const downloadedRef = useRef<string | null>(null);
 
-  const handleExport = async () => {
-    if (selectedItems.length === 0) return;
-
-    setIsExporting(true);
-
-    try {
-      const response = await fetch('/api/export-csv', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ items: selectedItems }),
+  useEffect(() => {
+    if (state.csvContent && state.csvContent !== downloadedRef.current) {
+      downloadedRef.current = state.csvContent;
+      const blob = new Blob([state.csvContent], {
+        type: 'text/csv;charset=utf-8',
       });
-
-      if (!response.ok) throw new Error('Export failed');
-
-      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -33,27 +29,22 @@ export const ExportCsvForm = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export CSV');
-    } finally {
-      setIsExporting(false);
     }
-  };
+  }, [state.csvContent]);
 
   if (selectedItems.length === 0) {
     return <p>No items selected for export</p>;
   }
 
   return (
-    <button
-      onClick={handleExport}
-      disabled={isExporting}
-      className="export-csv-button"
-    >
-      {isExporting
-        ? 'Exporting...'
-        : `Export Selected Books (${selectedItems.length}) to CSV`}
-    </button>
+    <form action={formAction}>
+      <input type="hidden" name="items" value={JSON.stringify(selectedItems)} />
+      <button type="submit" disabled={isPending} className="export-csv-button">
+        {isPending
+          ? 'Exporting...'
+          : `Export Selected Books (${selectedItems.length}) to CSV`}
+      </button>
+      {state.error && <p className="error-message">{state.error}</p>}
+    </form>
   );
 };

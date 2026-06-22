@@ -2,9 +2,12 @@
 
 import { SelectedItem } from '@/types/selectedItems';
 
-export async function generateCsvAction(
-  items: SelectedItem[]
-): Promise<string> {
+export type ExportCsvState = {
+  csvContent: string | null;
+  error: string | null;
+};
+
+function generateCsv(items: SelectedItem[]): string {
   const headers = [
     'Title',
     'Authors',
@@ -29,17 +32,21 @@ export async function generateCsvAction(
   return csvRows.join('\n');
 }
 
-export async function downloadCsvAction(formData: FormData) {
-  const itemsJson = formData.get('items') as string;
-  const items: SelectedItem[] = JSON.parse(itemsJson);
+export async function exportCsvAction(
+  _prevState: ExportCsvState,
+  formData: FormData
+): Promise<ExportCsvState> {
+  try {
+    const itemsJson = formData.get('items') as string;
+    const items: SelectedItem[] = JSON.parse(itemsJson);
 
-  const csvContent = await generateCsvAction(items);
+    if (!items.length) {
+      return { csvContent: null, error: 'No items selected for export' };
+    }
 
-  return new Response(csvContent, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/csv',
-      'Content-Disposition': 'attachment; filename="selected-books.csv"',
-    },
-  });
+    const csvContent = generateCsv(items);
+    return { csvContent, error: null };
+  } catch {
+    return { csvContent: null, error: 'Failed to generate CSV' };
+  }
 }

@@ -1,14 +1,20 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+export type SearchBooksState = {
+  redirectTo: string | null;
+};
 
-export async function searchBooksAction(formData: FormData) {
+export async function searchBooksAction(
+  _prevState: SearchBooksState,
+  formData: FormData
+): Promise<SearchBooksState> {
   const query = (formData.get('q') as string)?.trim() || '';
-  const locale = (formData.get('locale') as string) || 'en';
 
   const params = new URLSearchParams();
   if (query) params.set('q', query);
 
   const qs = params.toString();
-  redirect(`/${locale}/1${qs ? `?${qs}` : ''}`);
+  const redirectTo = `/1${qs ? `?${qs}` : ''}`;
+
+  return { redirectTo };
 }

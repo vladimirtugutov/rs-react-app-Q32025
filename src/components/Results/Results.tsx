@@ -5,10 +5,11 @@ import { useTranslations } from 'next-intl';
 
 type ResultsProps = {
   results: Book[];
+  currentPage: number;
   error?: string | null;
 };
 
-export const Results = ({ results, error }: ResultsProps) => {
+export const Results = ({ results, currentPage, error }: ResultsProps) => {
   const t = useTranslations('Search');
 
   if (error) {
@@ -22,7 +23,7 @@ export const Results = ({ results, error }: ResultsProps) => {
   return (
     <div className="results-table">
       {results.map((book) => (
-        <BookItem key={book.key} book={book} />
+        <BookItem key={book.key} book={book} currentPage={currentPage} />
       ))}
     </div>
   );

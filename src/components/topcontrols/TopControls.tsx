@@ -4,14 +4,13 @@ import { RefreshButton } from './RefreshButton';
 import './TopControls.css';
 
 type TopControlsProps = {
-  locale: string;
   initialQuery?: string;
 };
 
-export const TopControls = ({ locale, initialQuery }: TopControlsProps) => (
+export const TopControls = ({ initialQuery }: TopControlsProps) => (
   <div className="top-controls">
     <div className="search-controls-wrapper">
-      <SearchForm locale={locale} initialQuery={initialQuery} />
+      <SearchForm initialQuery={initialQuery} />
       <RefreshButton />
     </div>
     <nav className="navigation">

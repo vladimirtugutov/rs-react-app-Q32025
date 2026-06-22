@@ -1,20 +1,33 @@
 'use client';
 
-import { searchBooksAction } from '@/app/actions/searchBooks';
+import { useActionState, useEffect } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { searchBooksAction, SearchBooksState } from '@/app/actions/searchBooks';
 import SearchInput from './SearchInput';
 import SearchButton from './SearchButton';
 
 type SearchFormProps = {
-  locale: string;
   initialQuery?: string;
 };
 
-export const SearchForm = ({ locale, initialQuery }: SearchFormProps) => (
-  <form action={searchBooksAction} className="search-controls">
-    <input type="hidden" name="locale" value={locale} />
-    <SearchInput defaultValue={initialQuery} />
-    <SearchButton />
-  </form>
-);
+const initialState: SearchBooksState = { redirectTo: null };
+
+export const SearchForm = ({ initialQuery }: SearchFormProps) => {
+  const router = useRouter();
+  const [state, formAction] = useActionState(searchBooksAction, initialState);
+
+  useEffect(() => {
+    if (state.redirectTo) {
+      router.push(state.redirectTo);
+    }
+  }, [state.redirectTo, router]);
+
+  return (
+    <form action={formAction} className="search-controls">
+      <SearchInput defaultValue={initialQuery} />
+      <SearchButton />
+    </form>
+  );
+};
 
 export default SearchForm;
