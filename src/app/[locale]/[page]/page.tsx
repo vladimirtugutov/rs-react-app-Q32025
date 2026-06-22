@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { TopControls } from '@/components/Topcontrols/TopControls';
+import { TopControls } from '@/components/topcontrols/TopControls';
 import { Results } from '@/components/Results/Results';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { API_CONFIG } from '@/constants/api';
