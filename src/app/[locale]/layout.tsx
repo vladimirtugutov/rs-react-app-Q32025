@@ -14,17 +14,15 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-type Locale = (typeof routing.locales)[number];
-
 interface Props {
   children: React.ReactNode;
-  params: Promise<{ locale: Locale }>;
+  params: Promise<{ locale: string }>;
 }
 
 const LocaleLayout = async ({ children, params }: Props) => {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale)) {
+  if (!routing.locales.includes(locale as 'en' | 'ru')) {
     notFound();
   }
 
