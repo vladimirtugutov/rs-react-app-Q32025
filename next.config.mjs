@@ -17,6 +17,12 @@ const nextConfig = {
     ],
   },
 
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['*.app.github.dev', '*.vercel.app'],
+    },
+  },
+
   typescript: {
     ignoreBuildErrors: false,
   },
