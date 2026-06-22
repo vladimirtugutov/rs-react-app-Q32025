@@ -4,27 +4,32 @@ import { UncontrolledForm } from './pages/UncontrolledForm/UncontrolledForm';
 import { ControlledForm } from './pages/ControlledForm/ControlledForm';
 import { Modal } from './components/Modal';
 
+enum ModalType {
+  Uncontrolled = 'uncontrolled',
+  Controlled = 'controlled',
+}
+
+type ActiveModal = ModalType | null;
+
 export const App = () => {
-  const [modalType, setModalType] = useState<
-    'uncontrolled' | 'controlled' | null
-  >(null);
+  const [modalType, setModalType] = useState<ActiveModal>(null);
 
   return (
     <div>
       <MainRoute
-        onOpenUncontrolled={() => setModalType('uncontrolled')}
-        onOpenControlled={() => setModalType('controlled')}
+        onOpenUncontrolled={() => setModalType(ModalType.Uncontrolled)}
+        onOpenControlled={() => setModalType(ModalType.Controlled)}
       />
 
       <Modal
-        isOpen={modalType === 'uncontrolled'}
+        isOpen={modalType === ModalType.Uncontrolled}
         onClose={() => setModalType(null)}
       >
         <UncontrolledForm onSuccess={() => setModalType(null)} />
       </Modal>
 
       <Modal
-        isOpen={modalType === 'controlled'}
+        isOpen={modalType === ModalType.Controlled}
         onClose={() => setModalType(null)}
       >
         <ControlledForm onSuccess={() => setModalType(null)} />
