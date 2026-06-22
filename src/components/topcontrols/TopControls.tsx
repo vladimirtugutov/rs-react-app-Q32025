@@ -1,33 +1,31 @@
 import { Link } from '@/i18n/navigation';
-import SearchInput from '../Search/SearchInput';
-import SearchButton from '../Search/SearchButton';
-import { RefreshButton } from './RefreshButton';
+import { SearchForm } from '../Search/SearchForm';
 import './TopControls.css';
 
 type TopControlsProps = {
+  locale: string;
+  initialQuery?: string;
   isLoading: boolean;
   onManualRefresh?: () => void;
 };
 
 export const TopControls = ({
+  locale,
+  initialQuery,
   onManualRefresh,
   isLoading,
-}: TopControlsProps) => {
-  return (
-    <div className="top-controls">
-      <div className="search-controls">
-        <SearchInput />
-        <SearchButton />
-        <RefreshButton
-          isLoading={isLoading}
-          onRefresh={onManualRefresh ?? (() => {})}
-        />
-      </div>
-      <nav className="navigation">
-        <Link href="/about">About</Link>
-      </nav>
-    </div>
-  );
-};
+}: TopControlsProps) => (
+  <div className="top-controls">
+    <SearchForm
+      locale={locale}
+      initialQuery={initialQuery}
+      isLoading={isLoading}
+      onManualRefresh={onManualRefresh}
+    />
+    <nav className="navigation">
+      <Link href="/about">About</Link>
+    </nav>
+  </div>
+);
 
 export default TopControls;

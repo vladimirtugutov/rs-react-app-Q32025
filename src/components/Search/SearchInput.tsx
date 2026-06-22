@@ -1,21 +1,9 @@
-import { useContext } from 'react';
-import SearchContext from './SearchContext';
+type SearchInputProps = {
+  defaultValue?: string;
+};
 
-function SearchInput() {
-  const context = useContext(SearchContext);
-
-  return (
-    <input
-      type="text"
-      value={context.searchValue}
-      onChange={(e) => context.setSearchValue(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          context.handleSearchButtonClick();
-        }
-      }}
-    />
-  );
-}
+export const SearchInput = ({ defaultValue }: SearchInputProps) => (
+  <input type="text" name="q" defaultValue={defaultValue} />
+);
 
 export default SearchInput;
