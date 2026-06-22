@@ -17,8 +17,8 @@ export const App = () => {
   return (
     <div>
       <MainRoute
-        onOpenUncontrolled={() => setModalType(ModalType.Uncontrolled)}
-        onOpenControlled={() => setModalType(ModalType.Controlled)}
+        onUncontrolledFormOpen={() => setModalType(ModalType.Uncontrolled)}
+        onControlledFormOpen={() => setModalType(ModalType.Controlled)}
       />
 
       <Modal

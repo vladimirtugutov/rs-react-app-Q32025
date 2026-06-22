@@ -48,7 +48,7 @@ const renderWithStore = (formData: FormSubmission[] = []) => {
   const store = createTestStore(formData);
   const result = render(
     <Provider store={store}>
-      <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
+      <MainRoute onUncontrolledFormOpen={vi.fn()} onControlledFormOpen={vi.fn()} />
     </Provider>
   );
   return { ...result, store };
@@ -119,7 +119,7 @@ describe('MainRoute', () => {
 
       render(
         <Provider store={store}>
-          <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
+          <MainRoute onUncontrolledFormOpen={vi.fn()} onControlledFormOpen={vi.fn()} />
         </Provider>
       );
 
@@ -139,7 +139,7 @@ describe('MainRoute', () => {
 
       render(
         <Provider store={store}>
-          <MainRoute onOpenUncontrolled={vi.fn()} onOpenControlled={vi.fn()} />
+          <MainRoute onUncontrolledFormOpen={vi.fn()} onControlledFormOpen={vi.fn()} />
         </Provider>
       );
 
@@ -216,16 +216,16 @@ describe('MainRoute', () => {
   });
 
   describe('button interactions', () => {
-    it('should call onOpenControlled when controlled form button clicked', async () => {
+    it('should call onControlledFormOpen when controlled form button clicked', async () => {
       const user = userEvent.setup();
-      const mockOnOpenControlled = vi.fn();
+      const mockonControlledFormOpen = vi.fn();
       const store = createTestStore();
 
       render(
         <Provider store={store}>
           <MainRoute
-            onOpenUncontrolled={vi.fn()}
-            onOpenControlled={mockOnOpenControlled}
+            onUncontrolledFormOpen={vi.fn()}
+            onControlledFormOpen={mockonControlledFormOpen}
           />
         </Provider>
       );
@@ -233,19 +233,19 @@ describe('MainRoute', () => {
       await user.click(
         screen.getByRole('button', { name: 'Open Controlled Form' })
       );
-      expect(mockOnOpenControlled).toHaveBeenCalledTimes(1);
+      expect(mockonControlledFormOpen).toHaveBeenCalledTimes(1);
     });
 
-    it('should call onOpenUncontrolled when uncontrolled form button clicked', async () => {
+    it('should call onUncontrolledFormOpen when uncontrolled form button clicked', async () => {
       const user = userEvent.setup();
-      const mockOnOpenUncontrolled = vi.fn();
+      const mockonUncontrolledFormOpen = vi.fn();
       const store = createTestStore();
 
       render(
         <Provider store={store}>
           <MainRoute
-            onOpenUncontrolled={mockOnOpenUncontrolled}
-            onOpenControlled={vi.fn()}
+            onUncontrolledFormOpen={mockonUncontrolledFormOpen}
+            onControlledFormOpen={vi.fn()}
           />
         </Provider>
       );
@@ -253,7 +253,7 @@ describe('MainRoute', () => {
       await user.click(
         screen.getByRole('button', { name: 'Open Uncontrolled Form' })
       );
-      expect(mockOnOpenUncontrolled).toHaveBeenCalledTimes(1);
+      expect(mockonUncontrolledFormOpen).toHaveBeenCalledTimes(1);
     });
   });
 });

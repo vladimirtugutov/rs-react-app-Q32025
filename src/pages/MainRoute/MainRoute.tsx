@@ -6,13 +6,13 @@ import { compressImage } from '../../utils/imageUtils';
 import './MainRoute.css';
 
 type MainRouteProps = {
-  onOpenUncontrolled: () => void;
-  onOpenControlled: () => void;
+  onUncontrolledFormOpen: () => void;
+  onControlledFormOpen: () => void;
 };
 
 export const MainRoute = ({
-  onOpenUncontrolled,
-  onOpenControlled,
+  onUncontrolledFormOpen,
+  onControlledFormOpen,
 }: MainRouteProps) => {
   const dispatch = useDispatch();
   const formData = useSelector((state: RootState) => state.form.formData);
@@ -63,13 +63,13 @@ export const MainRoute = ({
 
       <div className="action-buttons">
         <button
-          onClick={onOpenUncontrolled}
+          onClick={onUncontrolledFormOpen}
           className="open-form-button uncontrolled"
         >
           Open Uncontrolled Form
         </button>
         <button
-          onClick={onOpenControlled}
+          onClick={onControlledFormOpen}
           className="open-form-button controlled"
         >
           Open Controlled Form
