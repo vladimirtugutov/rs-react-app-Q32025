@@ -9,7 +9,14 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'coverage/**', '.next/**', 'out/**', 'node_modules/**'],
+    ignores: [
+      'dist',
+      'coverage/**',
+      '.next/**',
+      'out/**',
+      'node_modules/**',
+      'next-env.d.ts',
+    ],
   },
   {
     extends: [
