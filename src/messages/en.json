@@ -12,7 +12,8 @@
     "placeholder": "Search books...",
     "button": "Search",
     "noResults": "No results found",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "selectBook": "Select book"
   },
   "Pagination": {
     "previous": "Previous",

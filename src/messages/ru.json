@@ -12,7 +12,8 @@
     "placeholder": "Поиск книг...",
     "button": "Поиск",
     "noResults": "Результатов не найдено",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "selectBook": "Выбрать книгу"
   },
   "Pagination": {
     "previous": "Предыдущая",
