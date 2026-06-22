@@ -1,4 +1,4 @@
-export const calculatePasswordStrength = (password: string): string => {
+export const calculatePasswordStrength = (password: string) => {
   let strength = 0;
   if (password.length >= 6) strength++;
   if (/[A-Z]/.test(password)) strength++;
@@ -22,6 +22,3 @@ export const calculatePasswordStrength = (password: string): string => {
       return 'Very Weak';
   }
 };
-
-export const getPasswordStrengthClass = (strength: string) =>
-  `strength-${strength.toLowerCase().replace(' ', '-')}`;

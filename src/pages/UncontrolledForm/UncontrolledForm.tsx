@@ -5,10 +5,8 @@ import { addFormData } from '../../store/formSlice';
 import { RootState } from '../../store/store';
 import { v4 as uuidv4 } from 'uuid';
 import './UncontrolledForm.css';
-import {
-  calculatePasswordStrength,
-  getPasswordStrengthClass,
-} from '../../utils/passwordUtils';
+import { calculatePasswordStrength } from '../../utils/calculatePasswordStrength/calculatePasswordStrength';
+import { getPasswordStrengthClass } from '../../utils/getPasswordStrengthClass/getPasswordStrengthClass';
 import { filterCountries } from '../../utils/countryUtils';
 import { compressImage, validateImageFile } from '../../utils/imageUtils';
 import { formSchema, FormData } from '../../utils/formSchema';

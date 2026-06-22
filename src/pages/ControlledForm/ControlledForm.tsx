@@ -6,10 +6,8 @@ import { RootState } from '../../store/store';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './ControlledForm.css';
-import {
-  calculatePasswordStrength,
-  getPasswordStrengthClass,
-} from '../../utils/passwordUtils';
+import { calculatePasswordStrength } from '../../utils/calculatePasswordStrength/calculatePasswordStrength';
+import { getPasswordStrengthClass } from '../../utils/getPasswordStrengthClass/getPasswordStrengthClass';
 import { filterCountries } from '../../utils/countryUtils';
 import { compressImage, validateImageFile } from '../../utils/imageUtils';
 import { formSchema, FormData } from '../../utils/formSchema';
