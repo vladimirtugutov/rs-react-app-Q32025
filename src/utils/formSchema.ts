@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { validateName, validateEmail, validateAge } from './validationUtils';
+import { validateName } from './validateName/validateName';
+import { validateEmail } from './validateEmail/validateEmail';
+import { validateAge } from './validateAge/validateAge';
 
 export const formSchema = z
   .object({

@@ -1,0 +1,1 @@
+export const validateAge = (age: number) => age > 0;
