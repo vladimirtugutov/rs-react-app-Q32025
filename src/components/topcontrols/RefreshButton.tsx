@@ -1,20 +1,25 @@
+'use client';
+
+import { useTransition } from 'react';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 
-type RefreshButtonProps = {
-  onRefresh: () => void;
-  isLoading: boolean;
-};
-
-export const RefreshButton = ({ onRefresh, isLoading }: RefreshButtonProps) => {
+export const RefreshButton = () => {
   const t = useTranslations('Search');
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
 
   return (
-    <button
-      onClick={onRefresh}
-      disabled={isLoading}
-      className="top-controls-button"
-    >
-      {isLoading ? t('refreshing') : t('refresh')}
+    <button onClick={handleRefresh} disabled={isPending}>
+      {isPending ? t('refreshing') : t('refresh')}
     </button>
   );
 };
+
+export default RefreshButton;

@@ -1,56 +1,55 @@
+import { Link } from '@/i18n/navigation';
 import { getVisiblePages } from '../../utils/pagination';
+import { getTranslations } from 'next-intl/server';
 import './Pagination.css';
-import { useTranslations } from 'next-intl';
 
 type PaginationProps = {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  query?: string;
 };
 
-export const Pagination = ({
+export const Pagination = async ({
   currentPage,
   totalPages,
-  onPageChange,
+  query,
 }: PaginationProps) => {
-  const t = useTranslations('Pagination');
-  const handlePreviousClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onPageChange(currentPage - 1);
-  };
+  const t = await getTranslations('Pagination');
 
-  const handleNextClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onPageChange(currentPage + 1);
-  };
+  const buildHref = (page: number) =>
+    query ? `/${page}?q=${encodeURIComponent(query)}` : `/${page}`;
 
-  const handlePageClick = (page: number | string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (typeof page === 'number') {
-      onPageChange(page);
-    }
-  };
+  const pages = getVisiblePages(currentPage, totalPages);
 
   return (
     <div className="pagination">
-      <button onClick={handlePreviousClick} disabled={currentPage === 1}>
-        {t('previous')}
-      </button>
+      {currentPage > 1 ? (
+        <Link href={buildHref(currentPage - 1)}>{t('previous')}</Link>
+      ) : (
+        <span className="disabled">{t('previous')}</span>
+      )}
 
-      {getVisiblePages(currentPage, totalPages).map((page, index) => (
-        <button
-          key={index}
-          onClick={(event) => handlePageClick(page, event)}
-          className={currentPage === page ? 'active' : ''}
-          disabled={typeof page !== 'number'}
-        >
-          {page}
-        </button>
-      ))}
+      {pages.map((page, index) =>
+        typeof page === 'number' ? (
+          <Link
+            key={index}
+            href={buildHref(page)}
+            className={currentPage === page ? 'active' : ''}
+          >
+            {page}
+          </Link>
+        ) : (
+          <span key={index}>{page}</span>
+        )
+      )}
 
-      <button onClick={handleNextClick} disabled={currentPage === totalPages}>
-        {t('next')}
-      </button>
+      {currentPage < totalPages ? (
+        <Link href={buildHref(currentPage + 1)}>{t('next')}</Link>
+      ) : (
+        <span className="disabled">{t('next')}</span>
+      )}
     </div>
   );
 };
+
+export default Pagination;

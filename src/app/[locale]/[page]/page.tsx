@@ -1,13 +1,25 @@
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { BooksListClient } from '@/components/BooksListClient';
+import { TopControls } from '@/components/Topcontrols/TopControls';
+import { Results } from '@/components/Results/Results';
+import { Pagination } from '@/components/Pagination/Pagination';
 import { API_CONFIG } from '@/constants/api';
-import { OpenLibraryResponse } from '@/types/book';
+import { OpenLibraryResponse, OpenLibraryBook, Book } from '@/types/book';
 
 type Props = {
   params: Promise<{ locale: string; page: string }>;
-  searchParams: Promise<{ q?: string; filter?: string }>;
+  searchParams: Promise<{ q?: string }>;
 };
+
+const transformOpenLibraryBook = (doc: OpenLibraryBook): Book => ({
+  key: doc.key,
+  title: doc.title || '',
+  author_name: doc.author_name ?? [],
+  first_publish_year: doc.first_publish_year,
+  cover_i: doc.cover_i,
+  subject: doc.subject ?? [],
+  isbn: doc.isbn ?? [],
+  publisher: doc.publisher ?? [],
+});
 
 export default async function BooksListPage({ params, searchParams }: Props) {
   const { locale, page } = await params;
@@ -26,9 +38,7 @@ export default async function BooksListPage({ params, searchParams }: Props) {
     const searchQuery = q || 'javascript';
     const apiUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchQuery)}&page=${currentPage}&limit=${API_CONFIG.ITEMS_PER_PAGE}`;
 
-    const response = await fetch(apiUrl, {
-      cache: 'no-store',
-    });
+    const response = await fetch(apiUrl, { cache: 'no-store' });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.status}`);
@@ -41,25 +51,25 @@ export default async function BooksListPage({ params, searchParams }: Props) {
       fetchError instanceof Error
         ? fetchError.message
         : 'Failed to fetch books';
-
-    initialData = {
-      docs: [],
-      numFound: 0,
-      start: 0,
-    };
+    initialData = { docs: [], numFound: 0, start: 0 };
   }
+
+  const books = initialData.docs.map(transformOpenLibraryBook);
+  const totalPages = Math.ceil(
+    initialData.numFound / API_CONFIG.ITEMS_PER_PAGE
+  );
 
   return (
     <div className="books-page">
-      <Suspense fallback={<div>Loading books...</div>}>
-        <BooksListClient
-          initialData={initialData}
+      <TopControls locale={locale} initialQuery={q} />
+      <Results results={books} error={error} />
+      {totalPages > 1 && (
+        <Pagination
           currentPage={currentPage}
-          locale={locale}
-          initialQuery={q}
-          error={error}
+          totalPages={totalPages}
+          query={q}
         />
-      </Suspense>
+      )}
     </div>
   );
 }

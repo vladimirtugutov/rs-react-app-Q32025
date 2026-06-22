@@ -13,6 +13,7 @@
     "button": "Search",
     "noResults": "No results found",
     "refresh": "Refresh",
+    "refreshing": "Refreshing...",
     "selectBook": "Select book"
   },
   "Pagination": {

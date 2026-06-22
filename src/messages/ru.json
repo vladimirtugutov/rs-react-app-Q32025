@@ -13,6 +13,7 @@
     "button": "Поиск",
     "noResults": "Результатов не найдено",
     "refresh": "Обновить",
+    "refreshing": "Обновление...",
     "selectBook": "Выбрать книгу"
   },
   "Pagination": {

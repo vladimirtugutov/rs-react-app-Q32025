@@ -1,20 +1,15 @@
 import './Results.css';
-import { useParams } from 'next/navigation';
-import { ResultsProps } from '../../types/components';
-import { useAppSelector } from '../../store/hooks';
-import { selectSelectedItems } from '../../store/selectedItemsSlice';
-import { BookItem } from '../../components/BookItem';
+import { Book } from '../../types/book';
+import { BookItem } from '../BookItem';
 import { useTranslations } from 'next-intl';
+
+type ResultsProps = {
+  results: Book[];
+  error?: string | null;
+};
 
 export const Results = ({ results, error }: ResultsProps) => {
   const t = useTranslations('Search');
-  const params = useParams() as { detailsId?: string };
-  const detailsId = params.detailsId;
-  const selectedItems = useAppSelector(selectSelectedItems);
-
-  const isItemSelected = (bookId: string): boolean => {
-    return selectedItems.some((item) => item.id === bookId);
-  };
 
   if (error) {
     return <div className="error-message">{error}</div>;
@@ -26,19 +21,11 @@ export const Results = ({ results, error }: ResultsProps) => {
 
   return (
     <div className="results-table">
-      {results.map((book) => {
-        const bookId = book.key?.replace('/works/', '') || '';
-        const isDetailSelected = detailsId === bookId;
-
-        return (
-          <BookItem
-            key={book.key || `book-${bookId}`}
-            book={book}
-            isSelected={isItemSelected(bookId)}
-            isDetailSelected={isDetailSelected}
-          />
-        );
-      })}
+      {results.map((book) => (
+        <BookItem key={book.key} book={book} />
+      ))}
     </div>
   );
 };
+
+export default Results;
