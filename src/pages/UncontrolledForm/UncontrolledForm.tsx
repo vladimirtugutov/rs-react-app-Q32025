@@ -13,6 +13,7 @@ import { filterCountries } from '../../utils/countryUtils';
 import { compressImage, validateImageFile } from '../../utils/imageUtils';
 import { formSchema, FormData } from '../../utils/formSchema';
 import { FormField } from '../../utils/formFields';
+import { FormFieldWrapper } from '../../components/FormFieldWrapper/FormFieldWrapper';
 
 type UncontrolledFormProps = {
   onSuccess: () => void;
@@ -61,14 +62,11 @@ export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors
           .map((err) => {
-            const fieldName =
-              FIELD_DISPLAY_NAMES[err.path[0] as string] ?? err.path[0];
+            const fieldName = FIELD_DISPLAY_NAMES[err.path[0] as string] ?? err.path[0];
             return `• ${fieldName}: ${err.message}`;
           })
           .join('\n');
-        alert(
-          `Please fix the following validation errors:\n\n${errorMessages}`
-        );
+        alert(`Please fix the following validation errors:\n\n${errorMessages}`);
       }
     }
   };
@@ -114,9 +112,7 @@ export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
 
   const handleCountryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setFilteredCountries(
-      value.length > 0 ? filterCountries(countries, value) : []
-    );
+    setFilteredCountries(value.length > 0 ? filterCountries(countries, value) : []);
   };
 
   const handleSelectCountry = (country: string) => {
@@ -130,23 +126,19 @@ export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
     <div className="uncontrolled-form">
       <h1>Uncontrolled Form (DOM-managed)</h1>
       <form onSubmit={handleSubmit} className="form">
-        <div className="form-field">
-          <label htmlFor={FormField.Name}>Name:</label>
+        <FormFieldWrapper label="Name:" htmlFor={FormField.Name}>
           <input id={FormField.Name} type="text" ref={nameRef} />
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Age}>Age:</label>
+        <FormFieldWrapper label="Age:" htmlFor={FormField.Age}>
           <input id={FormField.Age} type="number" ref={ageRef} />
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Email}>Email:</label>
+        <FormFieldWrapper label="Email:" htmlFor={FormField.Email}>
           <input id={FormField.Email} type="email" ref={emailRef} />
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Password}>Password:</label>
+        <FormFieldWrapper label="Password:" htmlFor={FormField.Password}>
           <input
             id={FormField.Password}
             type="password"
@@ -161,40 +153,30 @@ export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
               </span>
             </div>
           )}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.ConfirmPassword}>Confirm Password:</label>
-          <input
-            id={FormField.ConfirmPassword}
-            type="password"
-            ref={confirmPasswordRef}
-          />
-        </div>
+        <FormFieldWrapper label="Confirm Password:" htmlFor={FormField.ConfirmPassword}>
+          <input id={FormField.ConfirmPassword} type="password" ref={confirmPasswordRef} />
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Gender}>Gender:</label>
+        <FormFieldWrapper label="Gender:" htmlFor={FormField.Gender}>
           <select id={FormField.Gender} ref={genderRef}>
             <option value="">Select...</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.TermsAccepted} className="checkbox-label">
-            <input
-              id={FormField.TermsAccepted}
-              type="checkbox"
-              ref={termsRef}
-            />
-            Accept Terms and Conditions
-          </label>
-        </div>
+        <FormFieldWrapper
+          label="Accept Terms and Conditions"
+          htmlFor={FormField.TermsAccepted}
+          wrapInLabel
+        >
+          <input id={FormField.TermsAccepted} type="checkbox" ref={termsRef} />
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Country}>Country:</label>
+        <FormFieldWrapper label="Country:" htmlFor={FormField.Country}>
           <div className="autocomplete-container">
             <input
               id={FormField.Country}
@@ -207,27 +189,18 @@ export const UncontrolledForm = ({ onSuccess }: UncontrolledFormProps) => {
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
                 {filteredCountries.map((country) => (
-                  <li
-                    key={country}
-                    onClick={() => handleSelectCountry(country)}
-                  >
+                  <li key={country} onClick={() => handleSelectCountry(country)}>
                     {country}
                   </li>
                 ))}
               </ul>
             )}
           </div>
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor="imageFile">Upload Image (PNG/JPEG):</label>
-          <input
-            id="imageFile"
-            type="file"
-            ref={imageRef}
-            accept="image/png,image/jpeg"
-          />
-        </div>
+        <FormFieldWrapper label="Upload Image (PNG/JPEG):" htmlFor="imageFile">
+          <input id="imageFile" type="file" ref={imageRef} accept="image/png,image/jpeg" />
+        </FormFieldWrapper>
 
         <button type="submit" className="submit-button">
           Submit Form

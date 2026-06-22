@@ -14,6 +14,7 @@ import { filterCountries } from '../../utils/countryUtils';
 import { compressImage, validateImageFile } from '../../utils/imageUtils';
 import { formSchema, FormData } from '../../utils/formSchema';
 import { FormField } from '../../utils/formFields';
+import { FormFieldWrapper } from '../../components/FormFieldWrapper/FormFieldWrapper';
 
 type ControlledFormProps = {
   onSuccess: () => void;
@@ -100,42 +101,23 @@ export const ControlledForm = ({ onSuccess }: ControlledFormProps) => {
     <div className="controlled-form">
       <h1>Controlled Form (React Hook Form)</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="form">
-        <div className="form-field">
-          <label htmlFor={FormField.Name}>Name:</label>
-          <input
-            id={FormField.Name}
-            type="text"
-            {...register(FormField.Name)}
-          />
-          {errors.name && (
-            <p className="error-message">{errors.name.message}</p>
-          )}
-        </div>
+        <FormFieldWrapper label="Name:" htmlFor={FormField.Name} error={errors.name?.message}>
+          <input id={FormField.Name} type="text" {...register(FormField.Name)} />
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Age}>Age:</label>
+        <FormFieldWrapper label="Age:" htmlFor={FormField.Age} error={errors.age?.message}>
           <input
             id={FormField.Age}
             type="number"
             {...register(FormField.Age, { valueAsNumber: true })}
           />
-          {errors.age && <p className="error-message">{errors.age.message}</p>}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Email}>Email:</label>
-          <input
-            id={FormField.Email}
-            type="email"
-            {...register(FormField.Email)}
-          />
-          {errors.email && (
-            <p className="error-message">{errors.email.message}</p>
-          )}
-        </div>
+        <FormFieldWrapper label="Email:" htmlFor={FormField.Email} error={errors.email?.message}>
+          <input id={FormField.Email} type="email" {...register(FormField.Email)} />
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Password}>Password:</label>
+        <FormFieldWrapper label="Password:" htmlFor={FormField.Password} error={errors.password?.message}>
           <input
             id={FormField.Password}
             type="password"
@@ -145,18 +127,16 @@ export const ControlledForm = ({ onSuccess }: ControlledFormProps) => {
           {password && (
             <div className="password-strength">
               Password Strength:{' '}
-              <span className={getPasswordStrengthClass(passwordStrength)}>
-                {passwordStrength}
-              </span>
+              <span className={getPasswordStrengthClass(passwordStrength)}>{passwordStrength}</span>
             </div>
           )}
-          {errors.password && (
-            <p className="error-message">{errors.password.message}</p>
-          )}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.ConfirmPassword}>Confirm Password:</label>
+        <FormFieldWrapper
+          label="Confirm Password:"
+          htmlFor={FormField.ConfirmPassword}
+          error={errors.confirmPassword?.message}
+        >
           <input
             id={FormField.ConfirmPassword}
             type="password"
@@ -164,48 +144,31 @@ export const ControlledForm = ({ onSuccess }: ControlledFormProps) => {
             onBlur={handlePasswordBlur}
           />
           {password && confirmPassword && (
-            <div
-              className={`password-match ${password === confirmPassword ? 'match' : 'no-match'}`}
-            >
-              {password === confirmPassword
-                ? '✓ Passwords match'
-                : '✗ Passwords do not match'}
+            <div className={`password-match ${password === confirmPassword ? 'match' : 'no-match'}`}>
+              {password === confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
             </div>
           )}
-          {errors.confirmPassword && (
-            <p className="error-message">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Gender}>Gender:</label>
+        <FormFieldWrapper label="Gender:" htmlFor={FormField.Gender} error={errors.gender?.message}>
           <select id={FormField.Gender} {...register(FormField.Gender)}>
             <option value="">Select...</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && (
-            <p className="error-message">{errors.gender.message}</p>
-          )}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.TermsAccepted} className="checkbox-label">
-            <input
-              id={FormField.TermsAccepted}
-              type="checkbox"
-              {...register(FormField.TermsAccepted)}
-            />
-            Accept Terms and Conditions
-          </label>
-          {errors.termsAccepted && (
-            <p className="error-message">{errors.termsAccepted.message}</p>
-          )}
-        </div>
+        <FormFieldWrapper
+          label="Accept Terms and Conditions"
+          htmlFor={FormField.TermsAccepted}
+          error={errors.termsAccepted?.message}
+          wrapInLabel
+        >
+          <input id={FormField.TermsAccepted} type="checkbox" {...register(FormField.TermsAccepted)} />
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor={FormField.Country}>Country:</label>
+        <FormFieldWrapper label="Country:" htmlFor={FormField.Country} error={errors.country?.message}>
           <div className="autocomplete-container">
             <input
               id={FormField.Country}
@@ -218,33 +181,22 @@ export const ControlledForm = ({ onSuccess }: ControlledFormProps) => {
             {filteredCountries.length > 0 && (
               <ul className="autocomplete-dropdown">
                 {filteredCountries.map((country) => (
-                  <li
-                    key={country}
-                    onClick={() => handleSelectCountry(country)}
-                  >
+                  <li key={country} onClick={() => handleSelectCountry(country)}>
                     {country}
                   </li>
                 ))}
               </ul>
             )}
           </div>
-          {errors.country && (
-            <p className="error-message">{errors.country.message}</p>
-          )}
-        </div>
+        </FormFieldWrapper>
 
-        <div className="form-field">
-          <label htmlFor="imageFile">Upload Image (PNG/JPEG):</label>
-          <input
-            id="imageFile"
-            type="file"
-            onChange={handleFileUpload}
-            accept="image/png,image/jpeg"
-          />
-          {errors.imageBase64 && (
-            <p className="error-message">{errors.imageBase64.message}</p>
-          )}
-        </div>
+        <FormFieldWrapper
+          label="Upload Image (PNG/JPEG):"
+          htmlFor="imageFile"
+          error={errors.imageBase64?.message}
+        >
+          <input id="imageFile" type="file" onChange={handleFileUpload} accept="image/png,image/jpeg" />
+        </FormFieldWrapper>
 
         <button type="submit" disabled={!isValid} className="submit-button">
           Submit Form
