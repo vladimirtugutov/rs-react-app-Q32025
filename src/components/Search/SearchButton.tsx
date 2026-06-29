@@ -1,17 +1,13 @@
-import { useContext } from 'react';
-import SearchContext from './SearchContext';
+import { useTranslations } from 'next-intl';
 
-function SearchButton() {
-  const context = useContext(SearchContext);
+export const SearchButton = () => {
+  const t = useTranslations('Search');
 
   return (
-    <button
-      onClick={context.handleSearchButtonClick}
-      className="top-controls-button"
-    >
-      Search Button
+    <button type="submit" className="top-controls-button">
+      {t('button')}
     </button>
   );
-}
+};
 
 export default SearchButton;

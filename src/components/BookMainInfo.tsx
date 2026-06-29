@@ -1,5 +1,7 @@
 import { BookMainInfoProps } from '../types/components';
 import { InfoSection } from './InfoSection';
+import { isArrayWithItems } from '../utils/isArrayWithItems';
+import Image from 'next/image';
 
 const MAX_SUBJECTS_DISPLAY = 8;
 const MAX_PUBLISHERS_DISPLAY = 8;
@@ -7,20 +9,19 @@ const MAX_PUBLISHERS_DISPLAY = 8;
 export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
   <>
     {book.cover_i && (
-      <img
+      <Image
         src={getCoverUrl(book.cover_i)}
         alt={book.title}
+        width={300}
+        height={450}
         className="book-cover-large"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
-        }}
       />
     )}
 
     <div className="book-main-info">
       <h3>{book.title}</h3>
 
-      {book.author_name?.length > 0 && (
+      {isArrayWithItems<string>(book.author_name) && (
         <InfoSection title="Authors:">
           {book.author_name.join(', ')}
         </InfoSection>
@@ -32,7 +33,7 @@ export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
         </InfoSection>
       )}
 
-      {book.publisher?.length > 0 && (
+      {isArrayWithItems<string>(book.publisher) && (
         <InfoSection title="Publishers:">
           {book.publisher.slice(0, MAX_PUBLISHERS_DISPLAY).join(', ')}
         </InfoSection>
@@ -44,7 +45,7 @@ export const BookMainInfo = ({ book, getCoverUrl }: BookMainInfoProps) => (
         </InfoSection>
       )}
 
-      {book.subject?.length > 0 && (
+      {isArrayWithItems<string>(book.subject) && (
         <InfoSection title="Subjects:">
           {book.subject.slice(0, MAX_SUBJECTS_DISPLAY).join(', ')}
         </InfoSection>

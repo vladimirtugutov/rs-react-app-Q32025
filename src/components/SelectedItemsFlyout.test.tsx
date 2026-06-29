@@ -7,11 +7,43 @@ import { SelectedItemsFlyout } from './SelectedItemsFlyout';
 import selectedItemsReducer, { toggleItem } from '../store/selectedItemsSlice';
 import { SelectedItem } from '../types/selectedItems';
 
+const mockSaveAs = vi.hoisted(() => vi.fn());
+
+vi.mock('file-saver', () => ({
+  saveAs: mockSaveAs,
+}));
+
+class MockBlob {
+  content: string;
+  type: string;
+
+  constructor(content: string[], options: { type?: string } = {}) {
+    this.content = content.join('');
+    this.type = options.type || '';
+  }
+
+  text() {
+    return Promise.resolve(this.content);
+  }
+}
+
+Object.defineProperty(globalThis, 'Blob', {
+  value: MockBlob,
+  configurable: true,
+});
+
 const createTestStore = (initialItems: SelectedItem[] = []) => {
-  return configureStore({
-    reducer: { selectedItems: selectedItemsReducer },
-    preloadedState: { selectedItems: { items: initialItems } },
+  const store = configureStore({
+    reducer: {
+      selectedItems: selectedItemsReducer,
+    },
+    preloadedState: {
+      selectedItems: {
+        items: initialItems,
+      },
+    },
   });
+  return store;
 };
 
 const renderWithStore = (store: ReturnType<typeof createTestStore>) => {
@@ -55,35 +87,32 @@ const mockSelectedItems: SelectedItem[] = [
   },
 ];
 
-const originalCreateElement = document.createElement.bind(document);
-
 describe('SelectedItemsFlyout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.stubGlobal('URL', {
-      createObjectURL: vi.fn(() => 'blob:mock-url'),
-      revokeObjectURL: vi.fn(),
-    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.unstubAllGlobals();
   });
 
   describe('Visibility', () => {
     it('should not render when no items are selected', () => {
       const store = createTestStore([]);
       const { container } = renderWithStore(store);
+
       expect(container.firstChild).toBeNull();
     });
 
     it('should render when items are selected', () => {
       const store = createTestStore([mockSelectedItems[0]]);
       renderWithStore(store);
+
       expect(
-        screen.getByText((_c, el) => el?.textContent === '1 item selected')
+        screen.getByText((_content, element) => {
+          return element?.textContent === '1 item selected';
+        })
       ).toBeInTheDocument();
       expect(screen.getByText('Unselect all')).toBeInTheDocument();
       expect(screen.getByText('Download')).toBeInTheDocument();
@@ -94,24 +123,33 @@ describe('SelectedItemsFlyout', () => {
     it('should display singular form for 1 item', () => {
       const store = createTestStore([mockSelectedItems[0]]);
       renderWithStore(store);
+
       expect(
-        screen.getByText((_c, el) => el?.textContent === '1 item selected')
+        screen.getByText((_content, element) => {
+          return element?.textContent === '1 item selected';
+        })
       ).toBeInTheDocument();
     });
 
     it('should display plural form for multiple items', () => {
       const store = createTestStore(mockSelectedItems.slice(0, 2));
       renderWithStore(store);
+
       expect(
-        screen.getByText((_c, el) => el?.textContent === '2 items selected')
+        screen.getByText((_content, element) => {
+          return element?.textContent === '2 items selected';
+        })
       ).toBeInTheDocument();
     });
 
     it('should display correct count for larger numbers', () => {
       const store = createTestStore(mockSelectedItems);
       renderWithStore(store);
+
       expect(
-        screen.getByText((_c, el) => el?.textContent === '3 items selected')
+        screen.getByText((_content, element) => {
+          return element?.textContent === '3 items selected';
+        })
       ).toBeInTheDocument();
     });
   });
@@ -120,15 +158,22 @@ describe('SelectedItemsFlyout', () => {
     it('should clear all selected items when unselect all is clicked', () => {
       const store = createTestStore(mockSelectedItems.slice(0, 2));
       renderWithStore(store);
-      fireEvent.click(screen.getByText('Unselect all'));
+
+      const unselectButton = screen.getByText('Unselect all');
+      fireEvent.click(unselectButton);
+
       expect(screen.queryByText('Unselect all')).not.toBeInTheDocument();
     });
 
     it('should dispatch clearAllItems action when unselect all is clicked', () => {
       const store = createTestStore([mockSelectedItems[0]]);
       const dispatchSpy = vi.spyOn(store, 'dispatch');
+
       renderWithStore(store);
-      fireEvent.click(screen.getByText('Unselect all'));
+
+      const unselectButton = screen.getByText('Unselect all');
+      fireEvent.click(unselectButton);
+
       expect(dispatchSpy).toHaveBeenCalledWith({
         type: 'selectedItems/clearAllItems',
       });
@@ -136,67 +181,172 @@ describe('SelectedItemsFlyout', () => {
   });
 
   describe('Download functionality', () => {
-    it('should trigger download when download button is clicked', () => {
+    it('should call saveAs when download button is clicked', () => {
       const store = createTestStore([mockSelectedItems[0]]);
+
       renderWithStore(store);
 
-      const mockClick = vi.fn();
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-        if (tag === 'a')
-          return {
-            href: '',
-            setAttribute: vi.fn(),
-            click: mockClick,
-          } as unknown as HTMLAnchorElement;
-        return originalCreateElement(tag);
-      });
-      vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
 
-      fireEvent.click(screen.getByText('Download'));
-      expect(mockClick).toHaveBeenCalled();
+      expect(mockSaveAs).toHaveBeenCalledWith(
+        expect.any(MockBlob),
+        '1_items.csv'
+      );
     });
 
-    it('should set correct filename for single item', () => {
-      const store = createTestStore([mockSelectedItems[0]]);
-      renderWithStore(store);
-
-      const mockSetAttribute = vi.fn();
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-        if (tag === 'a')
-          return {
-            href: '',
-            setAttribute: mockSetAttribute,
-            click: vi.fn(),
-          } as unknown as HTMLAnchorElement;
-        return originalCreateElement(tag);
-      });
-      vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
-
-      fireEvent.click(screen.getByText('Download'));
-      expect(mockSetAttribute).toHaveBeenCalledWith('download', '1_items.csv');
-    });
-
-    it('should set correct filename for multiple items', () => {
+    it('should generate correct filename for multiple items', () => {
       const store = createTestStore(mockSelectedItems);
+
       renderWithStore(store);
 
-      const mockSetAttribute = vi.fn();
-      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-        if (tag === 'a')
-          return {
-            href: '',
-            setAttribute: mockSetAttribute,
-            click: vi.fn(),
-          } as unknown as HTMLAnchorElement;
-        return originalCreateElement(tag);
-      });
-      vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
 
-      fireEvent.click(screen.getByText('Download'));
-      expect(mockSetAttribute).toHaveBeenCalledWith('download', '3_items.csv');
+      expect(mockSaveAs).toHaveBeenCalledWith(
+        expect.any(MockBlob),
+        '3_items.csv'
+      );
+    });
+
+    it('should create blob with correct content type', () => {
+      const store = createTestStore([mockSelectedItems[0]]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+
+      expect(blob).toBeInstanceOf(MockBlob);
+      expect(blob.type).toBe('text/csv;charset=utf-8;');
+    });
+  });
+
+  describe('CSV generation', () => {
+    it('should generate correct CSV headers', async () => {
+      const store = createTestStore([mockSelectedItems[0]]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+      const csvContent = await blob.text();
+
+      const expectedHeaders =
+        'Title,Authors,Description,Published Date,Page Count,Categories,Preview Link';
+      expect(csvContent).toContain(expectedHeaders);
+    });
+
+    it('should generate correct CSV content for single item', async () => {
+      const store = createTestStore([mockSelectedItems[0]]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+      const csvContent = await blob.text();
+
+      expect(csvContent).toContain('"Test Book 1"');
+      expect(csvContent).toContain('"Author 1; Author 2"');
+      expect(csvContent).toContain('"Test description 1"');
+      expect(csvContent).toContain('"2020"');
+      expect(csvContent).toContain('"200"');
+      expect(csvContent).toContain('"Fiction; Adventure"');
+      expect(csvContent).toContain('"http://example.com/preview1"');
+    });
+
+    it('should properly escape quotes in CSV content', async () => {
+      const store = createTestStore([mockSelectedItems[2]]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+      const csvContent = await blob.text();
+
+      expect(csvContent).toContain('""quotes""');
+      expect(csvContent).toContain('"Author ""Quoted"""');
+    });
+
+    it('should handle empty/undefined fields correctly', async () => {
+      const itemWithEmptyFields: SelectedItem = {
+        id: 'empty-book',
+        title: 'Empty Book',
+      };
+
+      const store = createTestStore([itemWithEmptyFields]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+      const csvContent = await blob.text();
+
+      expect(csvContent).toContain('"Empty Book"');
+      expect(csvContent).toContain('""');
+    });
+
+    it('should generate correct CSV for multiple items', async () => {
+      const store = createTestStore(mockSelectedItems.slice(0, 2));
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      const mockCalls = mockSaveAs.mock.calls;
+      const firstCall = mockCalls[0];
+      const blob = firstCall[0] as MockBlob;
+      const csvContent = await blob.text();
+
+      const lines = csvContent.split('\n');
+      expect(lines).toHaveLength(3);
+      expect(lines[0]).toContain('Title,Authors');
+      expect(lines[1]).toContain('Test Book 1');
+      expect(lines[2]).toContain('Test Book 2');
+    });
+  });
+
+  describe('Error handling', () => {
+    it('should handle download errors gracefully', () => {
+      mockSaveAs.mockImplementation(() => {
+        throw new Error('Save failed');
+      });
+
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const store = createTestStore([mockSelectedItems[0]]);
+
+      renderWithStore(store);
+
+      const downloadButton = screen.getByText('Download');
+      fireEvent.click(downloadButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error downloading CSV:',
+        expect.any(Error)
+      );
     });
   });
 
@@ -204,18 +354,26 @@ describe('SelectedItemsFlyout', () => {
     it('should update count when items are added', async () => {
       const store = createTestStore([mockSelectedItems[0]]);
       const { rerender } = renderWithStore(store);
+
       expect(
-        screen.getByText((_c, el) => el?.textContent === '1 item selected')
+        screen.getByText((_content, element) => {
+          return element?.textContent === '1 item selected';
+        })
       ).toBeInTheDocument();
+
       store.dispatch(toggleItem(mockSelectedItems[1]));
+
       rerender(
         <Provider store={store}>
           <SelectedItemsFlyout />
         </Provider>
       );
+
       await waitFor(() => {
         expect(
-          screen.getByText((_c, el) => el?.textContent === '2 items selected')
+          screen.getByText((_content, element) => {
+            return element?.textContent === '2 items selected';
+          })
         ).toBeInTheDocument();
       });
     });
@@ -223,15 +381,26 @@ describe('SelectedItemsFlyout', () => {
     it('should disappear when last item is removed', async () => {
       const store = createTestStore([mockSelectedItems[0]]);
       const { rerender } = renderWithStore(store);
+
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === '1 item selected';
+        })
+      ).toBeInTheDocument();
+
       store.dispatch(toggleItem(mockSelectedItems[0]));
+
       rerender(
         <Provider store={store}>
           <SelectedItemsFlyout />
         </Provider>
       );
+
       await waitFor(() => {
         expect(
-          screen.queryByText((_c, el) => el?.textContent === '1 item selected')
+          screen.queryByText((_content, element) => {
+            return element?.textContent === '1 item selected';
+          })
         ).not.toBeInTheDocument();
       });
     });
@@ -241,20 +410,25 @@ describe('SelectedItemsFlyout', () => {
     it('should have proper button elements', () => {
       const store = createTestStore([mockSelectedItems[0]]);
       renderWithStore(store);
-      expect(
-        screen.getByRole('button', { name: 'Unselect all' })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Download' })
-      ).toBeInTheDocument();
+
+      const unselectButton = screen.getByRole('button', {
+        name: 'Unselect all',
+      });
+      const downloadButton = screen.getByRole('button', { name: 'Download' });
+
+      expect(unselectButton).toBeInTheDocument();
+      expect(downloadButton).toBeInTheDocument();
     });
 
     it('should have proper CSS classes for styling', () => {
       const store = createTestStore([mockSelectedItems[0]]);
       renderWithStore(store);
+
       expect(
         screen
-          .getByText((_c, el) => el?.textContent === '1 item selected')
+          .getByText((_content, element) => {
+            return element?.textContent === '1 item selected';
+          })
           .closest('.selected-items-flyout')
       ).toBeInTheDocument();
       expect(screen.getByText('Unselect all')).toHaveClass('unselect-btn');

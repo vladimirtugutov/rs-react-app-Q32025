@@ -1,16 +1,25 @@
-type RefreshButtonProps = {
-  onRefresh?: () => void;
-  isLoading: boolean;
-};
+'use client';
 
-export const RefreshButton = ({ onRefresh, isLoading }: RefreshButtonProps) => {
+import { useTransition } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+
+export const RefreshButton = () => {
+  const t = useTranslations('Search');
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
   return (
-    <button
-      onClick={onRefresh}
-      disabled={isLoading}
-      className="top-controls-button"
-    >
-      {isLoading ? 'Refreshing...' : 'Refresh'}
+    <button onClick={handleRefresh} disabled={isPending}>
+      {isPending ? t('refreshing') : t('refresh')}
     </button>
   );
 };
+
+export default RefreshButton;
