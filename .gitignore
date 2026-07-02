@@ -1,6 +1,5 @@
 # Logs
 logs
-.env
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -12,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Next.js
+.next/
+out/
 
 coverage/
 
@@ -25,3 +28,5 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+.vercel
+tsconfig.tsbuildinfo
