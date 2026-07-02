@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { IS_CLIENT } from '@/constants/environment';
 
 type Theme = 'light' | 'dark';
 
@@ -19,7 +20,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (IS_CLIENT) {
       document.documentElement.setAttribute('data-theme', theme);
     }
   }, [theme]);

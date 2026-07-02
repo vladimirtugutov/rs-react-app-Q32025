@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { IS_CLIENT, IS_SERVER } from '@/constants/environment';
 
 function readStoredValue<T>(key: string, initialValue: T): T {
-  if (typeof window === 'undefined') {
+  if (IS_SERVER) {
     return initialValue;
   }
 
@@ -47,7 +48,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
         value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
 
-      if (typeof window !== 'undefined') {
+      if (IS_CLIENT) {
         if (typeof valueToStore === 'string') {
           window.localStorage.setItem(key, valueToStore);
         } else {
