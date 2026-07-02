@@ -12,12 +12,12 @@ type BookDetailsProps = {
   bookDetailsAPI: BookDetailsAPI | null;
 };
 
+const handleClose = () => window.history.back();
+
+const getCoverUrl = (coverId: number) =>
+  `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
+
 export const BookDetails = ({ bookId, bookDetailsAPI }: BookDetailsProps) => {
-  const handleClose = () => window.history.back();
-
-  const getCoverUrl = (coverId: number) =>
-    `${API_CONFIG.COVER_BASE_URL}/${coverId}-L.jpg`;
-
   if (!bookDetailsAPI) {
     return (
       <div className="book-details-panel" data-testid="book-details-panel">
@@ -76,7 +76,6 @@ export const BookDetails = ({ bookId, bookDetailsAPI }: BookDetailsProps) => {
           ×
         </button>
       </div>
-
       <div className="book-details-content">
         <BookMainInfo book={bookForMainInfo} getCoverUrl={getCoverUrl} />
         <div className="book-additional-info">
